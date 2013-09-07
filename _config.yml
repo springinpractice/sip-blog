@@ -6,7 +6,8 @@ url: http://springinpractice.com
 title: Spring in Practice
 subtitle: Willie Wheeler's Spring blog
 author: Willie Wheeler
-simple_search: http://google.com/search
+#simple_search: http://google.com/search
+simple_search:
 description: Willie Wheeler's Spring blog
 
 # Default date format is "ordinal" (resulting in "July 22nd 2007")
