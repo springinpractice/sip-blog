@@ -28,6 +28,16 @@ body {
 				display: inline;
 				padding: 0 10px;
 
+				.icon {
+					padding-left: 30px;
+					background-position: left;
+					background-repeat: no-repeat;
+				}
+
+				.icon.github {
+					background-image: url(http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png);
+				}
+
 				a, a:visited, a:hover {
 					color: #8C8C8C;
 					text-decoration: none;
