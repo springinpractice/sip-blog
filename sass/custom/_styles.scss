@@ -1,7 +1,7 @@
 // This File is imported last, and will override other styles in the cascade
 // Add styles here to make changes without digging in too much
 
-$white: #FFFFFF;
+$white: #FBFFFB;
 
 html {
 	background: $white;
@@ -19,6 +19,21 @@ body {
 		text-align: center;
 		padding-left: 0px;
 		padding-right: 0px;	
+
+		> ul.social-links {
+			list-style: none;
+			font-size: 0.9em;
+
+			> li {
+				display: inline;
+				padding: 0 10px;
+
+				> a, a:visited, a:hover {
+					color: #8C8C8C;
+					text-decoration: none;
+				}
+			}
+		}
 
 		h1 {
 			a, a:visited, a:hover {
