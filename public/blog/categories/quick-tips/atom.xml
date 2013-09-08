@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Quick Tips | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/quick-tips/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-08T08:34:40-07:00</updated>
+  <updated>2013-09-08T08:42:17-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -14,31 +14,10 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Pageable custom queries with Spring Data JPA]]></title>
-    <link href="http://springinpractice.com/blog/2013/09/08/pageable-custom-queries-with-spring-data-jpa/"/>
-    <updated>2013-09-08T08:27:00-07:00</updated>
-    <id>http://springinpractice.com/blog/2013/09/08/pageable-custom-queries-with-spring-data-jpa</id>
-    <content type="html"><![CDATA[<p>In previous posts I explained how you can use Spring Data JPA to <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">create repositories that support custom queries</a>, as well as to <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">support paging in your app</a>. You might wonder whether you can use these together.</p>
-
-<p>The answer is yes. It works just like you would expect:</p>
-
-<pre><code>import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt; {
-
-    Page&amp;lt;Incident&amp;gt; findByProblemId(Long problemId, Pageable pageable);
-}
-</code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
     <title type="html"><![CDATA[Renaming node classes when using Spring Data Neo4j]]></title>
-    <link href="http://springinpractice.com/blog/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/"/>
+    <link href="http://springinpractice.com/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/"/>
     <updated>2012-12-09T15:33:00-08:00</updated>
-    <id>http://springinpractice.com/blog/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j</id>
+    <id>http://springinpractice.com/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j</id>
     <content type="html"><![CDATA[<p>This is one of those posts where I&rsquo;m just jotting down some notes for my own future use, but someone else may find this useful.</p>
 
 <p>I&rsquo;m going to show how to rename a node entity class when using Spring Data Neo4j. I&rsquo;m talking about the fully-qualified classname here, so it applies when we want to rename a package too.</p>
@@ -117,6 +96,27 @@ neo4j-sh (Spring in Practice Blog,49)$
 </code></pre>
 
 <p>That&rsquo;s it. This was the result of about 15 minutes of investigation, so there&rsquo;s a good chance there&rsquo;s more going on than what I&rsquo;ve described. Let me know and I&rsquo;ll update the post accordingly.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Pageable custom queries with Spring Data JPA]]></title>
+    <link href="http://springinpractice.com/2012/06/30/pageable-custom-queries-with-spring-data-jpa/"/>
+    <updated>2012-06-30T12:41:00-07:00</updated>
+    <id>http://springinpractice.com/2012/06/30/pageable-custom-queries-with-spring-data-jpa</id>
+    <content type="html"><![CDATA[<p>In previous posts I explained how you can use Spring Data JPA to <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">create repositories that support custom queries</a>, as well as to <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">support paging in your app</a>. You might wonder whether you can use these together.</p>
+
+<p>The answer is yes. It works just like you would expect:</p>
+
+<pre><code>import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt; {
+
+    Page&amp;lt;Incident&amp;gt; findByProblemId(Long problemId, Pageable pageable);
+}
+</code></pre>
 ]]></content>
   </entry>
   

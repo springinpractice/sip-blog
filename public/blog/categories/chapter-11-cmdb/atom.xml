@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 11 - CMDB | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-11-cmdb/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-08T08:34:40-07:00</updated>
+  <updated>2013-09-08T08:42:17-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Renaming node classes when using Spring Data Neo4j]]></title>
-    <link href="http://springinpractice.com/blog/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/"/>
+    <link href="http://springinpractice.com/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/"/>
     <updated>2012-12-09T15:33:00-08:00</updated>
-    <id>http://springinpractice.com/blog/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j</id>
+    <id>http://springinpractice.com/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j</id>
     <content type="html"><![CDATA[<p>This is one of those posts where I&rsquo;m just jotting down some notes for my own future use, but someone else may find this useful.</p>
 
 <p>I&rsquo;m going to show how to rename a node entity class when using Spring Data Neo4j. I&rsquo;m talking about the fully-qualified classname here, so it applies when we want to rename a package too.</p>

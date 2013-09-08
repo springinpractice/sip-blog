@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Pageable custom queries with Spring Data JPA"
-date: 2013-09-08 08:27
+date: 2012-06-30 12:41
 comments: true
 categories: [Quick Tips, Chapter 02 - Data]
 ---

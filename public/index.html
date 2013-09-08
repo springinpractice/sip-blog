@@ -9,7 +9,8 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="In previous posts I explained how you can use Spring Data JPA to create repositories that support custom queries, as well as to support paging in &hellip;">
+  <meta name="description" content="Testing. Testing.
+">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -57,7 +58,7 @@
   
 <ul class="main-navigation">
   <li><a href="/">Blog</a></li>
-  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/archives">Archives</a></li>
 </ul>
 
 </nav>
@@ -71,55 +72,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2013/09/08/pageable-custom-queries-with-spring-data-jpa/">Pageable Custom Queries With Spring Data JPA</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-09-08T08:27:00-07:00" pubdate data-updated="true">Sep 8<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>In previous posts I explained how you can use Spring Data JPA to <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">create repositories that support custom queries</a>, as well as to <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">support paging in your app</a>. You might wonder whether you can use these together.</p>
-
-<p>The answer is yes. It works just like you would expect:</p>
-
-<pre><code>import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt; {
-
-    Page&amp;lt;Incident&amp;gt; findByProblemId(Long problemId, Pageable pageable);
-}
-</code></pre>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/09/07/octopress-migration/">Octopress Migration</a></h1>
+      <h1 class="entry-title"><a href="/2013/09/07/octopress-migration/">Octopress Migration</a></h1>
     
     
       <p class="meta">
@@ -155,7 +108,7 @@ public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG Talk on Spring Data JPA</a></h1>
+      <h1 class="entry-title"><a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG Talk on Spring Data JPA</a></h1>
     
     
       <p class="meta">
@@ -195,7 +148,7 @@ public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2013/05/08/spring-in-practice-now-available/">Spring in Practice Now Available</a></h1>
+      <h1 class="entry-title"><a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice Now Available</a></h1>
     
     
       <p class="meta">
@@ -237,7 +190,7 @@ public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming Node Classes When Using Spring Data Neo4j</a></h1>
+      <h1 class="entry-title"><a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming Node Classes When Using Spring Data Neo4j</a></h1>
     
     
       <p class="meta">
@@ -345,9 +298,57 @@ neo4j-sh (Spring in Practice Blog,49)$
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable Custom Queries With Spring Data JPA</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-30T12:41:00-07:00" pubdate data-updated="true">Jun 30<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In previous posts I explained how you can use Spring Data JPA to <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">create repositories that support custom queries</a>, as well as to <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">support paging in your app</a>. You might wonder whether you can use these together.</p>
+
+<p>The answer is yes. It works just like you would expect:</p>
+
+<pre><code>import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt; {
+
+    Page&amp;lt;Incident&amp;gt; findByProblemId(Long problemId, Pageable pageable);
+}
+</code></pre>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
-    <a href="/blog/archives">Blog Archives</a>
+    <a href="/archives">Blog Archives</a>
     
   </div>
 </div>
@@ -358,23 +359,23 @@ neo4j-sh (Spring in Practice Blog,49)$
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2013/09/08/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2013/09/07/octopress-migration/">Octopress migration</a>
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+        <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
       </li>
     
   </ul>
