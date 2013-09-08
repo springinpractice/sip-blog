@@ -277,6 +277,80 @@ public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/05/13/how-to-run-javascript-from-java/">How to Run JavaScript From Java</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-13T11:02:00-07:00" pubdate data-updated="true">May 13<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Java 6 comes with the <a href="http://www.mozilla.org/rhino/">Rhino JavaScript engine</a>, which makes it easy to run JavaScript from inside your Java app. There are different situations in which you might want to do this. Chapter 9 of <a href="http://www.manning.com/wheeler/">Spring in Practice</a> affords a good example. There we&rsquo;re implementing a rich-text comment engine based on the WMD editor that <a href="http://stackoverflow.com">Stack Overflow</a> uses. We have a <code>showdown.js</code> script that maps Markdown to HTML, and we want to run it in two places:</p>
+
+<ul>
+<li>on the client to present a preview pane</li>
+<li>on the server to store the Markdown as HTML for easy presentation (as opposed to running the script against every comment dynamically)</li>
+</ul>
+
+
+<p>Here&rsquo;s how we can run it on the server:</p>
+
+<pre><code>import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
+...
+
+public final class RichTextFilter implements TextFilter {
+    @Inject private File showdownJsFile;
+
+    private String markdownToHtml(String markdown) {
+        try {
+            ScriptEngineManager mgr = new ScriptEngineManager();
+            ScriptEngine engine = mgr.getEngineByName("JavaScript");
+            engine.eval(showdownJs);
+            engine.eval("var markdown = '" + markdown + "';");
+            engine.eval("var converter = new Showdown.converter();");
+            engine.eval("var html = converter.makeHtml(markdown);");
+            return (String) engine.get("html");
+        } catch (ScriptException e) {
+            // Shouldn't happen unless somebody breaks the script
+            throw new RuntimeException(e);
+        }
+    }
+
+    ... other stuff ...
+}
+</code></pre>
+
+<p>To see how to inject the File into the class in Spring, see my post <a href="http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/">Injecting a file from the classpath into a bean</a>.</p>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
     <a href="/archives">Blog Archives</a>
