@@ -9,8 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Testing. Testing.
-">
+  <meta name="description" content="In previous posts I explained how you can use Spring Data JPA to create repositories that support custom queries, as well as to support paging in &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +65,54 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/09/08/pageable-custom-queries-with-spring-data-jpa/">Pageable Custom Queries With Spring Data JPA</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-08T08:27:00-07:00" pubdate data-updated="true">Sep 8<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In previous posts I explained how you can use Spring Data JPA to <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">create repositories that support custom queries</a>, as well as to <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">support paging in your app</a>. You might wonder whether you can use these together.</p>
+
+<p>The answer is yes. It works just like you would expect:</p>
+
+<pre><code>import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt; {
+
+    Page&amp;lt;Incident&amp;gt; findByProblemId(Long problemId, Pageable pageable);
+}
+</code></pre>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -309,6 +356,10 @@ neo4j-sh (Spring in Practice Blog,49)$
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/09/08/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2013/09/07/octopress-migration/">Octopress migration</a>

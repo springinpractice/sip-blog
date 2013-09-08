@@ -21,12 +21,18 @@
         <lastmod>2013-09-07T19:33:25-07:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://springinpractice.com/blog/2013/09/08/pageable-custom-queries-with-spring-data-jpa/
+        </loc>
+        <lastmod>2013-09-08T08:33:44-07:00</lastmod>
+    </url>
+    <url>
         <loc>http://springinpractice.com/blog/archives/</loc>
-        <lastmod>2013-09-08T07:59:26-07:00</lastmod>
+        <lastmod>2013-09-08T08:33:44-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-09-08T07:59:26-07:00</lastmod>
+        <lastmod>2013-09-08T08:33:44-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>
