@@ -351,6 +351,57 @@ public final class RichTextFilter implements TextFilter {
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/">Injecting a File From the Classpath Into a Bean</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-12T23:29:00-07:00" pubdate data-updated="true">May 12<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Here&rsquo;s a quick tip for you.</p>
+
+<p>Sometimes you need to inject a <code>java.io.File</code> from your classpath into a bean, but you don&rsquo;t want to have to spell out the absolute path (even in a configuration file). Never fear. It&rsquo;s easy:</p>
+
+<pre><code>&lt;bean id="tagProviderResource" class="org.springframework.core.io.ClassPathResource"&gt;
+    &lt;constructor-arg value="/htmlcleaner.xml" /&gt;
+&lt;/bean&gt;
+
+&lt;util:property-path id="tagProviderFile" path="tagProviderResource.file" /&gt;
+
+&lt;bean id="tagProvider" class="org.htmlcleaner.ConfigFileTagProvider"&gt;
+    &lt;constructor-arg ref="tagProviderFile" /&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p>In the configuration above, I used <code>ClassPathResource</code> to find the <code>htmlcleaner.xml</code> resource on the classpath. Then I used the handy <code>&lt;util:property-path&gt;</code> tag to assign the resource&rsquo;s <code>file</code> property its own ID. Finally, I inject the <code>File</code> using constructor injection.</p>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
     <a href="/archives">Blog Archives</a>

@@ -1,8 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
+        <loc>
+            http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/
+        </loc>
+        <lastmod>2013-09-08T16:04:59-07:00</lastmod>
+    </url>
+    <url>
         <loc>http://springinpractice.com/2012/05/13/how-to-run-javascript-from-java/</loc>
-        <lastmod>2013-09-08T15:27:07-07:00</lastmod>
+        <lastmod>2013-09-08T16:02:00-07:00</lastmod>
     </url>
     <url>
         <loc>
@@ -32,11 +38,11 @@
     </url>
     <url>
         <loc>http://springinpractice.com/archives/</loc>
-        <lastmod>2013-09-08T15:27:07-07:00</lastmod>
+        <lastmod>2013-09-08T16:04:59-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-09-08T15:27:07-07:00</lastmod>
+        <lastmod>2013-09-08T16:04:59-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>
