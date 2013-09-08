@@ -1,6 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
+        <loc>http://springinpractice.com/blog/2013/05/08/spring-in-practice-now-available/</loc>
+        <lastmod>2013-09-07T23:43:57-07:00</lastmod>
+    </url>
+    <url>
         <loc>
             http://springinpractice.com/blog/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/
         </loc>
@@ -12,11 +16,11 @@
     </url>
     <url>
         <loc>http://springinpractice.com/blog/archives/</loc>
-        <lastmod>2013-09-07T21:45:50-07:00</lastmod>
+        <lastmod>2013-09-07T23:43:57-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-09-07T21:45:50-07:00</lastmod>
+        <lastmod>2013-09-07T23:43:57-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>
