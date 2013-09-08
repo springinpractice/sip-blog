@@ -3,8 +3,10 @@ layout: post
 title: "Spring in Practice now available"
 date: 2013-05-08 23:42
 comments: true
-categories: 
+categories: [Book, News]
 ---
+
+<img src="http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png" align="right" />
 
 Spring in Practice is now available!
 
