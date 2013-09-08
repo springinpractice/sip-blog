@@ -107,7 +107,7 @@
 2 rows, 1 ms
 </code></pre>
 
-<p>From the above, it <i>looks like</i> you can just go to the nodes themselves and change their <code><strong>type</strong></code> fields:</p>
+<p>From the above, it <i>looks like</i> you can just go to the nodes themselves and change their <code>__type__</code> fields:</p>
 
 <pre><code>neo4j-sh (0)$ cd -a 36
 neo4j-sh (Zkybase,36)$ ls
@@ -129,11 +129,11 @@ neo4j-sh (Zkybase,36)$ ls
 0 rows, 1 ms
 </code></pre>
 
-<p>Moreover, when you re-run the original query, the node whose <code><strong>type</strong></code> we changed still shows up.</p>
+<p>Moreover, when you re-run the original query, the node whose <code>__type__</code> we changed still shows up.</p>
 
-<p>The problem is that we need to reindex the nodes. Spring Data Neo4j uses an index called <code><strong>types</strong></code>, and we need to replace the old index entries with some new ones.</p>
+<p>The problem is that we need to reindex the nodes. Spring Data Neo4j uses an index called <code>__types__</code>, and we need to replace the old index entries with some new ones.</p>
 
-<p>Let&rsquo;s see what&rsquo;s under the old classname, using <code>index -g</code> to get the relevant nodes from the <code><strong>types</strong></code> index:</p>
+<p>Let&rsquo;s see what&rsquo;s under the old classname, using <code>index -g</code> to get the relevant nodes from the <code>__types__</code> index:</p>
 
 <pre><code>neo4j-sh (Zkybase,36)$ index -g __types__ className "org.zkybase.cmdb.api.domain.ApplicationEntity"
 (me)
