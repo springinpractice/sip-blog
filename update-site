@@ -1,0 +1,5 @@
+#!/bin/bash
+rake generate
+git add .
+git commit -a -m 'Updated site'
+git push heroku master
