@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-07T21:36:24-07:00</updated>
+  <updated>2013-09-07T21:45:59-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -27,7 +27,9 @@
     <link href="http://springinpractice.com/blog/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/"/>
     <updated>2013-06-08T16:17:00-07:00</updated>
     <id>http://springinpractice.com/blog/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas</id>
-    <content type="html"><![CDATA[<p>Last month I did a talk at Expedia on <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/rest">Spring Data REST</a> and <a href="https://github.com/SpringSource/spring-hateoas">Spring HATEOAS</a> for the <a href="http://www.seajug.org/">Seattle Java User&rsquo;s Group</a>.</p>
+    <content type="html"><![CDATA[<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/seajug_expedia.jpg" alt="SeaJUG presentation at Expedia" /></p>
+
+<p>Last month I did a talk at Expedia on <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/rest">Spring Data REST</a> and <a href="https://github.com/SpringSource/spring-hateoas">Spring HATEOAS</a> for the <a href="http://www.seajug.org/">Seattle Java User&rsquo;s Group</a>.</p>
 
 <p><a href="http://vimeo.com/66717404">Here&rsquo;s the video.</a></p>
 ]]></content>
