@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-08T12:54:14-07:00</updated>
+  <updated>2013-09-08T13:03:09-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -60,6 +60,9 @@
     <content type="html"><![CDATA[<p>This is one of those posts where I&rsquo;m just jotting down some notes for my own future use, but someone else may find this useful.</p>
 
 <p>I&rsquo;m going to show how to rename a node entity class when using Spring Data Neo4j. I&rsquo;m talking about the fully-qualified classname here, so it applies when we want to rename a package too.</p>
+
+<!-- more -->
+
 
 <p>First, suppose my old classname is <code>org.zkybase.cmdb.api.domain.ApplicationEntity</code>. If I go into the Neo4j shell, I can see that I have a couple of nodes of this type:</p>
 

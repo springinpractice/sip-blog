@@ -218,82 +218,12 @@
 
 <p>I&rsquo;m going to show how to rename a node entity class when using Spring Data Neo4j. I&rsquo;m talking about the fully-qualified classname here, so it applies when we want to rename a package too.</p>
 
-<p>First, suppose my old classname is <code>org.zkybase.cmdb.api.domain.ApplicationEntity</code>. If I go into the Neo4j shell, I can see that I have a couple of nodes of this type:</p>
-
-<pre><code>neo4j-sh (0)$ start n=node:__types__(className="org.zkybase.cmdb.api.domain.ApplicationEntity") return n
-+-----------------------------------------------------------------------------------------------------+
-| n                                                                                                   |
-+-----------------------------------------------------------------------------------------------------+
-| Node[36]{__type__-&gt;"org.zkybase.cmdb.api.domain.ApplicationEntity",name-&gt;"Zkybase"}                 |
-| Node[49]{name-&gt;"Spring in Practice Blog",__type__-&gt;"org.zkybase.cmdb.api.domain.ApplicationEntity"} |
-+-----------------------------------------------------------------------------------------------------+
-2 rows, 1 ms
-</code></pre>
-
-<p>From the above, it <i>looks like</i> you can just go to the nodes themselves and change their <code>__type__</code> fields:</p>
-
-<pre><code>neo4j-sh (0)$ cd -a 36
-neo4j-sh (Zkybase,36)$ ls
-*__type__ =[org.zkybase.cmdb.api.domain.ApplicationEntity]
-*name     =[Zkybase]
-neo4j-sh (Zkybase,36)$ set __type__ "org.zkybase.api.domain.entity.ApplicationEntity"
-neo4j-sh (Zkybase,36)$ ls
-*__type__ =[org.zkybase.api.domain.entity.ApplicationEntity]
-*name     =[Zkybase]
-</code></pre>
-
-<p>But then when you try to find the node using the query, it doesn&rsquo;t show up.</p>
-
-<pre><code>neo4j-sh (Zkybase,36)$ start n=node:__types__(className="org.zkybase.api.domain.entity.ApplicationEntity") return n
-+---+
-| n |
-+---+
-+---+
-0 rows, 1 ms
-</code></pre>
-
-<p>Moreover, when you re-run the original query, the node whose <code>__type__</code> we changed still shows up.</p>
-
-<p>The problem is that we need to reindex the nodes. Spring Data Neo4j uses an index called <code>__types__</code>, and we need to replace the old index entries with some new ones.</p>
-
-<p>Let&rsquo;s see what&rsquo;s under the old classname, using <code>index -g</code> to get the relevant nodes from the <code>__types__</code> index:</p>
-
-<pre><code>neo4j-sh (Zkybase,36)$ index -g __types__ className "org.zkybase.cmdb.api.domain.ApplicationEntity"
-(me)
-
-(Spring in Practice Blog,49)
-</code></pre>
-
-<p>And under the new classname:</p>
-
-<pre><code>neo4j-sh (Zkybase,36)$ index -g __types__ className "org.zkybase.api.domain.entity.ApplicationEntity"
-neo4j-sh (Zkybase,36)$ 
-</code></pre>
-
-<p>We can fix that using <code>index -i</code>, which indexes the current entity:</p>
-
-<pre><code>neo4j-sh (Zkybase,36)$ index -i __types__ className "org.zkybase.api.domain.entity.ApplicationEntity"
-neo4j-sh (Zkybase,36)$ cd -a 49
-neo4j-sh (Spring in Practice Blog,49)$ index -i __types__ className "org.zkybase.api.domain.entity.ApplicationEntity"
-neo4j-sh (Spring in Practice Blog,49)$ cd -a 36
-neo4j-sh (Zkybase,36)$ index -g __types__ className "org.zkybase.api.domain.entity.ApplicationEntity"
-(me)
-
-(Spring in Practice Blog,49)
-</code></pre>
-
-<p>We still need to clean up the old entries, though, because they&rsquo;re still there. We use <code>index -r</code> to remove the index entry for the current node:</p>
-
-<pre><code>neo4j-sh (Zkybase,36)$ index -r __types__ className "org.zkybase.cmdb.api.domain.ApplicationEntity"
-neo4j-sh (Zkybase,36)$ cd -a 49
-neo4j-sh (Spring in Practice Blog,49)$ index -r __types__ className "org.zkybase.cmdb.api.domain.ApplicationEntity"
-neo4j-sh (Spring in Practice Blog,49)$ index -g __types__ className "org.zkybase.cmdb.api.domain.ApplicationEntity"
-neo4j-sh (Spring in Practice Blog,49)$ 
-</code></pre>
-
-<p>That&rsquo;s it. This was the result of about 15 minutes of investigation, so there&rsquo;s a good chance there&rsquo;s more going on than what I&rsquo;ve described. Let me know and I&rsquo;ll update the post accordingly.</p>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Read on &rarr;</a>
+    </footer>
   
 
 

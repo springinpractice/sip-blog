@@ -95,6 +95,9 @@
 
 <p>I&rsquo;m going to show how to rename a node entity class when using Spring Data Neo4j. I&rsquo;m talking about the fully-qualified classname here, so it applies when we want to rename a package too.</p>
 
+<!-- more -->
+
+
 <p>First, suppose my old classname is <code>org.zkybase.cmdb.api.domain.ApplicationEntity</code>. If I go into the Neo4j shell, I can see that I have a couple of nodes of this type:</p>
 
 <pre><code>neo4j-sh (0)$ start n=node:__types__(className="org.zkybase.cmdb.api.domain.ApplicationEntity") return n
