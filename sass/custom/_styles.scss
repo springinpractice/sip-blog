@@ -22,38 +22,10 @@ body {
 
 		ul.social-links {
 			list-style: none;
-			font-size: 0.7em;
 
 			li {
 				display: inline;
 				padding: 0 10px;
-
-				.icon {
-					padding: 12px 0 12px 28px;
-					background-position: left;
-					background-repeat: no-repeat;
-				}
-
-				.icon.github {
-					background-image: url(http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png);
-				}
-
-				.icon.linkedin {
-					background-image: url(http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png);
-				}
-
-				.icon.stackoverflow {
-					background-image: url(http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png);
-				}
-
-				.icon.twitter {
-					background-image: url(http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png);
-				}
-
-				a, a:visited, a:hover {
-					color: #8C8C8C;
-					text-decoration: none;
-				}
 			}
 		}
 
