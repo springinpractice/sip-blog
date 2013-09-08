@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-08T11:44:11-07:00</updated>
+  <updated>2013-09-08T12:02:06-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -18,7 +18,9 @@
     <link href="http://springinpractice.com/2013/09/07/octopress-migration/"/>
     <updated>2013-09-07T19:32:00-07:00</updated>
     <id>http://springinpractice.com/2013/09/07/octopress-migration</id>
-    <content type="html"><![CDATA[<p>Testing. Testing.</p>
+    <content type="html"><![CDATA[<p>I&rsquo;m in the process of migrating the blog from Wordpress to [Octopress[(<a href="http://octopress.org/">http://octopress.org/</a>). Octopress is a lot easier to hack, and I like being able to manage my posts in source control instead of in a Wordpress database.</p>
+
+<p>It might take a bit for the dust to settle.</p>
 ]]></content>
   </entry>
   
@@ -58,9 +60,6 @@
     <content type="html"><![CDATA[<p>This is one of those posts where I&rsquo;m just jotting down some notes for my own future use, but someone else may find this useful.</p>
 
 <p>I&rsquo;m going to show how to rename a node entity class when using Spring Data Neo4j. I&rsquo;m talking about the fully-qualified classname here, so it applies when we want to rename a package too.</p>
-
-<!-- more -->
-
 
 <p>First, suppose my old classname is <code>org.zkybase.cmdb.api.domain.ApplicationEntity</code>. If I go into the Neo4j shell, I can see that I have a couple of nodes of this type:</p>
 
@@ -152,9 +151,9 @@ neo4j-sh (Spring in Practice Blog,49)$
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface IncidentRepo extends JpaRepository&lt;Incident, Long&gt; {
+public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt; {
 
-    Page&lt;Incident&gt; findByProblemId(Long problemId, Pageable pageable);
+    Page&amp;lt;Incident&amp;gt; findByProblemId(Long problemId, Pageable pageable);
 }
 </code></pre>
 ]]></content>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 02 - Data | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-02-data/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-08T11:44:11-07:00</updated>
+  <updated>2013-09-08T12:02:06-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -26,9 +26,9 @@
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface IncidentRepo extends JpaRepository&lt;Incident, Long&gt; {
+public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt; {
 
-    Page&lt;Incident&gt; findByProblemId(Long problemId, Pageable pageable);
+    Page&amp;lt;Incident&amp;gt; findByProblemId(Long problemId, Pageable pageable);
 }
 </code></pre>
 ]]></content>
