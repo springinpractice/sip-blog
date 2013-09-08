@@ -14,7 +14,7 @@ The answer is yes. It works just like you would expect:
     import org.springframework.data.domain.Pageable;
     import org.springframework.data.jpa.repository.JpaRepository;
     
-    public interface IncidentRepo extends JpaRepository&lt;Incident, Long&gt; {
+    public interface IncidentRepo extends JpaRepository<Incident, Long> {
     
-        Page&lt;Incident&gt; findByProblemId(Long problemId, Pageable pageable);
+        Page<Incident> findByProblemId(Long problemId, Pageable pageable);
     }
