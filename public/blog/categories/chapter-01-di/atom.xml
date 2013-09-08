@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Chapter 01 – DI | Spring in Practice]]></title>
+  <link href="http://springinpractice.com/blog/categories/chapter-01-di/atom.xml" rel="self"/>
+  <link href="http://springinpractice.com/"/>
+  <updated>2013-09-08T16:15:16-07:00</updated>
+  <id>http://springinpractice.com/</id>
+  <author>
+    <name><![CDATA[Willie Wheeler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Injecting a file from the classpath into a bean]]></title>
+    <link href="http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/"/>
+    <updated>2012-05-12T23:29:00-07:00</updated>
+    <id>http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean</id>
+    <content type="html"><![CDATA[<p>Here&rsquo;s a quick tip for you.</p>
+
+<p>Sometimes you need to inject a <code>java.io.File</code> from your classpath into a bean, but you don&rsquo;t want to have to spell out the absolute path (even in a configuration file). Never fear. It&rsquo;s easy:</p>
+
+<pre><code>&lt;bean id="tagProviderResource" class="org.springframework.core.io.ClassPathResource"&gt;
+    &lt;constructor-arg value="/htmlcleaner.xml" /&gt;
+&lt;/bean&gt;
+
+&lt;util:property-path id="tagProviderFile" path="tagProviderResource.file" /&gt;
+
+&lt;bean id="tagProvider" class="org.htmlcleaner.ConfigFileTagProvider"&gt;
+    &lt;constructor-arg ref="tagProviderFile" /&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p>In the configuration above, I used <code>ClassPathResource</code> to find the <code>htmlcleaner.xml</code> resource on the classpath. Then I used the handy <code>&lt;util:property-path&gt;</code> tag to assign the resource&rsquo;s <code>file</code> property its own ID. Finally, I inject the <code>File</code> using constructor injection.</p>
+]]></content>
+  </entry>
+  
+</feed>

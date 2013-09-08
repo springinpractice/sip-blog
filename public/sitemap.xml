@@ -4,7 +4,7 @@
         <loc>
             http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/
         </loc>
-        <lastmod>2013-09-08T16:04:59-07:00</lastmod>
+        <lastmod>2013-09-08T16:11:34-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2012/05/13/how-to-run-javascript-from-java/</loc>
@@ -14,7 +14,7 @@
         <loc>
             http://springinpractice.com/2012/06/30/pageable-custom-queries-with-spring-data-jpa/
         </loc>
-        <lastmod>2013-09-08T11:53:40-07:00</lastmod>
+        <lastmod>2013-09-08T16:14:48-07:00</lastmod>
     </url>
     <url>
         <loc>
@@ -38,11 +38,11 @@
     </url>
     <url>
         <loc>http://springinpractice.com/archives/</loc>
-        <lastmod>2013-09-08T16:04:59-07:00</lastmod>
+        <lastmod>2013-09-08T16:14:48-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-09-08T16:04:59-07:00</lastmod>
+        <lastmod>2013-09-08T16:14:48-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>

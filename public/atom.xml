@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-08T16:07:38-07:00</updated>
+  <updated>2013-09-08T16:15:16-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -154,9 +154,9 @@ neo4j-sh (Spring in Practice Blog,49)$
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface IncidentRepo extends JpaRepository&amp;lt;Incident, Long&amp;gt; {
+public interface IncidentRepo extends JpaRepository&lt;Incident, Long&gt; {
 
-    Page&amp;lt;Incident&amp;gt; findByProblemId(Long problemId, Pageable pageable);
+    Page&lt;Incident&gt; findByProblemId(Long problemId, Pageable pageable);
 }
 </code></pre>
 ]]></content>
