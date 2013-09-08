@@ -6,7 +6,7 @@ comments: true
 categories: [Book, News]
 ---
 
-<img src="http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png" align="right" />
+![SiP at Barnes &amp; Noble](http://springinpractice.s3.amazonaws.com/blog/images/sip_on_shelves.jpg)
 
 Spring in Practice is now available!
 
