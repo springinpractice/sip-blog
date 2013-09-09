@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Chapter 02 - Data | Spring in Practice]]></title>
-  <link href="http://springinpractice.com/blog/categories/chapter-02-data/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Tutorials | Spring in Practice]]></title>
+  <link href="http://springinpractice.com/blog/categories/tutorials/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
   <updated>2013-09-08T19:10:07-07:00</updated>
   <id>http://springinpractice.com/</id>
@@ -151,27 +151,6 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
 </code></pre>
 
 <p>Spring Data JPA makes it very nice and simple. And Twitter Bootstrap looks great too.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Pageable custom queries with Spring Data JPA]]></title>
-    <link href="http://springinpractice.com/2012/06/30/pageable-custom-queries-with-spring-data-jpa/"/>
-    <updated>2012-06-30T12:41:00-07:00</updated>
-    <id>http://springinpractice.com/2012/06/30/pageable-custom-queries-with-spring-data-jpa</id>
-    <content type="html"><![CDATA[<p>In previous posts I explained how you can use Spring Data JPA to <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">create repositories that support custom queries</a>, as well as to <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">support paging in your app</a>. You might wonder whether you can use these together.</p>
-
-<p>The answer is yes. It works just like you would expect:</p>
-
-<pre><code>import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface IncidentRepo extends JpaRepository&lt;Incident, Long&gt; {
-
-    Page&lt;Incident&gt; findByProblemId(Long problemId, Pageable pageable);
-}
-</code></pre>
 ]]></content>
   </entry>
   

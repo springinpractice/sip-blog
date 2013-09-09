@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Spring in Practice</title>
+  <title>Pagination and sorting with Spring Data JPA - Spring in Practice</title>
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="I&rsquo;m in the process of migrating the blog from Wordpress to Octopress. Octopress is a lot easier to hack and in fact was designed for the hacker &hellip;">
+  <meta name="description" content="In an earlier post I introduced Spring Data JPA, which makes it really easy to create a DAO layer. I didn&rsquo;t get into too much depth, so this &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://springinpractice.com">
+  <link rel="canonical" href="http://springinpractice.com/2013/05/11/pagination-and-sorting-with-spring-data-jpa">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
@@ -63,93 +63,12 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/2013/09/07/octopress-migration/">Octopress Migration</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-09-07T19:32:00-07:00" pubdate data-updated="true">Sep 7<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I&rsquo;m in the process of migrating the blog from Wordpress to <a href="http://octopress.org/">Octopress</a>. Octopress is a lot easier to hack and in fact was designed for the hacker crowd. Plus I like being able to manage my posts in source control instead of in a database. Makes sense for all kinds of reasons.</p>
-
-<p>It might take a bit for the dust to settle, but that&rsquo;s what&rsquo;s going on.</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG Talk on Spring Data JPA</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-06-08T16:17:00-07:00" pubdate data-updated="true">Jun 8<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/blog/images/seajug_expedia.jpg" alt="SeaJUG presentation at Expedia" /></p>
-
-<p>Last month I did a talk at Expedia on <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/rest">Spring Data REST</a> and <a href="https://github.com/SpringSource/spring-hateoas">Spring HATEOAS</a> for the <a href="http://www.seajug.org/">Seattle Java User&rsquo;s Group</a>.</p>
-
-<p><a href="http://vimeo.com/66717404">Here&rsquo;s the video.</a></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013/05/11/pagination-and-sorting-with-spring-data-jpa/">Pagination and Sorting With Spring Data JPA</a></h1>
+      <h1 class="entry-title">Pagination and Sorting With Spring Data JPA</h1>
     
     
       <p class="meta">
@@ -172,7 +91,7 @@
   </header>
 
 
-  <div class="entry-content"><p>In an <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">earlier post</a> I introduced Spring Data JPA, which makes it really easy to create a DAO layer. I didn&rsquo;t get into too much depth, so this time I want to explore a couple of cool features that the DAOs support: pagination and sorting.</p>
+<div class="entry-content"><p>In an <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">earlier post</a> I introduced Spring Data JPA, which makes it really easy to create a DAO layer. I didn&rsquo;t get into too much depth, so this time I want to explore a couple of cool features that the DAOs support: pagination and sorting.</p>
 
 <p>Pagination and sorting are useful when you have long lists that you want the user to be able to navigate. Here for example is a UI for a runbook app I&rsquo;m building. One of the things it allows the user to do is view deployment logs, which we typically want to see in reverse chronological order. Also, since there are lots of logs, we want to page.</p>
 
@@ -306,64 +225,16 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
 
 <p>Spring Data JPA makes it very nice and simple. And Twitter Bootstrap looks great too.</p>
 </div>
-  
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice Now Available</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
   
 
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
 
-<time datetime="2013-05-08T23:42:00-07:00" pubdate data-updated="true">May 8<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/blog/images/sip_on_shelves.jpg" alt="SiP at Barnes &amp; Noble" /></p>
-
-<p>Spring in Practice is now available!</p>
-
-<p>It&rsquo;s also the Deal of the Day today, which means half off if you buy it today (May 8, 2013) from Manning. Use code <strong>dotd0508au</strong> at <a href="http://www.manning.com/wheeler/">www.manning.com/wheeler</a>.</p>
-
-<p>Josh and I hope that everybody enjoys the book. It was a lot of work, but I&rsquo;m very happy with the end result.</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming Node Classes When Using Spring Data Neo4j</a></h1>
-    
-    
-      <p class="meta">
-        
 
 
 
@@ -375,207 +246,41 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
   
 
 
-<time datetime="2012-12-09T15:33:00-08:00" pubdate data-updated="true">Dec 9<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>This is one of those posts where I&rsquo;m just jotting down some notes for my own future use, but someone else may find this useful.</p>
-
-<p>I&rsquo;m going to show how to rename a node entity class when using Spring Data Neo4j. I&rsquo;m talking about the fully-qualified classname here, so it applies when we want to rename a package too.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
+<time datetime="2013-05-11T01:31:00-07:00" pubdate data-updated="true">May 11<span>th</span>, 2013</time>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable Custom Queries With Spring Data JPA</a></h1>
-    
-    
-      <p class="meta">
-        
 
-
-
-
-
-
-
-
+<span class="categories">
   
+    <a class='category' href='/blog/categories/chapter-02-data/'>Chapter 02 - Data</a>, <a class='category' href='/blog/categories/chapter-12-articles/'>Chapter 12 - Articles</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
 
 
-<time datetime="2012-06-30T12:41:00-07:00" pubdate data-updated="true">Jun 30<span>th</span>, 2012</time>
-        
-      </p>
+    </p>
     
-  </header>
-
-
-  <div class="entry-content"><p>In previous posts I explained how you can use Spring Data JPA to <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">create repositories that support custom queries</a>, as well as to <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">support paging in your app</a>. You might wonder whether you can use these together.</p>
-
-<p>The answer is yes. It works just like you would expect:</p>
-
-<pre><code>import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface IncidentRepo extends JpaRepository&lt;Incident, Long&gt; {
-
-    Page&lt;Incident&gt; findByProblemId(Long problemId, Pageable pageable);
-}
-</code></pre>
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2013/05/11/pagination-and-sorting-with-spring-data-jpa/" data-via="williewheeler" data-counturl="http://springinpractice.com/2013/05/11/pagination-and-sorting-with-spring-data-jpa/" >Tweet</a>
+  
+  
+  
 </div>
-  
-  
 
-
-    </article>
-  
-  
-    <article>
+    
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/05/13/how-to-run-javascript-from-java/">How to Run JavaScript From Java</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-13T11:02:00-07:00" pubdate data-updated="true">May 13<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Java 6 comes with the <a href="http://www.mozilla.org/rhino/">Rhino JavaScript engine</a>, which makes it easy to run JavaScript from inside your Java app. There are different situations in which you might want to do this. Chapter 9 of <a href="http://www.manning.com/wheeler/">Spring in Practice</a> affords a good example. There we&rsquo;re implementing a rich-text comment engine based on the WMD editor that <a href="http://stackoverflow.com">Stack Overflow</a> uses. We have a <code>showdown.js</code> script that maps Markdown to HTML, and we want to run it in two places:</p>
-
-<ul>
-<li>on the client to present a preview pane</li>
-<li>on the server to store the Markdown as HTML for easy presentation (as opposed to running the script against every comment dynamically)</li>
-</ul>
-
-
-<p>Here&rsquo;s how we can run it on the server:</p>
-
-<pre><code>import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-...
-
-public final class RichTextFilter implements TextFilter {
-    @Inject private File showdownJsFile;
-
-    private String markdownToHtml(String markdown) {
-        try {
-            ScriptEngineManager mgr = new ScriptEngineManager();
-            ScriptEngine engine = mgr.getEngineByName("JavaScript");
-            engine.eval(showdownJs);
-            engine.eval("var markdown = '" + markdown + "';");
-            engine.eval("var converter = new Showdown.converter();");
-            engine.eval("var html = converter.makeHtml(markdown);");
-            return (String) engine.get("html");
-        } catch (ScriptException e) {
-            // Shouldn't happen unless somebody breaks the script
-            throw new RuntimeException(e);
-        }
-    }
-
-    ... other stuff ...
-}
-</code></pre>
-
-<p>To see how to inject the File into the class in Spring, see my post <a href="http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/">Injecting a file from the classpath into a bean</a>.</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
+        <a class="basic-alignment left" href="/2013/05/08/spring-in-practice-now-available/" title="Previous Post: Spring in Practice now available">&laquo; Spring in Practice now available</a>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/">Injecting a File From the Classpath Into a Bean</a></h1>
-    
-    
-      <p class="meta">
-        
+      
+        <a class="basic-alignment right" href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/" title="Next Post: SeaJUG talk on Spring Data JPA">SeaJUG talk on Spring Data JPA &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
 
 
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-12T23:29:00-07:00" pubdate data-updated="true">May 12<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Here&rsquo;s a quick tip for you.</p>
-
-<p>Sometimes you need to inject a <code>java.io.File</code> from your classpath into a bean, but you don&rsquo;t want to have to spell out the absolute path (even in a configuration file). Never fear. It&rsquo;s easy:</p>
-
-<pre><code>&lt;bean id="tagProviderResource" class="org.springframework.core.io.ClassPathResource"&gt;
-    &lt;constructor-arg value="/htmlcleaner.xml" /&gt;
-&lt;/bean&gt;
-
-&lt;util:property-path id="tagProviderFile" path="tagProviderResource.file" /&gt;
-
-&lt;bean id="tagProvider" class="org.htmlcleaner.ConfigFileTagProvider"&gt;
-    &lt;constructor-arg ref="tagProviderFile" /&gt;
-&lt;/bean&gt;
-</code></pre>
-
-<p>In the configuration above, I used <code>ClassPathResource</code> to find the <code>htmlcleaner.xml</code> resource on the classpath. Then I used the handy <code>&lt;util:property-path&gt;</code> tag to assign the resource&rsquo;s <code>file</code> property its own ID. Finally, I inject the <code>File</code> using constructor injection.</p>
 </div>
-  
-  
 
-
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/archives">Blog Archives</a>
-    
-  </div>
-</div>
 <aside class="sidebar">
   
     <section>
@@ -608,7 +313,7 @@ public final class RichTextFilter implements TextFilter {
 <section>
   <h1>GitHub Repos</h1>
   <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
+    <li class="loading">Status updating...</li>
   </ul>
   
   <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
@@ -640,6 +345,7 @@ public final class RichTextFilter implements TextFilter {
 
   
 </aside>
+
 
     </div>
   </div>
