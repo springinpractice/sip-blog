@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 02 - Data | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-02-data/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-08T19:10:07-07:00</updated>
+  <updated>2013-09-08T19:11:16-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -14,10 +14,31 @@
 
   
   <entry>
+    <title type="html"><![CDATA[Pageable custom queries with Spring Data JPA]]></title>
+    <link href="http://springinpractice.com/2012/06/30/pageable-custom-queries-with-spring-data-jpa/"/>
+    <updated>2012-06-30T12:41:00-07:00</updated>
+    <id>http://springinpractice.com/2012/06/30/pageable-custom-queries-with-spring-data-jpa</id>
+    <content type="html"><![CDATA[<p>In previous posts I explained how you can use Spring Data JPA to <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">create repositories that support custom queries</a>, as well as to <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">support paging in your app</a>. You might wonder whether you can use these together.</p>
+
+<p>The answer is yes. It works just like you would expect:</p>
+
+<pre><code>import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IncidentRepo extends JpaRepository&lt;Incident, Long&gt; {
+
+    Page&lt;Incident&gt; findByProblemId(Long problemId, Pageable pageable);
+}
+</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[Pagination and sorting with Spring Data JPA]]></title>
-    <link href="http://springinpractice.com/2013/05/11/pagination-and-sorting-with-spring-data-jpa/"/>
-    <updated>2013-05-11T01:31:00-07:00</updated>
-    <id>http://springinpractice.com/2013/05/11/pagination-and-sorting-with-spring-data-jpa</id>
+    <link href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/"/>
+    <updated>2012-05-11T01:31:00-07:00</updated>
+    <id>http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa</id>
     <content type="html"><![CDATA[<p>In an <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">earlier post</a> I introduced Spring Data JPA, which makes it really easy to create a DAO layer. I didn&rsquo;t get into too much depth, so this time I want to explore a couple of cool features that the DAOs support: pagination and sorting.</p>
 
 <p>Pagination and sorting are useful when you have long lists that you want the user to be able to navigate. Here for example is a UI for a runbook app I&rsquo;m building. One of the things it allows the user to do is view deployment logs, which we typically want to see in reverse chronological order. Also, since there are lots of logs, we want to page.</p>
@@ -151,27 +172,6 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
 </code></pre>
 
 <p>Spring Data JPA makes it very nice and simple. And Twitter Bootstrap looks great too.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Pageable custom queries with Spring Data JPA]]></title>
-    <link href="http://springinpractice.com/2012/06/30/pageable-custom-queries-with-spring-data-jpa/"/>
-    <updated>2012-06-30T12:41:00-07:00</updated>
-    <id>http://springinpractice.com/2012/06/30/pageable-custom-queries-with-spring-data-jpa</id>
-    <content type="html"><![CDATA[<p>In previous posts I explained how you can use Spring Data JPA to <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">create repositories that support custom queries</a>, as well as to <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">support paging in your app</a>. You might wonder whether you can use these together.</p>
-
-<p>The answer is yes. It works just like you would expect:</p>
-
-<pre><code>import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface IncidentRepo extends JpaRepository&lt;Incident, Long&gt; {
-
-    Page&lt;Incident&gt; findByProblemId(Long problemId, Pageable pageable);
-}
-</code></pre>
 ]]></content>
   </entry>
   

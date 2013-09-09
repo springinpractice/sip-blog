@@ -149,174 +149,6 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/2013/05/11/pagination-and-sorting-with-spring-data-jpa/">Pagination and Sorting With Spring Data JPA</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-05-11T01:31:00-07:00" pubdate data-updated="true">May 11<span>th</span>, 2013</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>In an <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">earlier post</a> I introduced Spring Data JPA, which makes it really easy to create a DAO layer. I didn&rsquo;t get into too much depth, so this time I want to explore a couple of cool features that the DAOs support: pagination and sorting.</p>
-
-<p>Pagination and sorting are useful when you have long lists that you want the user to be able to navigate. Here for example is a UI for a runbook app I&rsquo;m building. One of the things it allows the user to do is view deployment logs, which we typically want to see in reverse chronological order. Also, since there are lots of logs, we want to page.</p>
-
-<p><a href="http://springinpractice.com/wp-content/uploads/2012/05/pagination.png"><img src="http://springinpractice.com/wp-content/uploads/2012/05/pagination-1024x738.png" alt="" title="pagination" width="640" class="aligncenter size-large wp-image-1264" /></a></p>
-
-<p>There are different ways to design a pagination system from a user experience perspective. Here I&rsquo;ve done something pretty typical: I have links for first/previous/next/last, and then I show a bounded set of pages around the current page.</p>
-
-<h2>The repository</h2>
-
-<p>How does Spring Data JPA help? Here&rsquo;s my <code>DeploymentRepo</code> interface:</p>
-
-<pre><code>package com.example.repo;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import com.example.model.Deployment;
-
-public interface DeploymentRepo extends JpaRepository&lt;Deployment, Long&gt; { }
-</code></pre>
-
-<p>The <code>JpaRepository</code> interface extends Spring Data&rsquo;s <code>PagingAndSortingRepository</code> interface, so I get some paging/sorting finders for free.</p>
-
-<h2>The service</h2>
-
-<p>I have a simple service bean that calls the repo:</p>
-
-<pre><code>package com.example.service.impl;
-
-import javax.inject.Inject;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.example.repo.DeploymentRepo;
-import com.example.model.Deployment;
-import com.example.service.DeploymentLogService;
-
-@Service
-@Transactional
-public class DeploymentLogServiceImpl implements DeploymentLogService {
-    private static final int PAGE_SIZE = 50;
-
-    @Inject private DeploymentRepo deploymentRepo;
-
-    public Page&lt;Deployment&gt; getDeploymentLog(Integer pageNumber) {
-        PageRequest request =
-            new PageRequest(pageNumber - 1, PAGE_SIZE, Sort.Direction.DESC, "startTime");
-        return deploymentRepo.findAll(pageRequest);
-    }
-}
-</code></pre>
-
-<p>Spring Data uses 0-indexed pages, but I want my service interface to use 1-indexed pages (they will be user-visible and I want the page numbers to be intuitive), so I make the appropriate adjustment in the request. I specify the page size (50 deployments per page), sort direction, and also one or more property names to act as sort keys. Here I&rsquo;ve chosen <code>startTime</code>, which is a timestamp for the start of the deployment.</p>
-
-<p>That takes care of the Spring Data JPA part, but just for fun, I&rsquo;ll show you a simplified version of the controller method and JSP too.</p>
-
-<h2>The controller</h2>
-
-<p>Here&rsquo;s the controller method:</p>
-
-<pre><code>@RequestMapping(value = "/pages/{pageNumber}", method = RequestMethod.GET)
-public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
-    Page&lt;Deployment&gt; page = deploymentService.getDeploymentLog(pageNumber);
-
-    int current = page.getNumber() + 1;
-    int begin = Math.max(1, current - 5);
-    int end = Math.min(begin + 10, page.getTotalPages());
-
-    model.addAttribute("deploymentLog", page);
-    model.addAttribute("beginIndex", begin);
-    model.addAttribute("endIndex", end);
-    model.addAttribute("currentIndex", current);
-
-    return "deploymentLog";
-}
-</code></pre>
-
-<p>Note again that I&rsquo;ve adjusted the page numbers to convert Spring Data&rsquo;s 0-indexing to my app&rsquo;s 1-indexing.</p>
-
-<p>I&rsquo;ve precalculated the begin/end indices because JSTL doesn&rsquo;t have the min and max functions, and anyway, it&rsquo;s cleaner to do this sort of thing in the controller.</p>
-
-<h2>The JSP</h2>
-
-<p>Finally here&rsquo;s the page navigation in the JSP. It uses the <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a> library for the UI, so that&rsquo;s where the various CSS elements come from.</p>
-
-<pre><code>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
-
-&lt;c:url var="firstUrl" value="/pages/1" /&gt;
-&lt;c:url var="lastUrl" value="/pages/${deploymentLog.totalPages}" /&gt;
-&lt;c:url var="prevUrl" value="/pages/${currentIndex - 1}" /&gt;
-&lt;c:url var="nextUrl" value="/pages/${currentIndex + 1}" /&gt;
-
-&lt;div class="pagination"&gt;
-    &lt;ul&gt;
-        &lt;c:choose&gt;
-            &lt;c:when test="${currentIndex == 1}"&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;lt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
-            &lt;/c:when&gt;
-            &lt;c:otherwise&gt;
-                &lt;li&gt;&lt;a href="${firstUrl}"&gt;&amp;amp;lt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="${prevUrl}"&gt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
-            &lt;/c:otherwise&gt;
-        &lt;/c:choose&gt;
-        &lt;c:forEach var="i" begin="${beginIndex}" end="${endIndex}"&gt;
-            &lt;c:url var="pageUrl" value="/pages/${i}" /&gt;
-            &lt;c:choose&gt;
-                &lt;c:when test="${i == currentIndex}"&gt;
-                    &lt;li class="active"&gt;&lt;a href="${pageUrl}"&gt;&lt;c:out value="${i}" /&gt;&lt;/a&gt;&lt;/li&gt;
-                &lt;/c:when&gt;
-                &lt;c:otherwise&gt;
-                    &lt;li&gt;&lt;a href="${pageUrl}"&gt;&lt;c:out value="${i}" /&gt;&lt;/a&gt;&lt;/li&gt;
-                &lt;/c:otherwise&gt;
-            &lt;/c:choose&gt;
-        &lt;/c:forEach&gt;
-        &lt;c:choose&gt;
-            &lt;c:when test="${currentIndex == deploymentLog.totalPages}"&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
-            &lt;/c:when&gt;
-            &lt;c:otherwise&gt;
-                &lt;li&gt;&lt;a href="${nextUrl}"&gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="${lastUrl}"&gt;&amp;amp;gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
-            &lt;/c:otherwise&gt;
-        &lt;/c:choose&gt;
-    &lt;/ul&gt;
-&lt;/div&gt;
-</code></pre>
-
-<p>Spring Data JPA makes it very nice and simple. And Twitter Bootstrap looks great too.</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
       <h1 class="entry-title"><a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice Now Available</a></h1>
     
     
@@ -570,6 +402,174 @@ public final class RichTextFilter implements TextFilter {
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">Pagination and Sorting With Spring Data JPA</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-11T01:31:00-07:00" pubdate data-updated="true">May 11<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In an <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">earlier post</a> I introduced Spring Data JPA, which makes it really easy to create a DAO layer. I didn&rsquo;t get into too much depth, so this time I want to explore a couple of cool features that the DAOs support: pagination and sorting.</p>
+
+<p>Pagination and sorting are useful when you have long lists that you want the user to be able to navigate. Here for example is a UI for a runbook app I&rsquo;m building. One of the things it allows the user to do is view deployment logs, which we typically want to see in reverse chronological order. Also, since there are lots of logs, we want to page.</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/05/pagination.png"><img src="http://springinpractice.com/wp-content/uploads/2012/05/pagination-1024x738.png" alt="" title="pagination" width="640" class="aligncenter size-large wp-image-1264" /></a></p>
+
+<p>There are different ways to design a pagination system from a user experience perspective. Here I&rsquo;ve done something pretty typical: I have links for first/previous/next/last, and then I show a bounded set of pages around the current page.</p>
+
+<h2>The repository</h2>
+
+<p>How does Spring Data JPA help? Here&rsquo;s my <code>DeploymentRepo</code> interface:</p>
+
+<pre><code>package com.example.repo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.model.Deployment;
+
+public interface DeploymentRepo extends JpaRepository&lt;Deployment, Long&gt; { }
+</code></pre>
+
+<p>The <code>JpaRepository</code> interface extends Spring Data&rsquo;s <code>PagingAndSortingRepository</code> interface, so I get some paging/sorting finders for free.</p>
+
+<h2>The service</h2>
+
+<p>I have a simple service bean that calls the repo:</p>
+
+<pre><code>package com.example.service.impl;
+
+import javax.inject.Inject;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.repo.DeploymentRepo;
+import com.example.model.Deployment;
+import com.example.service.DeploymentLogService;
+
+@Service
+@Transactional
+public class DeploymentLogServiceImpl implements DeploymentLogService {
+    private static final int PAGE_SIZE = 50;
+
+    @Inject private DeploymentRepo deploymentRepo;
+
+    public Page&lt;Deployment&gt; getDeploymentLog(Integer pageNumber) {
+        PageRequest request =
+            new PageRequest(pageNumber - 1, PAGE_SIZE, Sort.Direction.DESC, "startTime");
+        return deploymentRepo.findAll(pageRequest);
+    }
+}
+</code></pre>
+
+<p>Spring Data uses 0-indexed pages, but I want my service interface to use 1-indexed pages (they will be user-visible and I want the page numbers to be intuitive), so I make the appropriate adjustment in the request. I specify the page size (50 deployments per page), sort direction, and also one or more property names to act as sort keys. Here I&rsquo;ve chosen <code>startTime</code>, which is a timestamp for the start of the deployment.</p>
+
+<p>That takes care of the Spring Data JPA part, but just for fun, I&rsquo;ll show you a simplified version of the controller method and JSP too.</p>
+
+<h2>The controller</h2>
+
+<p>Here&rsquo;s the controller method:</p>
+
+<pre><code>@RequestMapping(value = "/pages/{pageNumber}", method = RequestMethod.GET)
+public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
+    Page&lt;Deployment&gt; page = deploymentService.getDeploymentLog(pageNumber);
+
+    int current = page.getNumber() + 1;
+    int begin = Math.max(1, current - 5);
+    int end = Math.min(begin + 10, page.getTotalPages());
+
+    model.addAttribute("deploymentLog", page);
+    model.addAttribute("beginIndex", begin);
+    model.addAttribute("endIndex", end);
+    model.addAttribute("currentIndex", current);
+
+    return "deploymentLog";
+}
+</code></pre>
+
+<p>Note again that I&rsquo;ve adjusted the page numbers to convert Spring Data&rsquo;s 0-indexing to my app&rsquo;s 1-indexing.</p>
+
+<p>I&rsquo;ve precalculated the begin/end indices because JSTL doesn&rsquo;t have the min and max functions, and anyway, it&rsquo;s cleaner to do this sort of thing in the controller.</p>
+
+<h2>The JSP</h2>
+
+<p>Finally here&rsquo;s the page navigation in the JSP. It uses the <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a> library for the UI, so that&rsquo;s where the various CSS elements come from.</p>
+
+<pre><code>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+
+&lt;c:url var="firstUrl" value="/pages/1" /&gt;
+&lt;c:url var="lastUrl" value="/pages/${deploymentLog.totalPages}" /&gt;
+&lt;c:url var="prevUrl" value="/pages/${currentIndex - 1}" /&gt;
+&lt;c:url var="nextUrl" value="/pages/${currentIndex + 1}" /&gt;
+
+&lt;div class="pagination"&gt;
+    &lt;ul&gt;
+        &lt;c:choose&gt;
+            &lt;c:when test="${currentIndex == 1}"&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;lt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
+            &lt;/c:when&gt;
+            &lt;c:otherwise&gt;
+                &lt;li&gt;&lt;a href="${firstUrl}"&gt;&amp;amp;lt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${prevUrl}"&gt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
+            &lt;/c:otherwise&gt;
+        &lt;/c:choose&gt;
+        &lt;c:forEach var="i" begin="${beginIndex}" end="${endIndex}"&gt;
+            &lt;c:url var="pageUrl" value="/pages/${i}" /&gt;
+            &lt;c:choose&gt;
+                &lt;c:when test="${i == currentIndex}"&gt;
+                    &lt;li class="active"&gt;&lt;a href="${pageUrl}"&gt;&lt;c:out value="${i}" /&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;/c:when&gt;
+                &lt;c:otherwise&gt;
+                    &lt;li&gt;&lt;a href="${pageUrl}"&gt;&lt;c:out value="${i}" /&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;/c:otherwise&gt;
+            &lt;/c:choose&gt;
+        &lt;/c:forEach&gt;
+        &lt;c:choose&gt;
+            &lt;c:when test="${currentIndex == deploymentLog.totalPages}"&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;/c:when&gt;
+            &lt;c:otherwise&gt;
+                &lt;li&gt;&lt;a href="${nextUrl}"&gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${lastUrl}"&gt;&amp;amp;gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;/c:otherwise&gt;
+        &lt;/c:choose&gt;
+    &lt;/ul&gt;
+&lt;/div&gt;
+</code></pre>
+
+<p>Spring Data JPA makes it very nice and simple. And Twitter Bootstrap looks great too.</p>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
     <a href="/archives">Blog Archives</a>
@@ -591,15 +591,15 @@ public final class RichTextFilter implements TextFilter {
       </li>
     
       <li class="post">
-        <a href="/2013/05/11/pagination-and-sorting-with-spring-data-jpa/">Pagination and sorting with Spring Data JPA</a>
-      </li>
-    
-      <li class="post">
         <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
       </li>
     
       <li class="post">
         <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
       </li>
     
   </ul>
