@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Integration | Spring in Practice]]></title>
-  <link href="http://springinpractice.com/blog/categories/integration/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
+  <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-14T23:01:18-07:00</updated>
+  <updated>2013-09-14T23:03:37-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
