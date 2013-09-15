@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-15T00:37:56-07:00</updated>
+  <updated>2013-09-15T00:42:38-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -157,7 +157,7 @@ public class OptimisticLockChecker {
 
 <p>Now our entity is back to its original state, and we have both the submitted and the latest version numbers. So we compare and either throw an exception or else increment the version number.</p>
 
-<p>Perhaps the Spring Data REST guys will provide more direct support for <code>@Version</code> (or some suitable alternative) at some future point. Uuntil then, I hope the approach above proves useful.</p>
+<p>Perhaps the Spring Data REST guys will provide more direct support for <code>@Version</code> (or some suitable alternative) at some future point. Until then, I hope the approach above proves useful.</p>
 ]]></content>
   </entry>
   
