@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-14T21:08:24-07:00</updated>
+  <updated>2013-09-14T22:43:43-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -18,9 +18,147 @@
     <link href="http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/"/>
     <updated>2013-09-14T20:43:00-07:00</updated>
     <id>http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest</id>
-    <content type="html"><![CDATA[<p>I&rsquo;m working on a system where multiple clients can grab documents from a web service, modify them and resubmit. Since multiple clients can all grab the same document at the same time, we wanted to implement an <a href="http://c2.com/cgi/wiki?OptimisticLocking">optimistic locking</a> scheme. In this scheme, each document has a version, and when the client submits an update to the service, the service checks to see whether the submitted version&rsquo;s baseline is still the most recent one in the database. If so, the update proceeds. Otherwise, we throw an exception indicating a conflict.</p>
+    <content type="html"><![CDATA[<p>I&rsquo;m working on a web service for a document management system, where clients grab documents from the web service, modify them and submit the updates. Since multiple clients can all grab the same document at the same time, we needed to implement an <a href="http://c2.com/cgi/wiki?OptimisticLocking">optimistic locking</a> scheme. In this scheme, each document has a version number, and when the client submits an update to the service, the service checks to see whether the submitted version number baseline is still the most recent one in the database. If so, we increment the version number and the update proceeds. Otherwise, we throw an exception indicating a conflict.</p>
 
-<p>From a technology perspective we&rsquo;re using Spring Data REST, Spring Data JPA, JPA and Hibernate to implement the web service. So I originally tried to use <a href="http://docs.oracle.com/javaee/6/api/javax/persistence/Version.html">JPA&rsquo;s <code>@Version</code> annotation</a>. But it turns out not to work, for reasons I describe <a href="http://stackoverflow.com/questions/18780621/does-spring-data-rest-support-jpa-version">here</a>. <a href="https://twitter.com/mdeinum">Marten Deinum</a> notes further that this isn&rsquo;t really a problem with Spring Data REST <em>per se</em>; it affects e.g. form submissions too. At Marten&rsquo;s suggestion, I created an <a href="https://jira.springsource.org/browse/DATAREST-160">enhancement request</a>, but since I needed something now, I set out to implement optimisitic locking for Spring Data REST without <code>@Version</code>.</p>
+<p>From a technology perspective we&rsquo;re using <a href="http://projects.spring.io/spring-data-rest/">Spring Data REST</a>, <a href="http://projects.spring.io/spring-data-jpa/">Spring Data JPA</a>, JPA and Hibernate to implement the web service. So I originally tried to use <a href="http://docs.oracle.com/javaee/6/api/javax/persistence/Version.html">JPA&rsquo;s <code>@Version</code> annotation</a>. But for reasons I describe <a href="http://stackoverflow.com/questions/18780621/does-spring-data-rest-support-jpa-version">here</a> it doesn&rsquo;t work. <a href="https://twitter.com/mdeinum">Marten Deinum</a> notes further that this isn&rsquo;t really a problem with Spring Data REST <em>per se</em>; it affects e.g. form submissions too. At Marten&rsquo;s suggestion, I created an <a href="https://jira.springsource.org/browse/DATAREST-160">enhancement request</a>, but since I needed something now, I set out to implement optimisitic locking for Spring Data REST without <code>@Version</code>.</p>
+
+<!-- more -->
+
+
+<p>The trick is to listen for events that are fired before the update occurs. Spring Data REST fires such events, but so does JPA, and I decided to use JPA&rsquo;s events instead to ensure that the version number get/test/increment happens as part of a single atomic transaction. (My guess is that the Spring Data REST <a href="http://docs.spring.io/spring-data/rest/docs/1.1.0.M1/reference/htmlsingle/#events-chapter">BeforeSaveEvent</a> fires before entering the transaction.)</p>
+
+<p>Here&rsquo;s the code. First, here&rsquo;s an interface for versioned entities.</p>
+
+<pre><code>package myapp.entity;
+
+public interface VersionedEntity {
+
+    Long getVersion();
+
+    void setVersion(Long version);
+}
+</code></pre>
+
+<p>Next we have an abstract base class for versioned entities. I could have done a mixin-style implementation here (using, e.g., <a href="http://www.eclipse.org/aspectj/doc/next/progguide/language-interType.html">AspectJ inter-type declarations</a>), but I decided to keep it simple for now.</p>
+
+<pre><code>package myapp.entity;
+
+import javax.persistence.Column;
+import javax.persistence.EntityListeners;
+import javax.persistence.MappedSuperclass;
+import myapp.repo.listener.OptimisticLockListener;
+
+@MappedSuperclass
+@EntityListeners(OptimisticLockListener.class)
+public abstract class AbstractVersionedEntity implements VersionedEntity {
+
+    @Column(name = "VERSION")
+    private Long version;
+
+    @Override
+    public Long getVersion() { return version; }
+
+    @Override
+    public void setVersion(Long version) { this.version = version; }
+}
+</code></pre>
+
+<p>Notice the <code>@EntityListener</code> annotation. This tells JPA which class will listen for JPA lifecycle events. Here&rsquo;s the <code>OptimisticLockListener</code>.</p>
+
+<pre><code>package myapp.repo.listener;
+
+import javax.persistence.PreUpdate;
+import org.springframework.stereotype.Component;
+import myapp.entity.VersionedEntity;
+import myapp.util.ApplicationContextProvider;
+
+public class OptimisticLockListener {
+
+    @PreUpdate
+    public void preUpdate(Object entity) {
+        if (entity instanceof VersionedEntity) {
+            getChecker().check((VersionedEntity) entity);
+        }
+    }
+
+    private OptimisticLockChecker getChecker() {
+        return ApplicationContextProvider
+            .getApplicationContext()
+            .getBean(OptimisticLockChecker.class);
+    }
+}
+</code></pre>
+
+<p>In the listing above we grab an <code>OptimisticLockChecker</code> and then run the check. I&rsquo;ve implemented that as a separate class because I&rsquo;m going to need the application&rsquo;s JPA <code>EntityManager</code> to do the version check, and I need a managed bean to use <code>@PersistenceContext</code> to inject the <code>EntityManager</code>. Unfortunately, <a href="http://stackoverflow.com/questions/12951701/how-to-get-entity-manager-or-transaction-in-jpa-listener">JPA 2.0 doesn&rsquo;t treat entity listeners as managed beans</a> (apparently that will change in JPA 2.1). That&rsquo;s why there&rsquo;s a separate <code>OptimisticLockChecker</code> class.</p>
+
+<p><a href="https://twitter.com/vguhesan">Venkatt Guhesan</a> offers <code>ApplicationContextProvider</code> as a <a href="http://mythinkpond.wordpress.com/2010/03/22/spring-application-context/">clever way to get the app&rsquo;s context from an unmanaged instance</a>. (Note that we can&rsquo;t simply create a new <code>ClassPathXmlApplicationContext</code> from the Spring configuration files since we want to use the same <code>EntityManagerFactory</code> that the rest of the app is using.) Here&rsquo;s the technique.</p>
+
+<pre><code>package myapp.util;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+public class ApplicationContextProvider implements ApplicationContextAware {
+    private static ApplicationContext applicationContext;
+
+    public static ApplicationContext getApplicationContext() { return applicationContext; }
+
+    @Override
+    public void setApplicationContext(ApplicationContext appContext) throws BeansException {
+        applicationContext = appContext;
+    }
+}
+</code></pre>
+
+<p>Finally, let&rsquo;s look at the <code>OptimisticLockChecker</code> itself.</p>
+
+<pre><code>package myapp.repo.listener;
+
+import javax.persistence.EntityManager;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.PersistenceContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+import myapp.entity.VersionedEntity;
+
+@Component
+public class OptimisticLockChecker {
+    @PersistenceContext private EntityManager entityManager;
+
+    public void check(VersionedEntity entity) {
+        Long submittedVersion = entity.getVersion();
+        if (submittedVersion == null) {
+            throw new RuntimeException("Submitted entity must have a version");
+        }
+
+        Class&lt;? extends VersionedEntity&gt; entityClass = entity.getClass();
+        Object copy = BeanUtils.instantiate(entityClass);
+        BeanUtils.copyProperties(entity, copy);
+        entityManager.refresh(entity);
+        Long latestVersion = entity.getVersion();
+        BeanUtils.copyProperties(copy, entity);
+
+        if (submittedVersion != latestVersion) {
+            throw new OptimisticLockException(
+                    "Stale entity: submitted version " + submittedVersion
+                    + ", but latest version is " + latestVersion);
+        }
+
+        entity.setVersion(entity.getVersion() + 1);
+    }
+}
+</code></pre>
+
+<p>Despite appearances, the code is a little tricky because we&rsquo;re trying to compare an entity version in the persistence context with an entity version in the database, and by design JPA hides the database from the developer. While we can certainly use JDBC to grab the entity version in the database, I wanted to avoid having to map all the entities to &ldquo;get-latest-version&rdquo; SQL queries since we already have all the table names mapped in the entity classes. I suppose I could have read the contents of the <code>@Table</code> annotation and created dynamic queries, but I wanted to do something cleaner.</p>
+
+<p>When we get the entity, we cache a copy using Spring&rsquo;s <code>BeanUtils.copyProperties()</code> utility. That allows us to refresh the original entity, which puts it back in its database state, allowing us to see the latest version number in the database. After that, we put the entity back into its modified state by doing another <code>BeanUtils.copyProperties()</code>, this time from the copy to the entity.</p>
+
+<blockquote><p>Instead of cloning, I would have preferred to detach the entity, load the database entity into the persistence context, compare the two, and then reattach the entity to the persistence context. Unfortunately, while Hibernate supports reattachment, <a href="http://stackoverflow.com/questions/912659/what-is-the-proper-way-to-re-attach-detached-objects-in-hibernate">JPA doesn&rsquo;t</a>. JPA supports merges, but this leaves the original entity detached, which is no good since that&rsquo;s the reference that JPA is going to try to save after the entity listener&rsquo;s <code>@PreUpdate</code> handler completes its processing.</p></blockquote>
+
+<p>Now our entity is back in its original state, and we have both the submitted and the latest version numbers. So we compare and either throw an exception or else increment the version number.</p>
+
+<p>Not as nice as a simple <code>@Version</code> annotation, but it&rsquo;s pretty clean, and it works. I&rsquo;m not completely sure yet how well the cloning part works in various contexts, so keep an eye on that piece.</p>
 ]]></content>
   </entry>
   
