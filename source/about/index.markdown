@@ -6,7 +6,7 @@ comments: true
 sharing: true
 footer: true
 ---
-[Spring in Practice book cover](http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png)
+![Spring in Practice book cover](http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png)
 
 This is [Willie Wheeler](https://twitter.com/williewheeler)'s blog for the Manning title, [Spring in Practice](http://manning.com/wheeler/), by Willie Wheeler and Joshua White. It provides supplemental materials for the book. In some cases it's material that's more conceptual or theoretical in nature (and thus didn't mesh well with the cookbook format). In other cases we just ran out of room in the book itself. But mostly it's extra content that I wrote after the chapters were already done. I'll post additional content and also errata here over time.
 
