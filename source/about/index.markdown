@@ -24,4 +24,4 @@ I've been doing Java/Spring development for a long time (Java since 1997, Spring
 
 At my day job, I'm a Principal Applications Engineer at [Expedia](http://www.expedia.com/), working in devops. (Standard disclaimer&mdash;the statements and views on this site are my own, not necessarily my employer's.)
 
-I'm also an independent consultant, offering Java and Spring software development services. I have a lot of background with web application development in particular. Please see my [LinkedIn profile](http://www.linkedin.com/in/williewheeler) for more information on my background, and feel free to contact me at `[my_first_name].[my_last_name]@gmail.com` to discuss a project.
+I'm also an independent consultant, offering Java and Spring software development services. I have a lot of experience with web application development in particular. Please see my [LinkedIn profile](http://www.linkedin.com/in/williewheeler) for more information on my background, and contact me at `[my_first_name].[my_last_name]@gmail.com` to discuss a project.
