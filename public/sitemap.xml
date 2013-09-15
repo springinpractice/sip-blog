@@ -4,7 +4,7 @@
         <loc>
             http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/
         </loc>
-        <lastmod>2013-09-14T20:38:36-07:00</lastmod>
+        <lastmod>2013-09-14T20:41:55-07:00</lastmod>
     </url>
     <url>
         <loc>
@@ -43,12 +43,18 @@
         <lastmod>2013-09-08T12:10:49-07:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/
+        </loc>
+        <lastmod>2013-09-14T21:07:44-07:00</lastmod>
+    </url>
+    <url>
         <loc>http://springinpractice.com/archives/</loc>
-        <lastmod>2013-09-14T20:38:36-07:00</lastmod>
+        <lastmod>2013-09-14T21:07:44-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-09-14T20:38:36-07:00</lastmod>
+        <lastmod>2013-09-14T21:07:44-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>

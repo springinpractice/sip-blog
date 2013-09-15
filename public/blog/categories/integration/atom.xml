@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Integration | Spring in Practice]]></title>
+  <link href="http://springinpractice.com/blog/categories/integration/atom.xml" rel="self"/>
+  <link href="http://springinpractice.com/"/>
+  <updated>2013-09-14T21:08:24-07:00</updated>
+  <id>http://springinpractice.com/</id>
+  <author>
+    <name><![CDATA[Willie Wheeler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Optimistic locking with Spring Data REST]]></title>
+    <link href="http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/"/>
+    <updated>2013-09-14T20:43:00-07:00</updated>
+    <id>http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest</id>
+    <content type="html"><![CDATA[<p>I&rsquo;m working on a system where multiple clients can grab documents from a web service, modify them and resubmit. Since multiple clients can all grab the same document at the same time, we wanted to implement an <a href="http://c2.com/cgi/wiki?OptimisticLocking">optimistic locking</a> scheme. In this scheme, each document has a version, and when the client submits an update to the service, the service checks to see whether the submitted version&rsquo;s baseline is still the most recent one in the database. If so, the update proceeds. Otherwise, we throw an exception indicating a conflict.</p>
+
+<p>From a technology perspective we&rsquo;re using Spring Data REST, Spring Data JPA, JPA and Hibernate to implement the web service. So I originally tried to use <a href="http://docs.oracle.com/javaee/6/api/javax/persistence/Version.html">JPA&rsquo;s <code>@Version</code> annotation</a>. But it turns out not to work, for reasons I describe <a href="http://stackoverflow.com/questions/18780621/does-spring-data-rest-support-jpa-version">here</a>. <a href="https://twitter.com/mdeinum">Marten Deinum</a> notes further that this isn&rsquo;t really a problem with Spring Data REST <em>per se</em>; it affects e.g. form submissions too. At Marten&rsquo;s suggestion, I created an <a href="https://jira.springsource.org/browse/DATAREST-160">enhancement request</a>, but since I needed something now, I set out to implement optimisitic locking for Spring Data REST without <code>@Version</code>.</p>
+]]></content>
+  </entry>
+  
+</feed>

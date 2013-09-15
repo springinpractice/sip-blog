@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-14T20:38:56-07:00</updated>
+  <updated>2013-09-14T21:08:24-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,17 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Optimistic locking with Spring Data REST]]></title>
+    <link href="http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/"/>
+    <updated>2013-09-14T20:43:00-07:00</updated>
+    <id>http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest</id>
+    <content type="html"><![CDATA[<p>I&rsquo;m working on a system where multiple clients can grab documents from a web service, modify them and resubmit. Since multiple clients can all grab the same document at the same time, we wanted to implement an <a href="http://c2.com/cgi/wiki?OptimisticLocking">optimistic locking</a> scheme. In this scheme, each document has a version, and when the client submits an update to the service, the service checks to see whether the submitted version&rsquo;s baseline is still the most recent one in the database. If so, the update proceeds. Otherwise, we throw an exception indicating a conflict.</p>
+
+<p>From a technology perspective we&rsquo;re using Spring Data REST, Spring Data JPA, JPA and Hibernate to implement the web service. So I originally tried to use <a href="http://docs.oracle.com/javaee/6/api/javax/persistence/Version.html">JPA&rsquo;s <code>@Version</code> annotation</a>. But it turns out not to work, for reasons I describe <a href="http://stackoverflow.com/questions/18780621/does-spring-data-rest-support-jpa-version">here</a>. <a href="https://twitter.com/mdeinum">Marten Deinum</a> notes further that this isn&rsquo;t really a problem with Spring Data REST <em>per se</em>; it affects e.g. form submissions too. At Marten&rsquo;s suggestion, I created an <a href="https://jira.springsource.org/browse/DATAREST-160">enhancement request</a>, but since I needed something now, I set out to implement optimisitic locking for Spring Data REST without <code>@Version</code>.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Octopress migration]]></title>
@@ -337,12 +348,12 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
     &lt;ul&gt;
         &lt;c:choose&gt;
             &lt;c:when test="${currentIndex == 1}"&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;lt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;lt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:when&gt;
             &lt;c:otherwise&gt;
-                &lt;li&gt;&lt;a href="${firstUrl}"&gt;&amp;amp;lt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="${prevUrl}"&gt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${firstUrl}"&gt;&amp;lt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${prevUrl}"&gt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:otherwise&gt;
         &lt;/c:choose&gt;
         &lt;c:forEach var="i" begin="${beginIndex}" end="${endIndex}"&gt;
@@ -358,12 +369,12 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
         &lt;/c:forEach&gt;
         &lt;c:choose&gt;
             &lt;c:when test="${currentIndex == deploymentLog.totalPages}"&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:when&gt;
             &lt;c:otherwise&gt;
-                &lt;li&gt;&lt;a href="${nextUrl}"&gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="${lastUrl}"&gt;&amp;amp;gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${nextUrl}"&gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${lastUrl}"&gt;&amp;gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:otherwise&gt;
         &lt;/c:choose&gt;
     &lt;/ul&gt;

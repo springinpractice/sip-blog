@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>How to run JavaScript from Java - Spring in Practice</title>
+  <title>Category: - - Spring in Practice</title>
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Java 6 comes with the Rhino JavaScript engine, which makes it easy to run JavaScript from inside your Java app. There are different situations in &hellip;">
+  <meta name="description" content="Category: -">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://springinpractice.com/2012/05/13/how-to-run-javascript-from-java">
+  <link rel="canonical" href="http://springinpractice.comblog/categories">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
@@ -64,124 +64,49 @@
   <div id="main">
     <div id="content">
       <div>
-<article class="hentry" role="article">
+<article role="article">
   
   <header>
-    
-      <h1 class="entry-title">How to Run JavaScript From Java</h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-13T11:02:00-07:00" pubdate data-updated="true">May 13<span>th</span>, 2012</time>
-        
-      </p>
+    <h1 class="entry-title">Category: -</h1>
     
   </header>
+  
+  <div id="blog-archives" class="category">
 
 
-<div class="entry-content"><p>Java 6 comes with the <a href="http://www.mozilla.org/rhino/">Rhino JavaScript engine</a>, which makes it easy to run JavaScript from inside your Java app. There are different situations in which you might want to do this. Chapter 9 of <a href="http://www.manning.com/wheeler/">Spring in Practice</a> affords a good example. There we&rsquo;re implementing a rich-text comment engine based on the WMD editor that <a href="http://stackoverflow.com">Stack Overflow</a> uses. We have a <code>showdown.js</code> script that maps Markdown to HTML, and we want to run it in two places:</p>
 
-<ul>
-<li>on the client to present a preview pane</li>
-<li>on the server to store the Markdown as HTML for easy presentation (as opposed to running the script against every comment dynamically)</li>
-</ul>
+  
+  <h2>2013</h2>
+
+<article>
+  
+<h1><a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a></h1>
+<time datetime="2013-09-14T20:43:00-07:00" pubdate><span class='month'>Sep</span> <span class='day'>14</span> <span class='year'>2013</span></time>
+
+<footer>
+  <span class="categories">posted in <a class='category' href='/blog/categories//'>-</a>, <a class='category' href='/blog/categories//'>-</a>, <a class='category' href='/blog/categories/02/'>02</a>, <a class='category' href='/blog/categories/13/'>13</a>, <a class='category' href='/blog/categories/chapter/'>Chapter</a>, <a class='category' href='/blog/categories/chapter/'>Chapter</a>, <a class='category' href='/blog/categories/data/'>Data,</a>, <a class='category' href='/blog/categories/integration/'>Integration</a></span>
+</footer>
 
 
-<p>Here&rsquo;s how we can run it on the server:</p>
+</article>
 
-<pre><code>import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
-...
 
-public final class RichTextFilter implements TextFilter {
-    @Inject private File showdownJsFile;
+<article>
+  
+<h1><a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a></h1>
+<time datetime="2013-09-14T20:43:00-07:00" pubdate><span class='month'>Sep</span> <span class='day'>14</span> <span class='year'>2013</span></time>
 
-    private String markdownToHtml(String markdown) {
-        try {
-            ScriptEngineManager mgr = new ScriptEngineManager();
-            ScriptEngine engine = mgr.getEngineByName("JavaScript");
-            engine.eval(showdownJs);
-            engine.eval("var markdown = '" + markdown + "';");
-            engine.eval("var converter = new Showdown.converter();");
-            engine.eval("var html = converter.makeHtml(markdown);");
-            return (String) engine.get("html");
-        } catch (ScriptException e) {
-            // Shouldn't happen unless somebody breaks the script
-            throw new RuntimeException(e);
-        }
-    }
+<footer>
+  <span class="categories">posted in <a class='category' href='/blog/categories//'>-</a>, <a class='category' href='/blog/categories//'>-</a>, <a class='category' href='/blog/categories/02/'>02</a>, <a class='category' href='/blog/categories/13/'>13</a>, <a class='category' href='/blog/categories/chapter/'>Chapter</a>, <a class='category' href='/blog/categories/chapter/'>Chapter</a>, <a class='category' href='/blog/categories/data/'>Data,</a>, <a class='category' href='/blog/categories/integration/'>Integration</a></span>
+</footer>
 
-    ... other stuff ...
-}
-</code></pre>
 
-<p>To see how to inject the File into the class in Spring, see my post <a href="http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/">Injecting a file from the classpath into a bean</a>.</p>
+</article>
+
 </div>
 
-
-  <footer>
-    <p class="meta">
-      
   
-
-<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
-
-      
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-13T11:02:00-07:00" pubdate data-updated="true">May 13<span>th</span>, 2012</time>
-      
-
-<span class="categories">
-  
-    <a class='category' href='/blog/categories/chapter-09-comments/'>Chapter 09 - Comments</a>, <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>
-  
-</span>
-
-
-    </p>
-    
-      <div class="sharing">
-  
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2012/05/13/how-to-run-javascript-from-java/" data-via="williewheeler" data-counturl="http://springinpractice.com/2012/05/13/how-to-run-javascript-from-java/" >Tweet</a>
-  
-  
-  
-</div>
-
-    
-    <p class="meta">
-      
-        <a class="basic-alignment left" href="/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/" title="Previous Post: Injecting a file from the classpath into a bean">&laquo; Injecting a file from the classpath into a bean</a>
-      
-      
-        <a class="basic-alignment right" href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/" title="Next Post: Pageable custom queries with Spring Data JPA">Pageable custom queries with Spring Data JPA &raquo;</a>
-      
-    </p>
-  </footer>
 </article>
 
 

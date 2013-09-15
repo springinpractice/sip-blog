@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Tutorials | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/tutorials/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-14T20:38:56-07:00</updated>
+  <updated>2013-09-14T21:08:24-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -117,12 +117,12 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
     &lt;ul&gt;
         &lt;c:choose&gt;
             &lt;c:when test="${currentIndex == 1}"&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;lt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;lt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:when&gt;
             &lt;c:otherwise&gt;
-                &lt;li&gt;&lt;a href="${firstUrl}"&gt;&amp;amp;lt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="${prevUrl}"&gt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${firstUrl}"&gt;&amp;lt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${prevUrl}"&gt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:otherwise&gt;
         &lt;/c:choose&gt;
         &lt;c:forEach var="i" begin="${beginIndex}" end="${endIndex}"&gt;
@@ -138,12 +138,12 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
         &lt;/c:forEach&gt;
         &lt;c:choose&gt;
             &lt;c:when test="${currentIndex == deploymentLog.totalPages}"&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:when&gt;
             &lt;c:otherwise&gt;
-                &lt;li&gt;&lt;a href="${nextUrl}"&gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="${lastUrl}"&gt;&amp;amp;gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${nextUrl}"&gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${lastUrl}"&gt;&amp;gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:otherwise&gt;
         &lt;/c:choose&gt;
     &lt;/ul&gt;

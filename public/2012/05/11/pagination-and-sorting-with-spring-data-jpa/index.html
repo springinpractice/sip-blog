@@ -190,12 +190,12 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
     &lt;ul&gt;
         &lt;c:choose&gt;
             &lt;c:when test="${currentIndex == 1}"&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;lt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;lt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:when&gt;
             &lt;c:otherwise&gt;
-                &lt;li&gt;&lt;a href="${firstUrl}"&gt;&amp;amp;lt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="${prevUrl}"&gt;&amp;amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${firstUrl}"&gt;&amp;lt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${prevUrl}"&gt;&amp;lt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:otherwise&gt;
         &lt;/c:choose&gt;
         &lt;c:forEach var="i" begin="${beginIndex}" end="${endIndex}"&gt;
@@ -211,12 +211,12 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
         &lt;/c:forEach&gt;
         &lt;c:choose&gt;
             &lt;c:when test="${currentIndex == deploymentLog.totalPages}"&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;amp;gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="disabled"&gt;&lt;a href="#"&gt;&amp;gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:when&gt;
             &lt;c:otherwise&gt;
-                &lt;li&gt;&lt;a href="${nextUrl}"&gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
-                &lt;li&gt;&lt;a href="${lastUrl}"&gt;&amp;amp;gt;&amp;amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${nextUrl}"&gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="${lastUrl}"&gt;&amp;gt;&amp;gt;&lt;/a&gt;&lt;/li&gt;
             &lt;/c:otherwise&gt;
         &lt;/c:choose&gt;
     &lt;/ul&gt;
@@ -286,6 +286,10 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
       </li>
     
@@ -299,10 +303,6 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
     
       <li class="post">
         <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
       </li>
     
   </ul>
