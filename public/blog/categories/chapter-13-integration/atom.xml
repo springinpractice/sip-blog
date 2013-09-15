@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-14T23:03:37-07:00</updated>
+  <updated>2013-09-14T23:04:49-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -23,7 +23,7 @@
 <!-- more -->
 
 
-<p>From a technology perspective we&rsquo;re using <a href="http://projects.spring.io/spring-data-rest/">Spring Data REST</a>, <a href="http://projects.spring.io/spring-data-jpa/">Spring Data JPA</a>, JPA and Hibernate to implement the web service. So I originally tried to use <a href="http://docs.oracle.com/javaee/6/api/javax/persistence/Version.html">JPA&rsquo;s <code>@Version</code> annotation</a>. But for reasons I describe <a href="http://stackoverflow.com/questions/18780621/does-spring-data-rest-support-jpa-version">here</a> it doesn&rsquo;t work. <a href="https://twitter.com/mdeinum">Marten Deinum</a> notes further that this isn&rsquo;t really a problem with Spring Data REST <em>per se</em>; it affects e.g. form submissions too. At Marten&rsquo;s suggestion, I created an <a href="https://jira.springsource.org/browse/DATAREST-160">enhancement request</a>, but since I needed something now, I set out to implement optimisitic locking for Spring Data REST without <code>@Version</code>.</p>
+<p>From a technology perspective we&rsquo;re using <a href="http://projects.spring.io/spring-data-rest/">Spring Data REST</a>, <a href="http://projects.spring.io/spring-data-jpa/">Spring Data JPA</a>, JPA and Hibernate to implement the web service. So I originally tried to use <a href="http://docs.oracle.com/javaee/6/api/javax/persistence/Version.html">JPA&rsquo;s @Version annotation</a>. But for reasons I describe <a href="http://stackoverflow.com/questions/18780621/does-spring-data-rest-support-jpa-version">here</a> it doesn&rsquo;t work. <a href="https://twitter.com/mdeinum">Marten Deinum</a> notes further that this isn&rsquo;t really a problem with Spring Data REST <em>per se</em>; it affects e.g. form submissions too. At Marten&rsquo;s suggestion, I created an <a href="https://jira.springsource.org/browse/DATAREST-160">enhancement request</a>, but since I needed something now, I set out to implement optimisitic locking for Spring Data REST without <code>@Version</code>.</p>
 
 <p>The trick is to listen for events that are fired before the update occurs. Spring Data REST fires such events, but so does JPA, and I decided to use JPA&rsquo;s events instead to ensure that the version number get/test/increment happens as part of a single atomic transaction. (My guess is that the Spring Data REST <a href="http://docs.spring.io/spring-data/rest/docs/1.1.0.M1/reference/htmlsingle/#events-chapter">BeforeSaveEvent</a> fires before entering the transaction.)</p>
 
