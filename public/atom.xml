@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-14T23:52:12-07:00</updated>
+  <updated>2013-09-15T00:18:04-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -153,7 +153,7 @@ public class OptimisticLockChecker {
 
 <p>When we get the entity, we cache a copy using Spring&rsquo;s <code>BeanUtils.copyProperties()</code> utility. That allows us to refresh the original entity, which puts it back in its database state, allowing us to see the latest version number in the database. After that, we put the entity back into its modified state by doing another <code>BeanUtils.copyProperties()</code>, this time from the copy to the entity.</p>
 
-<p>(Instead of cloning, I would have preferred to detach the entity, load the database entity into the persistence context, compare the two, and then reattach the entity to the persistence context. Unfortunately, while Hibernate supports reattachment, <a href="http://stackoverflow.com/questions/912659/what-is-the-proper-way-to-re-attach-detached-objects-in-hibernate">JPA doesn&rsquo;t</a>. JPA supports merges, but this leaves the original entity detached, which is no good since that&rsquo;s the reference that JPA is going to try to save after the entity listener&rsquo;s <code>@PreUpdate</code> handler completes its processing.)</p>
+<p>(Instead of cloning, I would have preferred to detach the entity, load the database entity into the persistence context, compare the two, and then reattach the entity to the persistence context. Unfortunately, while Hibernate supports reattachment, <a href="http://stackoverflow.com/questions/912659/what-is-the-proper-way-to-re-attach-detached-objects-in-hibernate">JPA doesn&rsquo;t</a>. JPA supports merges, but this leaves the original entity detached, which is no good since that&rsquo;s the reference that JPA is going to try to save after the entity listener&rsquo;s <code>@PreUpdate</code> handler completes its processing. See <a href="http://java.dzone.com/articles/saving_detatched_entities">this article</a> for more information on these topics.)</p>
 
 <p>Now our entity is back to its original state, and we have both the submitted and the latest version numbers. So we compare and either throw an exception or else increment the version number.</p>
 
