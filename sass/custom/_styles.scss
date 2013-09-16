@@ -20,6 +20,15 @@ body {
 		padding-left: 0px;
 		padding-right: 0px;	
 
+		ul.social-links {
+			display: inline;
+			list-style-type: none;
+
+			> li {
+				padding: 10px 20px;
+			}
+		}
+
 		h1 {
 			a, a:visited, a:hover {
 				color: #8C8C8C;
