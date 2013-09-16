@@ -13,6 +13,8 @@ I wanted to like it&mdash;honest I did. While I've always been a little iffy on 
 
 So I tried the constructor namespace out, and it bit me in exactly the way I expected.
 
+<!-- more -->
+
 The problem
 -----------
 
