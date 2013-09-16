@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Spring's constructor namespace is a bad idea - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="The other day I wrote up a post explaining how to use Spring&rsquo;s constructor namespace, which is new with Spring 3.1. So the following might be a &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2012/05/07/springs-constructor-namespace-is-a-bad-idea">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Spring's Constructor Namespace Is a Bad Idea</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-07T21:26:00-07:00" pubdate data-updated="true">May 7<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>The other day I wrote up a post <a href="http://springinpractice.com/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/">explaining how to use Spring&rsquo;s constructor namespace</a>, which is new with Spring 3.1. So the following might be a little surprising:</p>
+
+<p><em>Spring&rsquo;s constructor namespace is a bad idea.</em></p>
+
+<p>I wanted to like it&mdash;honest I did. While I&rsquo;ve always been a little iffy on the whole idea of introspecting on method parameter names, <a href="https://issues.springsource.org/browse/SPR-6500?page=com.atlassian.jira.plugin.system.issuetabpanels:all-tabpanel">Juergen Hoeller answered my concerns</a> with respect to <code>@PathVariable</code> and the like. My worries around <a href="http://en.wikipedia.org/wiki/Principle_of_least_astonishment">least surprise</a> were admittedly academic since I always compile binaries in debug mode.</p>
+
+<p>So I tried the constructor namespace out, and it bit me in exactly the way I expected.</p>
+
+<h2>The problem</h2>
+
+<p>Just as a quick refresher (or introduction), here&rsquo;s how the constructor namespace works:</p>
+
+<pre><code>&lt;bean class="com.example.Client"
+    c:restTemplate-ref-"restTemplate"
+    c:baseUrl="http://localhost:8080/service" /&gt;
+</code></pre>
+
+<p>The configuration presupposes a constructor that looks like this:</p>
+
+<pre><code>public Client(RestTemplate restTemplate, String baseUrl) { ... }
+</code></pre>
+
+<p>Here&rsquo;s the problem. Developers expect changing parameter names to be a local operation. Even in some of the Spring Web MVC cases that Juergen mentions in response to my JIRA issue&mdash;<code>@PathVariable</code>, <code>@RequestParam</code>, <code>@RequestHeader</code> and <code>@CookieValue</code>&mdash;the annotations in question are colocated with the parameters; e.g.</p>
+
+<pre><code>public String getUser(@PathVariable Long id, Model model) { ... }
+</code></pre>
+
+<p>so somebody experienced with the framework will know what to do, and somebody less experienced will discover the issue soon enough (the code won&rsquo;t work) and fix it.</p>
+
+<p>But the constructor namespace is totally different. Changing the constructor parameter name has the potential to break client code, and that client code may not be part of your current project. So you might not know you broke someone else&rsquo;s code.</p>
+
+<p>This happened to me today, except it was breaking my own code in a separate project. I have a web service client with a constructor like this:</p>
+
+<pre><code>public Client(RestTemplate restTemplate, String basePath) { ... }
+</code></pre>
+
+<p>and I changed that to</p>
+
+<pre><code>public Client(RestTemplate restTemplate, String baseUrl) { ... }
+</code></pre>
+
+<p>This broke code in another project that was using the constructor namespace to inject values into the constructor. This is another violation of the principle of least surprise, but this time I don&rsquo;t think it&rsquo;s theoretical in the least. It happened to me the very first time.</p>
+
+<h2>Some possible solutions</h2>
+
+<p>One solution would be for Spring to simply get rid of this feature, as it leads to brittle code.</p>
+
+<p>Another possibility would be for Spring to do something like this instead:</p>
+
+<pre><code>public Client(@Param RestTemplate restTemplate, @Param String baseUrl) { ... }
+</code></pre>
+
+<p>and even</p>
+
+<pre><code>public Client(@Param("restTemplate") RestTemplate template, @Param("baseUrl") String url) { ... }
+</code></pre>
+
+<p>That would make it more explicit that the constructor parameter names were being exposed as part of an API.</p>
+
+<p>If you&rsquo;re set on using it, you should adopt the practice of documenting your constructors when they support this configuration style. And as an API consumer, you should assume that constructor parameter names are <em>not</em> contractual unless explicitly documented as such. Parameter names in Java have always counted as implementation details, and while I&rsquo;m all for innovation and challenging the status quo, the benefit that the constructor namespace offers here is far too modest to call for revisiting this particular issue.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-07T21:26:00-07:00" pubdate data-updated="true">May 7<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-01-di/'>Chapter 01 - DI</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2012/05/07/springs-constructor-namespace-is-a-bad-idea/" data-via="williewheeler" data-counturl="http://springinpractice.com/2012/05/07/springs-constructor-namespace-is-a-bad-idea/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+      
+        <a class="basic-alignment right" href="/2012/05/11/pagination-and-sorting-with-spring-data-jpa/" title="Next Post: Pagination and sorting with Spring Data JPA">Pagination and sorting with Spring Data JPA &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

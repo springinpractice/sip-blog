@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-15T00:42:38-07:00</updated>
+  <updated>2013-09-16T01:15:43-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -522,6 +522,74 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
 </code></pre>
 
 <p>Spring Data JPA makes it very nice and simple. And Twitter Bootstrap looks great too.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring's constructor namespace is a bad idea]]></title>
+    <link href="http://springinpractice.com/2012/05/07/springs-constructor-namespace-is-a-bad-idea/"/>
+    <updated>2012-05-07T21:26:00-07:00</updated>
+    <id>http://springinpractice.com/2012/05/07/springs-constructor-namespace-is-a-bad-idea</id>
+    <content type="html"><![CDATA[<p>The other day I wrote up a post <a href="http://springinpractice.com/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/">explaining how to use Spring&rsquo;s constructor namespace</a>, which is new with Spring 3.1. So the following might be a little surprising:</p>
+
+<p><em>Spring&rsquo;s constructor namespace is a bad idea.</em></p>
+
+<p>I wanted to like it&mdash;honest I did. While I&rsquo;ve always been a little iffy on the whole idea of introspecting on method parameter names, <a href="https://issues.springsource.org/browse/SPR-6500?page=com.atlassian.jira.plugin.system.issuetabpanels:all-tabpanel">Juergen Hoeller answered my concerns</a> with respect to <code>@PathVariable</code> and the like. My worries around <a href="http://en.wikipedia.org/wiki/Principle_of_least_astonishment">least surprise</a> were admittedly academic since I always compile binaries in debug mode.</p>
+
+<p>So I tried the constructor namespace out, and it bit me in exactly the way I expected.</p>
+
+<h2>The problem</h2>
+
+<p>Just as a quick refresher (or introduction), here&rsquo;s how the constructor namespace works:</p>
+
+<pre><code>&lt;bean class="com.example.Client"
+    c:restTemplate-ref-"restTemplate"
+    c:baseUrl="http://localhost:8080/service" /&gt;
+</code></pre>
+
+<p>The configuration presupposes a constructor that looks like this:</p>
+
+<pre><code>public Client(RestTemplate restTemplate, String baseUrl) { ... }
+</code></pre>
+
+<p>Here&rsquo;s the problem. Developers expect changing parameter names to be a local operation. Even in some of the Spring Web MVC cases that Juergen mentions in response to my JIRA issue&mdash;<code>@PathVariable</code>, <code>@RequestParam</code>, <code>@RequestHeader</code> and <code>@CookieValue</code>&mdash;the annotations in question are colocated with the parameters; e.g.</p>
+
+<pre><code>public String getUser(@PathVariable Long id, Model model) { ... }
+</code></pre>
+
+<p>so somebody experienced with the framework will know what to do, and somebody less experienced will discover the issue soon enough (the code won&rsquo;t work) and fix it.</p>
+
+<p>But the constructor namespace is totally different. Changing the constructor parameter name has the potential to break client code, and that client code may not be part of your current project. So you might not know you broke someone else&rsquo;s code.</p>
+
+<p>This happened to me today, except it was breaking my own code in a separate project. I have a web service client with a constructor like this:</p>
+
+<pre><code>public Client(RestTemplate restTemplate, String basePath) { ... }
+</code></pre>
+
+<p>and I changed that to</p>
+
+<pre><code>public Client(RestTemplate restTemplate, String baseUrl) { ... }
+</code></pre>
+
+<p>This broke code in another project that was using the constructor namespace to inject values into the constructor. This is another violation of the principle of least surprise, but this time I don&rsquo;t think it&rsquo;s theoretical in the least. It happened to me the very first time.</p>
+
+<h2>Some possible solutions</h2>
+
+<p>One solution would be for Spring to simply get rid of this feature, as it leads to brittle code.</p>
+
+<p>Another possibility would be for Spring to do something like this instead:</p>
+
+<pre><code>public Client(@Param RestTemplate restTemplate, @Param String baseUrl) { ... }
+</code></pre>
+
+<p>and even</p>
+
+<pre><code>public Client(@Param("restTemplate") RestTemplate template, @Param("baseUrl") String url) { ... }
+</code></pre>
+
+<p>That would make it more explicit that the constructor parameter names were being exposed as part of an API.</p>
+
+<p>If you&rsquo;re set on using it, you should adopt the practice of documenting your constructors when they support this configuration style. And as an API consumer, you should assume that constructor parameter names are <em>not</em> contractual unless explicitly documented as such. Parameter names in Java have always counted as implementation details, and while I&rsquo;m all for innovation and challenging the status quo, the benefit that the constructor namespace offers here is far too modest to call for revisiting this particular issue.</p>
 ]]></content>
   </entry>
   
