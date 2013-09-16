@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-16T02:11:34-07:00</updated>
+  <updated>2013-09-16T02:13:12-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -537,6 +537,9 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
 <p>I wanted to like it&mdash;honest I did. While I&rsquo;ve always been a little iffy on the whole idea of introspecting on method parameter names, <a href="https://issues.springsource.org/browse/SPR-6500?page=com.atlassian.jira.plugin.system.issuetabpanels:all-tabpanel">Juergen Hoeller answered my concerns</a> with respect to <code>@PathVariable</code> and the like. My worries around <a href="http://en.wikipedia.org/wiki/Principle_of_least_astonishment">least surprise</a> were admittedly academic since I always compile binaries in debug mode.</p>
 
 <p>So I tried the constructor namespace out, and it bit me in exactly the way I expected.</p>
+
+<!-- more -->
+
 
 <h2>The problem</h2>
 
