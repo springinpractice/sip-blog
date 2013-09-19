@@ -1,0 +1,336 @@
+---
+link: http://springinpractice.com/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/
+layout: post
+title: Annotation-based validation with the Spring Bean Validation Framework
+date: 2008-07-17 23:35:36
+comments: true
+categories: [Chapter 04 - Web forms, Tutorials]
+---
+<div class="alert warning">This post predates JSR 303, which describes a standard around bean validation. The Spring Modules Bean Validation Framework isn't compliant with that JSR, and anyway, it's a defunct library. Use <a href="http://springinpractice.com/2009/02/02/getting-started-with-hibernate-validator/">Hibernate Validator</a> instead.</div>
+
+The Spring Bean Validation Framework, which is part of the <a href="https://springmodules.dev.java.net/">Spring Modules</a> project, allows you to perform validation declaratively using Java annotations. I've always liked the declarative approach, which we saw for instance in Commons Validator, but annotation-based validation is especially convenient.
+
+<a href="http://jcp.org/en/jsr/detail?id=303">JSR 303 (Bean Validation)</a> specifies some standards around bean validation, though the Spring Bean Validation Framework does not adopt those standards. The <a href="http://www.hibernate.org/412.html">Hibernate Validator</a> project, on the other hand, aims to provide an implementation of the emerging JSR 303 standard.
+
+While it very well could be subpar Googling skills on my part, there doesn't seem to be much detailed how-to information out there on actually using the Bean Validation Framework.  Hence this article.
+
+I'm using Spring 2.5.x (specifically, Spring 2.5.5) and Spring Modules 0.9.  I assume that you already know Spring and Spring Web MVC in particular.
+
+If you want to download the code, you can do so here:
+
+<center><span class="icon archive"><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-bean-validation-framework/contact-example.zip">contact-example.zip</a></span></center>
+
+You'll have to download the dependencies separately though.
+
+<h3>Dependencies</h3>
+
+Here's what you'll need (again, I'm using Spring 2.5.x and Spring Modules 0.9):
+
+<ul class="square">
+    <li><code>commons-collections.jar</code></li>
+    <li><code>commons-lang.jar</code></li>
+    <li><code>commons-logging.jar</code></li>
+    <li><code>spring.jar</code></li>
+    <li><code>spring-modules-validation.jar</code></li>
+    <li><code>spring-webmvc.jar</code></li>
+</ul>
+
+<h3>Java sources</h3>
+
+I'm going to do things a little differently than I normally do, and start with the Java first.  We're going to build a very simple "Contact Us" form of the sort that you might use to ask a question, complain about lousy service, or whatever.  Since we're just showing how validation works, I've left out the service and persistence tiers.  We're going to do everything with a form bean and a controller.
+
+Here's the form bean:
+
+<div>
+<span class="code-listing">Code listing:</span> <code>contact.UserMessage</code>
+<pre name="code" class="java">
+package contact;
+
+import org.springmodules.validation.bean.conf.loader.annotation.handler.Email;
+import org.springmodules.validation.bean.conf.loader.annotation.handler.Length;
+import org.springmodules.validation.bean.conf.loader.annotation.handler.NotBlank;
+
+public final class UserMessage {
+    
+    @NotBlank
+    @Length(max = 80)
+    private String name;
+    
+    @NotBlank
+    @Email
+    @Length(max = 80)
+    private String email;
+    
+    @NotBlank
+    @Length(max = 4000)
+    private String text;
+    
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+    
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) { this.email = email; }
+
+    public String getText() { return text; }
+
+    public void setText(String text) { this.text = text; }
+}
+</pre>
+</div>
+
+The bean itself is pretty uninteresting&mdash;I have field for the user's name, e-mail address, and the message text.  But the cool part is that I've included annotations that specify validation constraints.  It's probably self-explanatory, but I've specified that none of the fields is allowed to be blank, and I've also specified the maximum lengths for each.  (You can also specify minimum lengths, which one could use instead of <code>@NotBlank</code>, but I'm using <code>@NotBlank</code> instead for a reason I'll explain in just a bit.)  Finally, I've specified that <code>email</code> needs to be a valid e-mail address.  It's that simple!
+
+Here are <a href="https://springmodules.dev.java.net/docs/reference/0.8/html_single/#d0e9699">the rest of the validation rules</a> you can use.
+
+Now here's the Spring MVC controller, which I've implemented as a POJO controller:
+
+<div>
+<span class="code-listing">Code listing:</span> <code>contact.ContactController</code>
+<pre name="code" class="java">
+package contact;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@Controller
+public final class ContactController {
+    
+    @Autowired
+    private Validator validator;
+    
+    public void setValidator(Validator validator) {
+        this.validator = validator;
+    }
+    
+    @RequestMapping(value = "/form", method = RequestMethod.GET)
+    public ModelMap get() {
+        
+        // Because we're not specifying a logical view name, the
+        // DispatcherServlet's DefaultRequestToViewNameTranslator kicks in.
+        return new ModelMap("userMessage", new UserMessage());
+    }
+    
+    @RequestMapping(value = "/form", method = RequestMethod.POST)
+    public String post(@ModelAttribute("userMessage") UserMessage userMsg,
+            BindingResult result) {
+        
+        validator.validate(userMsg, result);
+        if (result.hasErrors()) { return "form"; }
+        
+        // Use the redirect-after-post pattern to reduce double-submits.
+        return "redirect:thanks";
+    }
+    
+    @RequestMapping("/thanks")
+    public void thanks() {
+    }
+}
+</pre>
+</div>
+
+The Bean Validation Framework includes its own <code>Validator</code> implementation, called <code>BeanValidator</code>, and I'm making that injectable here.  Also, note that we're going to autowire it in.
+
+It may be that there's a standard, predefined interceptor to apply <code>BeanValidator</code> (as opposed to injecting the <code>Validator</code> into the controller), but if there is, I haven't seen it.  I'd be interested to hear if you, gentle reader, know of one.
+
+The noteworthy method here is the second <code>post()</code> method, which contains the validation code.  I just call the standard <code>validate()</code> method, passing in the form bean and the <code>BindingResult</code>, and return the current logical view name if there's an error.  That way the form shows the validation error messages, which we'll see below.  If everything passes validation, I just redirect to a "thank you" page.
+
+Now let's look at how we define the validation messages that the end user sees if his form submission fails validation.
+
+<h3>Validation messages</h3>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/classes/errors.properties</code>
+<pre name="code" class="java">
+UserMessage.name[not.blank]=Please enter your name.
+UserMessage.name[length]=Please enter no more than {2} characters.
+UserMessage.email[not.blank]=Please enter your e-mail address.
+UserMessage.email[email]=Please enter a valid e-mail address.
+UserMessage.email[length]=Please enter no more than {2} characters.
+UserMessage.text[not.blank]=Please enter a message.
+UserMessage.text[length]=Please enter no more than {2} characters.
+</pre>
+</div>
+
+The keys should be fairly self-explanatory given <code>UserMessage</code> above.  Each key involves a class, a field and an annotation.  The values are parametrizable messages, not unlike Commons Validator messages if you're familiar with those.  In the three <code>length</code> messages, I'm using <code>{2}</code> to indicate argument #2&mdash;viz., <code>max</code>&mdash;for the <code>length</code> validation rule.  Argument #1 happens to be <code>min</code>, and argument #0 in general appears to be the form bean itself.  I can imagine that it would be nice to be able to use the form bean to get at the specific submitted value so you could say things like "You entered 4012 characters, but the limit is 4000 characters."  And I think there's actually a way to do that though I don't myself know how to do it yet.  (This is another one of those areas where I'd appreciate whatever information you may have.)
+
+I mentioned above that I chose <code>@NotBlank</code> instead of <code>@Length(min = 1, max = 80)</code>.  The reason is that I wanted to use a specific error message ("Please enter your name") if the message is blank.  I could have just used "Please enter a name between 1-80 characters" but that sounds slightly silly compared to "Please enter your name", and since I'm a usability guy I care about such things.
+
+<h3>The JSPs</h3>
+
+We have two JSPs: the form itself, and a basic (really basic) "thank you" page.
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/form.jsp</code>
+<pre name="code" class="xml">
+&lt;%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %&gt;
+
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+    &lt;head&gt;
+        &lt;title&gt;Contact Us&lt;/title&gt;
+        &lt;style&gt;
+            .form-item { margin: 20px 0; }
+            .form-label { font-weight: bold; }
+            .form-error-field { background-color: #FFC; }
+            .form-error-message { font-weight: bold; color: #900; }
+        &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    
+&lt;h1&gt;Contact Us&lt;/h1&gt;
+
+&lt;%-- Give command object a meaningful name instead of using default name, 'command' --%&gt;
+&lt;form:form commandName="userMessage"&gt;
+    &lt;div class="form-item"&gt;
+        &lt;div class="form-label"&gt;Your name:&lt;/div&gt;
+        &lt;form:input path="name" size="40" cssErrorClass="form-error-field"/&gt;
+        &lt;div class="form-error-message"&gt;&lt;form:errors path="name"/&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="form-item"&gt;
+        &lt;div class="form-label"&gt;Your e-mail address:&lt;/div&gt;
+        &lt;form:input path="email" size="40" cssErrorClass="form-error-field"/&gt;
+        &lt;div class="form-error-message"&gt;&lt;form:errors path="email"/&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="form-item"&gt;
+        &lt;div class="form-label"&gt;Your message:&lt;/div&gt;
+        &lt;form:textarea path="text" rows="12" cols="60" cssErrorClass="form-error-field"/&gt;
+        &lt;div class="form-error-message"&gt;&lt;form:errors path="text"/&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="form-item"&gt;
+        &lt;input type="submit" value="Submit" /&gt;
+    &lt;/div&gt;
+&lt;/form:form&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div>
+
+This is just a standard Spring Web MVC form, so I'll invoke my "I assume you know Spring Web MVC" assumption here.  The <code>cssErrorClass</code> attribute is kind of fun if you don't already know about it.  It indicates the CSS class to use in the event of a validation error.  You can combine that with the <code>cssClass</code> attribute (which applies in the non-error case) though I haven't done that here.
+
+Now here's the basic "thank you" page:
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/thanks.jsp</code>
+<pre name="code" class="xml">
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+    &lt;head&gt;
+        &lt;title&gt;Thank You&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Thank You&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div>
+
+(I told you it was basic...)
+
+OK, now we're ready to move onto application configuration.  Almost done!
+
+<h3>Servlet and Spring configuration</h3>
+
+Here's our completely standard <code>web.xml</code>:
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/web.xml</code>
+<pre name="code" class="xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;web-app xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+        http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5"&gt;
+    
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;contact&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;
+            org.springframework.web.servlet.DispatcherServlet
+        &lt;/servlet-class&gt;
+    &lt;/servlet&gt;
+    
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;contact&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/contact/*&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;        
+&lt;/web-app&gt;
+</pre>
+</div>
+
+Though I said I'm assuming you already know Spring Web MVC, I'll just point out that since I didn't specify a custom location for the application context file, I have to put it at <code>/WEB-INF/contact-servlet.xml</code>.  If you want the file to live elsewhere, or if you want it to be associated with the servlet context instead of the <code>DispatcherServlet</code>, you'll have to set that up in <code>web.xml</code> accordingly.
+
+Here's the Spring application context:
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/contact-servlet.xml</code>
+<pre name="code" class="xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"&gt;
+    
+    &lt;!-- Enable annotation-based validation using Bean Validation Framework --&gt;
+    &lt;!-- Using these instead of vld namespace to prevent Eclipse from complaining --&gt;
+    &lt;bean id="configurationLoader"
+        class="org.springmodules.validation.bean.conf.loader.annotation.AnnotationBeanValidationConfigurationLoader"/&gt;
+    &lt;bean id="validator" class="org.springmodules.validation.bean.BeanValidator"
+        p:configurationLoader-ref="configurationLoader"/&gt;
+    
+    &lt;!-- Load messages --&gt;
+    &lt;bean id="messageSource"
+        class="org.springframework.context.support.ResourceBundleMessageSource"
+        p:basenames="errors"/&gt;
+
+    &lt;!-- Discover POJO @Components --&gt;
+    &lt;!-- These automatically register an AutowiredAnnotationBeanPostProcessor --&gt;
+    &lt;context:component-scan base-package="contact"/&gt;
+    
+    &lt;!-- Map logical view names to physical views --&gt;
+    &lt;bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+        p:prefix="/WEB-INF/"
+        p:suffix=".jsp"/&gt;
+&lt;/beans&gt;
+</pre>
+</div>
+
+(<strong>IMPORTANT:</strong> In the <code>configurationLoader</code> definition, make sure you put the class name on a single line.  I had to break it up for formatting purposes.)
+
+If you're not familiar with it, I'm using the <code>p</code> namespace here for syntactic sugar&mdash;it allows me to specify properties using a nice shorthand.
+
+The first two beans basically create the <code>BeanValidator</code> instance we're going to use.  It turns out that instead of defining these two beans explicitly, you can use a special element from a special namespace:
+
+<ul class="square">
+    <li>namespace is <code>xmlns:vld="http://www.springmodules.org/validation/bean/validator"</code>;</li>
+    <li>purported schema location is <code>http://www.springmodules.org/validation/bean/validator-2.0.xsd</code>;</li>
+    <li>element is <code>&lt;vld:annotation-based-validator id="validator"/&gt;</code></li>
+</ul>
+
+But when I do it, Eclipse complains (even though the code works when you run it) since there isn't at the time of this writing actually an XSD at the specified location.  (At least there's a <a href="http://jira.springframework.org/browse/MOD-464">JIRA ticket</a> for it.)  So I'll just use the two beans for now.
+
+The other stuff is mostly normal Spring Web MVC stuff.  I put the message source on the app context, scan for the controller (which is why I'm autowiring the validator into the controller), and put a view resolver on the context too.
+
+<h3>Finis</h3>
+
+Build and deploy your WAR, and then point your browser to your web app; for example:
+
+<center>http://localhost:8080/contact-example/contact/form</center>
+
+Try submitting the form with empty fields, or an invalid e-mail address, or fields that are too long.  If things are working correctly, you ought to see error messages and even field highlighting when validation fails.
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
