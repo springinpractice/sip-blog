@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/02/26/acegi-overview/
 layout: post
-title: Acegi overview (now Spring Security)
+title: "Acegi overview (now Spring Security)"
 date: 2008-02-26 13:24:16
 comments: true
 categories: [Chapter 06 - Authentication, Chapter 07 - Authorization, Tutorials]

@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/11/25/publish-an-rss-feed-with-spring-3-0/
 layout: post
-title: Publish an RSS feed with Spring 3.0
+title: "Publish an RSS feed with Spring 3.0"
 date: 2008-11-25 14:27:00
 comments: true
 categories: [Chapter 08 - Communicating, Tutorials]

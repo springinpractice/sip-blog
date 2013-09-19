@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/05/08/session-scoped-beans-in-spring/
 layout: post
-title: Session-scoped beans in Spring
+title: "Session-scoped beans in Spring"
 date: 2008-05-08 00:50:20
 comments: true
 categories: [Chapter 01 - DI, Tutorials]

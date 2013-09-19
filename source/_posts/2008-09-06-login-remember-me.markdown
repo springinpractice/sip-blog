@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/09/06/login-remember-me/
 layout: post
-title: Excerpt: Login and remember-me discussion
+title: "Excerpt: Login and remember-me discussion"
 date: 2008-09-06 15:37:16
 comments: true
 categories: [Chapter 06 - Authentication, News]

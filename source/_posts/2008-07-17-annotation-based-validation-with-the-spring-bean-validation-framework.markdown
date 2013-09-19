@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/
 layout: post
-title: Annotation-based validation with the Spring Bean Validation Framework
+title: "Annotation-based validation with the Spring Bean Validation Framework"
 date: 2008-07-17 23:35:36
 comments: true
 categories: [Chapter 04 - Web forms, Tutorials]

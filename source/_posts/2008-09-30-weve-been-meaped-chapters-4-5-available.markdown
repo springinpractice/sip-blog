@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/09/30/weve-been-meaped-chapters-4-5-available/
 layout: post
-title: We've been MEAPed - chapters 4 & 5 available
+title: "We've been MEAPed - chapters 4 & 5 available"
 date: 2008-09-30 21:27:53
 comments: true
 categories: [News]

@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2011/12/29/its-back-the-classpathscanningjaxb2marshaller/
 layout: post
-title: ClasspathScanningJaxb2Marshaller
+title: "ClasspathScanningJaxb2Marshaller"
 date: 2011-12-29 21:03:00
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Quick Tips]

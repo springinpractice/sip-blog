@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Spring Security 3 DZone Refcard and interview - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="My Spring Security 3 Refcard is out. It covers expression-based authorization in Spring Security 3. There is also a supporting interview about the &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2010/07/11/spring-security-3-dzone-refcard-and-interview">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Spring Security 3 DZone Refcard and Interview</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-07-11T18:23:20-07:00" pubdate data-updated="true">Jul 11<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/refcard106/ss3_refcard.png" alt="Spring Security 3 DZone Refcard" style="float:right;margin:0 0 20px 20px;" /></p>
+
+<p>My <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization?oid=hom25493">Spring Security 3 Refcard</a> is out. It covers expression-based authorization in Spring Security 3.</p>
+
+<p>There is also a supporting <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">interview</a> about the Refcard. The interview goes into more depth about some security principles like whitelisting and data-driven security, and explains how to implement these ideas using Spring Security 3.</p>
+
+<p>Thanks to <a href="http://www.scottbattaglia.com/">Scott Battaglia</a>, David Harp, Joe Koberstein, <a href="http://www.mularien.com/blog/">Peter Mularien</a>, <a href="http://pveentjer.wordpress.com/">Peter Veentjer</a> and John Wheeler for their helpful suggestions and also for catching typos.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-07-11T18:23:20-07:00" pubdate data-updated="true">Jul 11<span>th</span>, 2010</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-07-authorization/'>Chapter 07 - Authorization</a>, <a class='category' href='/blog/categories/news/'>News</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2010/07/11/spring-security-3-dzone-refcard-and-interview/" data-via="williewheeler" data-counturl="http://springinpractice.com/2010/07/11/spring-security-3-dzone-refcard-and-interview/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2010/07/06/annotation-based-circuit-breakers-with-spring/" title="Previous Post: Annotation-based circuit breakers with Spring">&laquo; Annotation-based circuit breakers with Spring</a>
+      
+      
+        <a class="basic-alignment right" href="/2010/07/13/spring-roo-in-under-nine-minutes/" title="Next Post: Spring Roo in under nine minutes">Spring Roo in under nine minutes &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

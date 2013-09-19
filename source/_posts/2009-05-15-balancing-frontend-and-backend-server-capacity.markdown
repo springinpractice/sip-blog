@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2009/05/15/balancing-frontend-and-backend-server-capacity/
 layout: post
-title: Balancing frontend and backend server capacity
+title: "Balancing frontend and backend server capacity"
 date: 2009-05-15 14:03:54
 comments: true
 categories: [Architecture, Chapter 14 - Site-up]

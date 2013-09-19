@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/05/05/smtp-and-smtp-auth/
 layout: post
-title: SMTP and SMTP-AUTH
+title: "SMTP and SMTP-AUTH"
 date: 2008-05-05 00:31:39
 comments: true
 categories: [Chapter 08 - Communicating, Tutorials]

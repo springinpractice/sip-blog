@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/11/27/springone-americas-2008/
 layout: post
-title: SpringOne Americas 2008
+title: "SpringOne Americas 2008"
 date: 2008-11-27 23:37:58
 comments: true
 categories: [News]

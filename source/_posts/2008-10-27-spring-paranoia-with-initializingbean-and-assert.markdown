@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/10/27/spring-paranoia-with-initializingbean-and-assert/
 layout: post
-title: Spring paranoia with InitializingBean and Assert
+title: "Spring paranoia with InitializingBean and Assert"
 date: 2008-10-27 14:51:40
 comments: true
 categories: [Chapter 01 - DI, Quick Tips]

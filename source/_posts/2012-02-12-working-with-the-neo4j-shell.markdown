@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/
 layout: post
-title: Working with the Neo4j shell
+title: "Working with the Neo4j shell"
 date: 2012-02-12 14:06:54
 comments: true
 categories: [Chapter 02 - Data, Chapter 11 - CMDB, Quick Tips, Tutorials]

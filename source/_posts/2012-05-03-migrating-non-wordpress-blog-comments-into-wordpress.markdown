@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/05/03/migrating-non-wordpress-blog-comments-into-wordpress/
 layout: post
-title: Migrating non-Wordpress blog comments into Wordpress
+title: "Migrating non-Wordpress blog comments into Wordpress"
 date: 2012-05-03 02:24:51
 comments: true
 categories: [Quick Tips]

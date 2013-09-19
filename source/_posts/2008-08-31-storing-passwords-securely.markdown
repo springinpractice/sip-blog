@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/08/31/storing-passwords-securely/
 layout: post
-title: Storing passwords securely
+title: "Storing passwords securely"
 date: 2008-08-31 10:28:35
 comments: true
 categories: [Chapter 06 - Authentication, Tutorials]

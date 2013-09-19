@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2010/07/14/spring-roo-in-under-nine-minutes/
 layout: post
-title: Spring Roo in under nine minutes
+title: "Spring Roo in under nine minutes"
 date: 2010-07-14 01:48:36
 comments: true
 categories: [Demos, Tutorials]

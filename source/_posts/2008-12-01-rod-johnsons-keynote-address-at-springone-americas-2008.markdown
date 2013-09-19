@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/12/01/rod-johnsons-keynote-address-at-springone-americas-2008/
 layout: post
-title: Rod Johnson's keynote address at SpringOne Americas 2008
+title: "Rod Johnson's keynote address at SpringOne Americas 2008"
 date: 2008-12-01 22:44:13
 comments: true
 categories: [News]

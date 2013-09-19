@@ -1,0 +1,1563 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="This post is for myself more than anything else, just because I keep forgetting the steps involved. I&rsquo;m using SpringSource Tool Suite 2.9.1. &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/blog/page/2">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/05/06/mavenizing-an-empty-github-project-in-eclipse/">Mavenizing an Empty GitHub Project in Eclipse</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-06T12:30:15-07:00" pubdate data-updated="true">May 6<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This post is for myself more than anything else, just because I keep forgetting the steps involved.</p>
+
+<p>I&rsquo;m using SpringSource Tool Suite 2.9.1.RELEASE, which is based on Eclipse 3.7.2 (Indigo). I have the egit and m2e Eclipse plugins installed.</p>
+
+<h3>The scenario</h3>
+
+
+<p>You have a brand new, pretty-much-empty GitHub project (other than the README, say&mdash;but no Maven stuff yet), and you want to import it into Eclipse as a Maven project.</p>
+
+<h3>The steps</h3>
+
+
+
+
+<ol>
+
+<li>Add the remote GitHub repo to your list of Git repos in Eclipse.</li>
+
+<li>In Eclipse, go to File &rarr; Import &rarr; Git &rarr; Projects from Git. (I&#8217;m on a Mac; the menu may be a little different for other platforms.)</li>
+
+<li>On the &#8220;Select Repository Source&#8221;, choose &#8220;URI&#8221;.</li>
+
+<li>On the &#8220;Source Git Repository&#8221; pane, enter the URI info. It might be something like <code>ssh://git@github.com/williewheeler/sip11.git</code>, for example.</li>
+
+<li>On the &#8220;Branch Selection&#8221; pane, choose the master branch.</li>
+
+<li>On the &#8220;Local Destination&#8221; pane, decide where you want the local copy to live.</li>
+
+<li>Where it asks you to select an import wizard, choose &#8220;Use the New Project wizard&#8221; and click &#8220;Finish&#8221;.</li>
+
+<li>Now you have to choose a New Project wizard. Choose Maven &rarr; Maven Project.</li>
+
+<li>From here just create the project like you would any other new Maven project. Once you&#8217;re done, it will show up in your list of projects in the Package Explorer view, and sharing should be activated.</li>
+
+</ol>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/05/05/combined-my-two-blogs/">Combined My Two Blogs</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-05T14:39:30-07:00" pubdate data-updated="true">May 5<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>To better focus my Java/Spring blogging, I&rsquo;ve merged my former Wheeler Software blog into this one. There are a few articles that didn&rsquo;t make the cut, but the majority of them did.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/05/02/migrating-non-wordpress-blog-comments-into-wordpress/">Migrating non-Wordpress Blog Comments Into Wordpress</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-02T19:24:51-07:00" pubdate data-updated="true">May 2<span>nd</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This isn&rsquo;t a Spring post, but I&rsquo;m doing something that I think others might find useful, so I&rsquo;m going to share it.</p>
+
+<p>I&rsquo;m in the process of migrating content over from my old Wheeler Software blog to this one, which is a Wordpress blog. Besides the posts themselves, I want to move the comments over.</p>
+
+<p>The slight wrinkle in the plan is that the software and database for the old blog are custom. So getting the comments over involves some SQL scripting. Both databases are MySQL databases, so that helps a bit.</p>
+
+<p>Here&rsquo;s what I&rsquo;m doing.</p>
+
+<h3>The old, custom comment table</h3>
+
+
+
+
+<pre>CREATE TABLE `services_comment` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `url` varchar(255) NOT NULL DEFAULT '',
+  `name` varchar(50) NOT NULL,
+  `email` varchar(50) NOT NULL,
+  `web` varchar(100) DEFAULT NULL,
+  `text` text NOT NULL,
+  `html_text` text,
+  `ip_addr` varchar(15) NOT NULL,
+  `date_created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `date_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `services_comment_idx0` (`url`,`date_created`)
+) ENGINE=InnoDB AUTO_INCREMENT=1686 DEFAULT CHARSET=latin1;</pre>
+
+
+
+
+<h3>The Wordpress post table</h3>
+
+
+<p>This isn&rsquo;t the entire table, but just the columns that we care about for this post:</p>
+
+<pre>CREATE TABLE `wp_posts` (
+  `ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `post_title` text NOT NULL,
+  `comment_count` bigint(20) NOT NULL DEFAULT '0',
+
+  ... other columns that we don't care about for our current purpose ...
+
+) ENGINE=MyISAM AUTO_INCREMENT=1126 DEFAULT CHARSET=utf8;</pre>
+
+
+
+
+<h3>The Wordpress comment table</h3>
+
+
+
+
+<pre>CREATE TABLE `wp_comments` (
+  `comment_ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `comment_post_ID` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `comment_author` tinytext NOT NULL,
+  `comment_author_email` varchar(100) NOT NULL DEFAULT '',
+  `comment_author_url` varchar(200) NOT NULL DEFAULT '',
+  `comment_author_IP` varchar(100) NOT NULL DEFAULT '',
+  `comment_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `comment_date_gmt` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `comment_content` text NOT NULL,
+  `comment_karma` int(11) NOT NULL DEFAULT '0',
+  `comment_approved` varchar(20) NOT NULL DEFAULT '1',
+  `comment_agent` varchar(255) NOT NULL DEFAULT '',
+  `comment_type` varchar(20) NOT NULL DEFAULT '',
+  `comment_parent` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `user_id` bigint(20) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`comment_ID`),
+  KEY `comment_approved` (`comment_approved`),
+  KEY `comment_post_ID` (`comment_post_ID`),
+  KEY `comment_approved_date_gmt` (`comment_approved`,`comment_date_gmt`),
+  KEY `comment_date_gmt` (`comment_date_gmt`),
+  KEY `comment_parent` (`comment_parent`)
+) ENGINE=MyISAM AUTO_INCREMENT=289 DEFAULT CHARSET=utf8;</pre>
+
+
+
+
+<h3>The copy script</h3>
+
+
+
+
+<div class="alert warning"><strong>WARNING and DISCLAIMER:</strong> Before you try anything like this, back up your database! And it&#8217;s a good idea to experiment with your script on a separate copy of the database before trying it out on the real thing.
+
+You&#8217;ve been warned. I&#8217;m not responsible if you hose your database, and I&#8217;m not going to field support requests!</div>
+
+
+
+
+<h4>Step 1. Copy the old table into the new database.</h4>
+
+
+<p>I created a copy of my old comment table inside the new Wordpress database to facilitate the copying.</p>
+
+<h4>Step 2. Look up the target Wordpress post&#8217;s ID</h4>
+
+
+<p>You&rsquo;ll need to have something to attach your comments to. You can use whatever means you like here; I just looked it up by the post title:</p>
+
+<pre>select
+  id
+from
+  wp_posts
+where
+  post_title = 'Getting started with Hibernate Validator' and
+  post_parent = 0
+into
+  @post_id;</pre>
+
+
+<p>Note that you want the post with <code>post_parent = 0</code>. Other posts are the various revisions you create over time, and Wordpress has to have a way to attach all the comments to the same single post.</p>
+
+<h4>Step 3. Copy the comments</h4>
+
+
+<p>This is obviously dependent on the specifics of your source table. In my case the source table is pretty close to the destination table, so that makes things a lot easier.</p>
+
+<p>I didn&rsquo;t really care about getting the date vs. GMT date right, so I just used the same date for both. If you care, I&rsquo;m sure there&rsquo;s a function that can handle that.</p>
+
+<pre>insert into
+  wp_comments (comment_post_ID, comment_author, comment_author_email, comment_author_url, comment_author_IP, comment_date, comment_date_gmt, comment_content, comment_approved)
+select
+  @post_id, name, email, web, ip_addr, date_created, date_created, html_text, 1
+from
+  services_comment
+where
+  url = '/hibernate-validator.html'
+order by
+  date_created;</pre>
+
+
+
+
+<h4>Step 4. Update the post&#8217;s comment count</h4>
+
+
+<p>Presumably for performance reasons, Wordpress stores the comment count with the post itself. So we have to update that column or else it will say &ldquo;0 comments&rdquo; even though there&rsquo;s a bunch of comments below:</p>
+
+<pre>select count(*) from wp_comments where comment_post_ID = @post_id and comment_approved = 1 into @comment_count;
+update wp_posts set comment_count = @comment_count where ID = @post_id;</pre>
+
+
+<p>It probably wouldn&rsquo;t be a bad idea to wrap these up in a stored procedure if you have a lot of posts. But no biggie either way.</p>
+
+<h4>Step 5. Verify</h4>
+
+
+<p>Check to see whether your comments showed up. Mine did:</p>
+
+<ul class="square">
+<li><a href="http://springinpractice.com/2009/02/02/getting-started-with-hibernate-validator/" target="_blank">Hibernate Validator post</a></li>
+<li><a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/" target="_blank">Spring Web Flow post</a></li>
+</ul>
+
+
+<p>For some reason the Gravatars don&rsquo;t seem to be showing up as much when there are a lot of comments all on a single page. I don&rsquo;t know if it&rsquo;s rate limited or what.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">Configuring Jetty to Use Gmail as an SMTP Provider</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-29T09:13:34-07:00" pubdate data-updated="true">Apr 29<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In chapter 8 of <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, recipes 8.2 and 8.3 require a JNDI-exposed JavaMail session backed by an SMTP provider. Here I&rsquo;ll show how to set that up in Jetty 6. For SMTP we&rsquo;ll use Gmail, which provides a free SMTP service to anybody with a Gmail account.</p>
+
+<p>Here&rsquo;s the <code>jetty-env.xml</code> configuration supporting the goals above.</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd"&gt;
+&lt;Configure class="org.mortbay.jetty.webapp.WebAppContext"&gt;
+    &lt;New id="repository" class="org.mortbay.jetty.plus.naming.Resource"&gt;
+        &lt;Arg&gt;mail/Session&lt;/Arg&gt;
+        &lt;Arg&gt;
+            &lt;New class="org.mortbay.naming.factories.MailSessionReference"&gt;
+                &lt;Set name="user"&gt;[your_gmail_username]&lt;/Set&gt;
+                &lt;Set name="password"&gt;[your_gmail_password]&lt;/Set&gt;
+                &lt;Set name="properties"&gt;
+                    &lt;New class="java.util.Properties"&gt;
+                        &lt;Put name="mail.user"&gt;[your_gmail_username]&lt;/Put&gt;
+                        &lt;Put name="mail.password"&gt;[your_gmail_password]&lt;/Put&gt;
+                        &lt;Put name="mail.transport.protocol"&gt;smtp&lt;/Put&gt;
+                        &lt;Put name="mail.smtp.host"&gt;smtp.gmail.com&lt;/Put&gt;
+                        &lt;Put name="mail.smtp.port"&gt;587&lt;/Put&gt;
+                        &lt;Put name="mail.smtp.auth"&gt;true&lt;/Put&gt;
+                        &lt;Put name="mail.smtp.starttls.enable"&gt;true&lt;/Put&gt;
+                        &lt;Put name="mail.debug"&gt;true&lt;/Put&gt;
+                    &lt;/New&gt;
+                &lt;/Set&gt;
+            &lt;/New&gt;
+        &lt;/Arg&gt;
+    &lt;/New&gt;
+
+    ... other configuration (e.g. JDBC DataSource) ...
+&lt;/Configure&gt;</pre>
+
+
+<p>This configuration allows us to grab the mail session using the <code>mail/Session</code> name from the Spring configuration file:</p>
+
+<pre>&lt;jee:jndi-lookup id="mailSession" jndi-name="mail/Session" resource-ref="true" /&gt;</pre>
+
+
+
+
+<h3>Alternative configurations</h3>
+
+
+<p>For information about doing the same thing with Tomcat, or information on configuring your JavaMail session directly into the app (along with the SMTP provider details), see my post <a href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/">Send e-mail using Spring and JavaMail</a>.</p>
+
+<h3>Problems?</h3>
+
+
+<p>If you run into an error to the effect that there was a PKIX path building problem, then you need to import the remote certificate into your local truststore. See <a href="http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/">Fixing PKIX path building issues when using JavaMail and SMTP</a> for details on this issue and how to fix it.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/">Fixing PKIX Path Building Issues When Using JavaMail and SMTP</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-29T06:08:01-07:00" pubdate data-updated="true">Apr 29<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&rsquo;m writing this post in support of <a href="http://springinpractice.com/category/book/chapter-8/">chapter 8</a> in my book <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, which deals with <a href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/">Spring/JavaMail integration</a>, since it&rsquo;s not always straightforward to <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">configure an app to use SMTP</a>.</p>
+
+<h3>The problem</h3>
+
+
+<p>Suppose that you&rsquo;ve configured your JavaMail app to send e-mail via an SMTP server, but you get the following error:</p>
+
+<pre>HTTP ERROR 500
+
+Problem accessing /sip/contact.html. Reason:
+
+    Mail server connection failed; nested exception is javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target. Failed messages: javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+
+Caused by:
+
+org.springframework.mail.MailSendException: Mail server connection failed; nested exception is javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target. Failed messages: javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target; message exception details (1) are:
+Failed message 1:
+javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+    at com.sun.mail.smtp.SMTPTransport.sendCommand(SMTPTransport.java:1420)
+    at com.sun.mail.smtp.SMTPTransport.sendCommand(SMTPTransport.java:1408)
+    at com.sun.mail.smtp.SMTPTransport.ehlo(SMTPTransport.java:847)
+    at com.sun.mail.smtp.SMTPTransport.protocolConnect(SMTPTransport.java:384)
+    at javax.mail.Service.connect(Service.java:297)
+    at org.springframework.mail.javamail.JavaMailSenderImpl.doSend(JavaMailSenderImpl.java:389)
+    at org.springframework.mail.javamail.JavaMailSenderImpl.send(JavaMailSenderImpl.java:340)
+    at org.springframework.mail.javamail.JavaMailSenderImpl.send(JavaMailSenderImpl.java:336)
+
+        ... snip ...
+</pre>
+
+
+<p>What&rsquo;s going on, and how do you fix it?</p>
+
+<h3>What&#8217;s going on</h3>
+
+
+<p>Your Java runtime doesn&rsquo;t trust the certificate.</p>
+
+<p>Normally Java verifies certificates through the standard <a href="http://en.wikipedia.org/wiki/Chain_of_trust">chain of trust</a> mechanism. But if that chain terminates with a certificate that Java doesn&rsquo;t trust, then Java will complain in the way described above.</p>
+
+<h3>How you fix it</h3>
+
+
+
+
+<h4>Step 1. Decide whether you want to &#8220;fix&#8221; it at all</h4>
+
+
+<p>Before you tell Java to trust the cert, make sure that that&rsquo;s actually the right thing to do. I don&rsquo;t have any guidance to offer on that particular point, but if you&rsquo;re trying to connect to a well-known service (say Google) and your Java runtime gives you the PKIX issue, that&rsquo;s a red flag.</p>
+
+<div class="alert warning">If for whatever reason you think Java ought to trust the certificate, then stop&mdash;you&#8217;re done. Don&#8217;t import the certificate into your truststore until you figure out why it (or one of the certs in the chain) isn&#8217;t already there.</div>
+
+
+
+
+<h4>Step 2. Download the certificate from the remote SMTP server</h4>
+
+
+<p>You can use <code>openssl</code> to get the cert, at least on Unix/Linux and MacOS. I think Cygwin provides <code>openssl</code> on Windows too.</p>
+
+<p>Here&rsquo;s an example for mail.kattare.com, which is the SMTP server I happen to be using. Kattare uses STARTTLS so I&rsquo;m using the <code>-starttls smtp</code> flag:</p>
+
+<pre>openssl s_client -connect mail.kattare.com:2525 -starttls smtp > kattare-smtp.cer</pre>
+
+
+<p>The call will look like it&rsquo;s hung for a little while, but it hasn&rsquo;t. You can either wait it out or else just hit Ctrl-C, as the part of the response that we&rsquo;re actually interested in returns immediately.</p>
+
+<p>Now open the file with your favorite text editor and strip out everything other than the certificate itself. Here&rsquo;s what the result looks like for the mail.kattare.com cert:</p>
+
+<pre>-----BEGIN CERTIFICATE-----
+MIIDfjCCAuegAwIBAgIDFJoPMA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT
+MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0
+aWZpY2F0ZSBBdXRob3JpdHkwHhcNMTAwOTE5MDEzMDUxWhcNMTIxMTIwMTQ0MjI4
+WjCB4TEpMCcGA1UEBRMgRFZxc0c5bkIxUGNleTNZVUFzY3otOFNWV0ZnL2Y1aU8x
+CzAJBgNVBAYTAlVTMRYwFAYDVQQKDA0qLmthdHRhcmUuY29tMRMwEQYDVQQLEwpH
+VDE3NDM3OTM5MTEwLwYDVQQLEyhTZWUgd3d3LnJhcGlkc3NsLmNvbS9yZXNvdXJj
+ZXMvY3BzIChjKTEwMS8wLQYDVQQLEyZEb21haW4gQ29udHJvbCBWYWxpZGF0ZWQg
+LSBSYXBpZFNTTChSKTEWMBQGA1UEAwwNKi5rYXR0YXJlLmNvbTCBnzANBgkqhkiG
+9w0BAQEFAAOBjQAwgYkCgYEA3E9EOUrXoPLgz/N1MFB4xtld2NyDJK5jzPk313VQ
+dldvYY8SOd6XqnO/WAmm/2FaFRjhEZ7HcNPAauVeMXW2YQVGSkimeWd8ZDbKU8o6
+vJuFJmnRpfxIIZxS1gzJanFrv7v+TtlIQRDP/YI5OnXkZ0sSLVBb2MK7wHLDbtej
+dhECAwEAAaOB1TCB0jAfBgNVHSMEGDAWgBRI5mj5K9KylddH2CMgEE8zmJCf1DAO
+BgNVHQ8BAf8EBAMCBPAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMCUG
+A1UdEQQeMByCDSoua2F0dGFyZS5jb22CC2thdHRhcmUuY29tMDoGA1UdHwQzMDEw
+L6AtoCuGKWh0dHA6Ly9jcmwuZ2VvdHJ1c3QuY29tL2NybHMvc2VjdXJlY2EuY3Js
+MB0GA1UdDgQWBBRCAb04OmdhLLLRIAtJGNgYnJKQcjANBgkqhkiG9w0BAQUFAAOB
+gQCZQVc8nNHGo5Sr1hh9ZMBK2bcivXqLeJkOVt2pQ0OoMWDsq7/ei4njcN5QJXf0
+mK3Qb4bUkdJUemS3QITRXVqNnBZaP0XUAKBxK5htwHJLuQ83q71Td6NkqSj4yS35
+jM3JXG7LRkr/G6M24RCxBKONckQy+3j1wdy/jZwfisilPg==
+-----END CERTIFICATE-----</pre>
+
+
+
+
+<h4>Step 3. Import the certificate into your local truststore</h4>
+
+
+<p>You&rsquo;ll want to import the cert into the truststore in your Java home directory. My Java home is at</p>
+
+<pre>/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home</pre>
+
+
+<p>but yours is probably somewhere else. Anyway, once you find it, the truststore is at <code>/lib/security/jssecacerts</code>, at least if you&rsquo;re using JSSE.</p>
+
+<pre>sudo keytool -import -alias [alias] -file [cert_file] -keystore [java_home]/lib/security/jssecacerts</pre>
+
+
+<p>For example, for me it&rsquo;s:</p>
+
+<pre>sudo keytool -import -alias mail.kattare.com -file kattare-smtp.cer -keystore /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/security/jssecacerts</pre>
+
+
+<p>Enter your <code>sudo</code> password and then your keystore password, and then answer yes when it asks you whether to trust the certificate. This will import the cert into the keystore (which doubles as a truststore).</p>
+
+<h4>Step 4. Restart your app and try again</h4>
+
+
+<p>Hopefully this time it works, or at least gets rid of the PKIX error.</p>
+
+<h3>References</h3>
+
+
+
+
+<ul>
+<li><a href="http://serverfault.com/questions/131627/how-to-inspect-remote-smtp-servers-tls-certificate">How to inspect remote SMTP server&#8217;s TLS certificate? [serverfault]</a>: Explains how to get the remote certificate.</li>
+<li><a href="http://stackoverflow.com/questions/373295/digital-certificate-how-to-import-cer-file-in-to-truststore-file-using">Digital Certificate: How to import .cer file in to .truststore file using? [stackoverflow]</a>: Explains how to import the certificate into your truststore.</li>
+<li><a href="http://en.wikipedia.org/wiki/STARTTLS">STARTTLS [Wikipedia]</a>: Background material on STARTTLS.</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/04/25/the-spring-constructor-namespace-and-some-deep-thoughts/">The Spring Constructor Namespace</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-25T19:14:51-07:00" pubdate data-updated="true">Apr 25<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>You know the <code>p</code> namespace? It&rsquo;s the one that cleans up your Spring configuration files by providing a shorthand for injecting beans and values:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation=
+       "http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"&gt;
+    
+    &lt;bean id="sessionFactory"
+        class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"
+        p:dataSource-ref="dataSource"
+        p:packagesToScan="com.springinpractice.ch10.model" /&gt;
+
+    ... other beans ...
+
+&lt;/beans&gt;</pre>
+
+
+<p>Did you know that Spring 3.1 introduces an analogous namespace for constructor injection? Yup&mdash;it&rsquo;s the <code>c</code> namespace:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation=
+       "http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd"&gt;
+        
+    &lt;bean id="connectionFactoryLocator"
+        class="org.springframework.social.connect.support.ConnectionFactoryRegistry"&gt;
+        &lt;property name="connectionFactories"&gt;
+            &lt;list&gt;
+                &lt;bean class="org.springframework.social.github.connect.GitHubConnectionFactory"
+                    c:clientId="${gitHub.clientId}"
+                    c:clientSecret="${gitHub.clientSecret}" /&gt;
+            &lt;/list&gt;
+        &lt;/property&gt;
+    &lt;/bean&gt;
+    
+    &lt;bean id="usersConnectionRepository"
+        class="org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository"
+        c:dataSource-ref="dataSource"
+        c:connectionFactoryLocator-ref="connectionFactoryLocator"
+        c:textEncryptor-ref="textEncryptor" /&gt;
+    
+    ... other beans ...
+
+&lt;/beans&gt;</pre>
+
+
+<p>It works pretty much the same way, but for constructors. You can inject values, or else you can inject references using the <code>-ref</code> suffix.</p>
+
+<p>With <code>p</code>, the XML element name comes from the bean property name, but with constructors that&rsquo;s not available. Instead, for <code>c</code> we use the name of the constructor parameter itself. So for <code>JdbcUsersConnectionRepository</code> we&rsquo;re calling a constructor that looks like this:</p>
+
+<p><code>public JdbcUsersConnectionRepository(DataSource dataSource, ConnectionFactoryLocator connectionFactoryLocator, TextEncryptor textEncryptor)</code></p>
+
+<p>where it&rsquo;s the parameter names themselves (rather than the parameter types) driving the XML element names.</p>
+
+<h3>But keep this in mind&#8230;</h3>
+
+
+<p>The <code>c</code> namespace is great, but there&rsquo;s something you may not have considered. Because the XML element names come from the constructor parameter names, we have to compile the app in debug mode if we want to use this feature (otherwise the local variable names aren&rsquo;t in the class files), and we want to pay attention to the parameter names we choose. So, for instance, <code>ds</code>, <code>cfl</code> and <code>te</code> wouldn&rsquo;t be very good constructor parameter names.</p>
+
+<p>Note that Spring (especially Spring Web MVC) has been using parameter names in this fashion for a long time, so that&rsquo;s nothing new. The <code>@PathVariable</code> and <code>@RequestParam</code> annotations, for example, default to using parameter names when explicit names aren&rsquo;t specified. But in the case of the <code>c</code> namespace, a bean that supports <code>c</code>-based injection ought to publish the constructor parameter names, and they become in effect part of the API.</p>
+
+<h3>Update</h3>
+
+
+<p>I&rsquo;ve had a bit of a change of heart regarding the constructor namespace. Here&rsquo;s why I think <a href="http://springinpractice.com/2012/05/07/springs-constructor-namespace-is-a-bad-idea/">the Spring constructor namespace is a bad idea</a>.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">Dynamic DAOs and Queries Using Spring Data JPA</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-24T16:18:27-07:00" pubdate data-updated="true">Apr 24<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>For a long time, creating a DAO layer in Spring has been a largely manual process:</p>
+
+<ol>
+    <li>Create a base generic DAO interface.</li>
+    <li>Create a generic abstract DAO implementation with general-purpose CRUD methods and common queries (e.g., <code>findAll</code>()).</li>
+    <li>For each DAO we want, extend the base DAO interface with an entity-specific interface (e.g., <code>CustomerDao</code>).</li>
+    <li>For each DAO we want, extend the abstract DAO class with an entity-specific concrete class (e.g., <code>HibernateCustomerDao</code>).</li>
+</ol>
+
+
+<p>Items 1 and 2 amount to creating a homegrown DAO framework, and items 3 and 4 amount to using it to implement DAOs.</p>
+
+<p>Now there&rsquo;s a better way to do things. The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don&rsquo;t have to implement it ourselves.</p>
+
+<p>Moreover, Spring Data is able to generate concrete DAO implementations and custom queries automatically. So even step 4 above goes away in many cases. With Spring Data JPA you can create DAO tiers by defining interfaces.</p>
+
+<p>In this post we&rsquo;ll learn how to use Spring Data JPA to clean up our DAO tier. Let&rsquo;s get the POM and configuration out of the way first. Then we&rsquo;ll get into the actual repository code. We won&rsquo;t get into the details of mapping actual entities (via JPA annotations or otherwise) as that&rsquo;s outside the scope of what we want to cover here.</p>
+
+<h3>POM</h3>
+
+
+<p>First we need to choose which JPA provider and which package versions we want to work with. For the JPA provider, we&rsquo;ll use Hibernate. For the package versions, we&rsquo;ll use Spring 3.1.1, Spring Data JPA 1.0.3 and Hibernate 4.1.1 since those are current at the time I&rsquo;m writing this.</p>
+
+<p>Here are the relevant Maven dependencies for <code>pom.xml</code>:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project ...&gt;
+
+    ...
+
+    &lt;!-- Use whatever versions make sense for your project. --&gt;
+    &lt;properties&gt;
+        &lt;hibernate.version&gt;4.1.1.Final&lt;/hibernate.version&gt;
+        &lt;spring.version&gt;3.1.1.RELEASE&lt;/spring.version&gt;
+        &lt;spring.data.version&gt;1.0.3.RELEASE&lt;/spring.data.version&gt;
+    &lt;/properties&gt;
+
+    &lt;dependencies&gt;
+
+        ... standard Spring dependencies (beans, context, core, etc.) ...
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.data&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-data-jpa&lt;/artifactId&gt;
+            &lt;version&gt;${spring.data.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+            &lt;artifactId&gt;hibernate-core&lt;/artifactId&gt;
+            &lt;version&gt;${hibernate.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+            &lt;artifactId&gt;hibernate-entitymanager&lt;/artifactId&gt;
+            &lt;version&gt;${hibernate.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+            &lt;artifactId&gt;hibernate-ehcache&lt;/artifactId&gt;
+            &lt;version&gt;${hibernate.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+
+    ...
+
+&lt;/project&gt;
+</pre>
+
+
+
+
+<h3>JPA configuration</h3>
+
+
+<p>The JPA configuration goes here: <code>/src/main/resources/META-INF/persistence.xml</code>. Here&rsquo;s the configuration itself. (Adjust as necessary if you&rsquo;re not using MySQL.)</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;persistence xmlns="http://java.sun.com/xml/ns/persistence"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
+    version="1.0"&gt;
+   
+    &lt;persistence-unit name="RunbookManager" transaction-type="RESOURCE_LOCAL"&gt;
+        &lt;description&gt;This unit manages runbooks.&lt;/description&gt;
+        &lt;provider&gt;org.hibernate.ejb.HibernatePersistence&lt;/provider&gt;
+        &lt;jta-data-source&gt;jdbc/RunbookDS&lt;/jta-data-source&gt;
+        &lt;properties&gt;
+            &lt;property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5Dialect" /&gt;
+            &lt;property name="hibernate.show_sql" value="false" /&gt;
+        &lt;/properties&gt;
+    &lt;/persistence-unit&gt;
+&lt;/persistence&gt;</pre>
+
+
+<p>The configuration above is where we declare Hibernate as our JPA provider.</p>
+
+<p>Now let&rsquo;s look at the Spring configuration.</p>
+
+<h3>Spring configuration</h3>
+
+
+
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+        http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.0.xsd
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.1.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd"&gt;
+        
+    &lt;jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/RunbookDS" resource-ref="true" /&gt;
+    
+    &lt;bean id="entityManagerFactory"
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+        p:persistenceUnitName="RunbookManager"
+        p:dataSource-ref="dataSource" /&gt;
+
+    &lt;bean id="transactionManager"
+        class="org.springframework.orm.jpa.JpaTransactionManager"
+        p:entityManagerFactory-ref="entityManagerFactory" /&gt;
+
+    &lt;jpa:repositories base-package="com.example.runbooks.repo" /&gt;
+    
+    &lt;tx:annotation-driven /&gt;
+
+    ... other beans ...
+
+&lt;/beans&gt;
+</pre>
+
+
+<p>Note the use of the <code>jpa</code> namespace to declare a package containing the repositories. This package contains the various interfaces we&rsquo;re about to define. The <code>&lt;jpa:repositories&gt;</code> configuration tells Spring to scan for interfaces and create the repository implementations, magically.</p>
+
+<h3>Repository interfaces</h3>
+
+
+<p>OK, now we&rsquo;ve made it to the good stuff. We&rsquo;ll look at a few examples here.</p>
+
+<p>To create a new DAO, we simply extend the <code>JpaRepository</code> interface, which is part of Spring Data JPA. It takes two type parameters: the relevant entity type, and its ID type. The interface comes with a bunch of standard CRUD operations and queries; see the <a href="http://static.springsource.org/spring-data/data-jpa/docs/current/api/org/springframework/data/jpa/repository/JpaRepository.html">JpaRepository API documentation</a> for details on those.</p>
+
+<h4>Example 1: A barebones repo</h4>
+
+
+<p>First, the most barebones example would be where we&rsquo;re perfectly happy with the standard CRUD and query operations that the Spring Data <code>JpaRepository</code> already provides. In that case, all we have to do is extend the interface and we&rsquo;re done.</p>
+
+<pre>package com.example.runbooks.repo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.runbooks.model.RunbookGroup;
+
+public interface RunbookGroupRepo
+    extends JpaRepository&lt;RunbookGroup, Long&gt; { }</pre>
+
+
+<p>With that simple interface definition, Spring Data JPA will be able to create an implementation dynamically that gives us methods like <code>count()</code>, <code>findAll()</code>, <code>findOne()</code>, <code>save()</code>, <code>delete()</code>, <code>deleteAll()</code>, <code>deleteInBatch()</code> and more for free.</p>
+
+<h4>Example 2. A simple custom query</h4>
+
+
+<p>Say we have a <code>ChapterType</code> entity with a <code>key</code> property, and we want a query that can find chapter types by key. No problem. We can use conventions around method names to tell Spring Data JPA which query we&rsquo;d like to see:</p>
+
+<pre>package com.example.runbooks.repo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.runbooks.model.ChapterType;
+
+public interface ChapterTypeRepo
+    extends JpaRepository&lt;ChapterType, Long&gt; {
+
+    ChapterType findByKey(String key);
+}</pre>
+
+
+<p>Spring Data maps the method to a query that effectively accomplishes</p>
+
+<blockquote>
+<code>from ChapterType where key = :key</code>
+</blockquote>
+
+
+
+
+<h4>Example 3. A more complex custom query</h4>
+
+
+<p>The scheme from example 2 above extends to cases where the properties in question are complex, in a couple of different ways: first, they might involve multiple conditions in the &ldquo;where&rdquo; clause; second, they might involve joins. Suppose, for instance, that we want to find a chapter having a certain runbook ID and a certain chapter number. Suppose also that the JPQL would be</p>
+
+<blockquote>
+<code>from Chapter c where c.runbook.id = :runbookId and<br />
+c.chapterType.number = :chapterNumber</code>
+</blockquote>
+
+
+<p>Here&rsquo;s how to build a repo supporting that query:</p>
+
+<pre>package com.example.runbooks.repo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.runbooks.model.Chapter;
+
+public interface ChapterRepo
+    extends JpaRepository&lt;Chapter, Long&gt; {
+
+    Chapter findByRunbookIdAndChapterTypeNumber(
+        Long runbookId, Integer chapterNumber);
+}</pre>
+
+
+<p>The convention implicit in the method name is fairly obvious, especially in light of the JPQL query. The convention can admittedly lead to some awkward method names, as it does in this case. (A better name might be <code>findByRunbookIdAndChapterNumber()</code>.) But the convenience is tough to beat.</p>
+
+<div class="endnote">Interested in learning more about Spring Data JPA? See my post <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">Pagination and sorting with Spring Data JPA</a>.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/04/08/sending-cookies-with-resttemplate/">Sending Cookies With RestTemplate</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-08T14:06:18-07:00" pubdate data-updated="true">Apr 8<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Sometimes it is necessary to send cookies along with requests to a RESTful API. One such example is the JIRA 4.3 API, which requires sending the <code>JSESSIONID</code> to JIRA for session management and authentication purposes. REST purists point out that such usages are not properly RESTful (see <a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/" target="_blank"><a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/">http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/</a></a> for a good discussion), and indeed the <code>RestTemplate</code> doesn&rsquo;t directly support sending cookies.</p>
+
+<p>But in the real world, we need to make things work, and so in this quick post I&rsquo;ll show how to send cookies with <code>RestTemplate</code>.</p>
+
+<p>The first thing to bear in mind is that we implement cookies as HTTP headers: the service uses a <code>Set-Cookie</code> response header to tell the client to set a cookie, and the client uses the <code>Cookie</code> request header for subsequent requests. And <code>RestTemplate</code> certainly supports setting request headers.</p>
+
+<p>Here&rsquo;s how I&rsquo;m pulling down an access-controlled RSS feed from JIRA 4.3:</p>
+
+<pre>HttpHeaders requestHeaders = new HttpHeaders();
+requestHeaders.add("Cookie", "JSESSIONID=" + session.getValue());
+HttpEntity requestEntity = new HttpEntity(null, requestHeaders);
+ResponseEntity rssResponse = restTemplate.exchange(
+    "https://jira.example.com/sr/jira.issueviews:searchrequest-xml/18107/SearchRequest-18107.xml?tempMax=1000",
+    HttpMethod.GET,
+    requestEntity,
+    Rss.class);
+Rss rss = rssResponse.getBody();</pre>
+
+
+<p>The trick here is to use the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> method, as this gives us more control over the request, including request headers. We just encode the cookie as a <code>JSESSIONID=[session ID]</code> request header and send it along.</p>
+
+<p>Have fun!</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/03/05/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/">Neo4j 1.6.1 Cypher Query Examples When Using Spring Data Neo4j 2.0</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-05T17:36:56-08:00" pubdate data-updated="true">Mar 5<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This post shows how to perform various sample Cypher queries when using Neo4j 1.6.1 and Spring Data Neo4j (SDN) 2.0.</p>
+
+<p>SDN 2.0 assumes Neo4j 1.6, and it imposes specific structures on databases that it creates. For example, SDN uses the <code><strong>type</strong></code> property on nodes to store the associated Java class, and it names its indexes using the Java class&#8217; simple name.</p>
+
+<p>In the examples below, I&rsquo;m using the Neo4j shell, though you can of course run Cypher queries outside of the shell (e.g., from within the app itself). See <a href="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/" title="Working with the Neo4j shell">my earlier blog post</a> if you&rsquo;re interested in learning how to use the shell.</p>
+
+<p>I&rsquo;ll probably add more examples to this post from time to time.</p>
+
+<h4>Return a single node with a given ID</h4>
+
+
+
+
+<pre>neo4j-sh (Skybase,1)$ start n=node(1) return n
++------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                |
++------------------------------------------------------------------------------------------------------------------+
+| Node[1]{__type__-&gt;"org.skydingo.skybase.model.Application",name-&gt;"Skybase",shortDescription-&gt;"Cloud-based CMDB"} |
++------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h4>Return multiple nodes, looked up by ID</h4>
+
+
+
+
+<pre>neo4j-sh (Skybase,1)$ start n=node(1,4,5) return n
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                                                                                  |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[1]{__type__-&gt;"org.skydingo.skybase.model.Application",name-&gt;"Skybase",shortDescription-&gt;"Cloud-based CMDB"}                                                                   |
+| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
+| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h4>Find all nodes of a given type</h4>
+
+
+
+
+<pre>neo4j-sh[readonly] (Maven,3)$ start n=node:__types__(className="org.skydingo.skybase.model.Module") return n
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                                                                                  |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
+| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
+| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
+| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h4>Find all instances of a class having a certain property</h4>
+
+
+<p>Say we have a <code>org.skydingo.skybase.model.Module</code> class with a <code>groupId</code> property and a <code>moduleId</code> property, both annotated with SDN&rsquo;s <code>@Indexed</code> annotation. Then SDN will create an index for this class called <code>Module</code>. Here&rsquo;s how to find modules in a given group:</p>
+
+<pre>neo4j-sh (Skybase,1)$ start n=node:Module("groupId:org.skydingo.skybase") return n
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                                                                                  |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
+| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
+| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
+| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+<p>Here&rsquo;s an alternative syntax for doing exactly the same thing:</p>
+
+<pre>neo4j-sh (Skybase,1)$ start n=node:Module(groupId = 'org.skydingo.skybase') return n
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                                                                                  |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
+| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
+| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
+| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h4>Find all nodes having a certain set of property values</h4>
+
+
+
+
+<pre>neo4j-sh[readonly] (Maven,3)$ start n=node:Module("groupId:org.skydingo.skybase, moduleId:skybase-maven-plugin") return n  
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                                                                       |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"} |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h4>Find all nodes in a specified relationship to a given node</h4>
+
+
+
+
+<pre>neo4j-sh (Skybase,1)$ start app=node(1) match app-[:APPLICATION_MODULE]-&gt;module return module
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| module                                                                                                                                                                             |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
+| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
+| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
+| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h3>Reader-contributed</h3>
+
+
+<p>I&rsquo;ll just add queries here if people send them. It&rsquo;s useful to have examples of queries around.</p>
+
+<h4>Return a user&#8217;s events (of specific types), ordered by date</h4>
+
+
+<p><a href="https://twitter.com/#!/bytor99999">Mark Spritzler</a> sent me the following query, which he noted that <a href="https://twitter.com/#!/mesirii">Michael Hunger</a> mostly wrote:</p>
+
+<pre>START user=node({0})
+MATCH user-[r]-event
+WHERE type(r) = "ATTENDING"
+OR type(r) = "INVITED"
+OR type(r) = "HOSTING"
+RETURN ID(event) as eventId, event.eventDate as eventDate, event.title as eventName, type(r) as eventUserType
+ORDER BY event.eventDate desc</pre>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/03/05/using-spring-social-github-to-access-secured-github-data-code/">Using Spring Social GitHub to Access Secured GitHub Data</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-05T16:40:28-08:00" pubdate data-updated="true">Mar 5<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>At my <a title="Skydingo blog" href="http://skydingo.com/blog/">Skydingo blog</a> (a devops blog written in collaboration with Paul Jenson) I just wrote a <a href="http://skydingo.com/blog/2012/03/skybase-now-supports-authorized-access-to-github-via-spring-social-github/" title="Skybase now supports authorized access to GitHub via Spring Social GitHub">quick post</a> with some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+
+<p>[caption id=&ldquo;attachment_672&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;529&rdquo; caption=&ldquo;Authorize access to get GitHub repo hooks and other sensitive data&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png"><img src="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png" alt="" title="hooks" width="529" height="195" class="size-full wp-image-672" /></a>[/caption]</p>
+
+<h3>Spring application configuration</h3>
+
+
+<p>This goes in the app context. I lifted it more or less as-is from the Spring Social reference documentation, except that I&rsquo;m using GitHub as the provider instead of Facebook, Twitter or LinkedIn.</p>
+
+<pre>&lt;bean id="connectionFactoryLocator" class="org.springframework.social.connect.support.ConnectionFactoryRegistry"&gt;
+    &lt;property name="connectionFactories"&gt;
+        &lt;list&gt;
+            &lt;bean class="org.springframework.social.github.connect.GitHubConnectionFactory"&gt;
+                &lt;constructor-arg value="${gitHub.clientId}" /&gt;
+                &lt;constructor-arg value="${gitHub.clientSecret}" /&gt;
+            &lt;/bean&gt;
+        &lt;/list&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;bean id="textEncryptor" class="org.springframework.security.crypto.encrypt.Encryptors" factory-method="noOpText" /&gt;
+
+&lt;bean id="usersConnectionRepository" class="org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository"&gt;
+    &lt;constructor-arg ref="dataSource" /&gt;
+    &lt;constructor-arg ref="connectionFactoryLocator" /&gt;
+    &lt;constructor-arg ref="textEncryptor" /&gt;
+&lt;/bean&gt;
+
+&lt;!-- This requires authentication via Spring Security --&gt;
+&lt;bean id="connectionRepository"
+    factory-bean="usersConnectionRepository"
+    factory-method="createConnectionRepository" 
+    scope="request"&gt;
+    
+    &lt;constructor-arg value="#{request.userPrincipal.name}" /&gt;
+    &lt;aop:scoped-proxy proxy-target-class="false" /&gt;
+&lt;/bean&gt;</pre>
+
+
+
+
+<h3>Spring web configuration</h3>
+
+
+
+
+<pre>&lt;bean class="org.springframework.social.connect.web.ConnectController" /&gt;</pre>
+
+
+
+
+<h3>Service code for the user account page</h3>
+
+
+<p>Here&rsquo;s how I&rsquo;m looking up the GitHub user profile information:</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import javax.inject.Inject;
+
+import org.skydingo.skybase.model.UserAccount;
+import org.skydingo.skybase.repository.UserAccountRepository;
+import org.skydingo.skybase.service.UserAccountService;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubUserProfile;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserAccountServiceImpl extends AbstractCIService implements UserAccountService {
+    @Inject private ConnectionRepository connectionRepo;
+    
+    public GitHubUserProfile getCurrentUserProfile() {
+        if (gitHub().isAuthorized()) {
+            return gitHub().userOperations().getUserProfile();
+        } else {
+            return null;
+        }
+    }
+    
+    private GitHub gitHub() {
+        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
+        return (conn != null ? conn.getApi() : new GitHubTemplate());
+    }
+
+    ... other methods ...
+}</pre>
+
+
+<p>In the <code>gitHub()</code> method you can see that I return an existing <code>GitHub</code> object if the connection exists; otherwise I just create a new <code>GitHub</code> (in the form of the template, which implements <code>GitHub</code>) so that the app can at least perform non-sensitive read operations.</p>
+
+<h3>Service to get the GitHub service hooks</h3>
+
+
+<p>This one&rsquo;s pretty similar to the above.</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import java.util.List;
+import javax.inject.Inject;
+import org.skydingo.skybase.model.Application;
+import org.skydingo.skybase.service.ApplicationService;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubHook;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ApplicationServiceImpl extends AbstractCIService implements ApplicationService {
+    @Inject private ConnectionRepository connectionRepo;
+    
+    public List findHooks(String user, String repo) {
+        return gitHub().repoOperations().getHooks(user, repo);
+    }
+
+    private GitHub gitHub() {
+        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
+        return (conn != null ? conn.getApi() : new GitHubTemplate());
+    }
+
+    ... various other methods ...
+}</pre>
+
+
+<p>I should probably factor out that common <code>gitHub()</code> method. :&ndash;)</p>
+
+<h3>User account JSP</h3>
+
+
+<p>Here&rsquo;s the JSP code for rendering the connect/disconnect buttons. The CSS classes come from <a title="Twitter Bootstrap" href="http://twitter.github.com/bootstrap/">Bootstrap 2.0</a>, in case you were wondering.</p>
+
+<pre>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+&lt;%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %&gt;
+&lt;%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %&gt;
+&lt;%@ taglib prefix="social" uri="http://www.springframework.org/spring-social/social/tags" %&gt;
+
+&lt;c:url var="connectUrl" value="/connect" /&gt;
+&lt;c:url var="githubUrl" value="/connect/github" /&gt;
+
+&lt;sec:authentication var="user" property="principal" /&gt;
+
+&lt;h1&gt;Account details&lt;/h1&gt;
+
+&lt;section class="first"&gt;
+    &lt;div class="well"&gt;
+        &lt;table class="grid"&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Username:&lt;/td&gt;
+                &lt;td&gt;&lt;c:out value="${user.username}" /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+    &lt;h2&gt;GitHub&lt;/h2&gt;
+
+    &lt;social:connected provider="github"&gt;
+        &lt;p&gt;Your Skybase and GitHub accounts are connected.&lt;/p&gt;
+        &lt;div class="well"&gt;
+            &lt;table class="grid"&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;Blog:&lt;/td&gt;
+                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.blog}" default="None" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;Location:&lt;/td&gt;
+                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.location}" default="None" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;form method="post" action="${githubUrl}"&gt;
+            &lt;input type="hidden" name="_method" value="delete" /&gt;
+            &lt;input class="btn btn-danger" type="submit" value="Disconnect from GitHub" /&gt;
+        &lt;/form&gt;
+    &lt;/social:connected&gt;
+
+    &lt;social:notConnected provider="github"&gt;
+        &lt;p&gt;Your Skybase and GitHub accounts are not yet connected. Connect them for additional Skybase features.&lt;/p&gt;
+        &lt;form method="post" action="${githubUrl}"&gt;
+            &lt;input type="hidden" name="scope" value="user, repo, gist" /&gt;
+            &lt;input class="btn btn-primary" type="submit" value="Connect to GitHub" /&gt;
+        &lt;/form&gt;
+    &lt;/social:notConnected&gt;
+&lt;/section&gt;</pre>
+
+
+<p>Note the use of the Spring Social <code>&lt;social:connected&gt;</code> and <code>&lt;social:notConnected&gt;</code> tags to show different content based on whether the user is or isn&rsquo;t connected to the provider in question.</p>
+
+<p>Notice also that the connect button sends a hidden <code>scope</code> parameter to the GitHub URL. This allows us to specify the kinds of operation we want the user to authorize.</p>
+
+<p>Anyway, there you have it. This post was a bit quick, so let me know if I left anything important out and I&rsquo;m happy to add it. Have fun.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/3/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2011/12/06/jackson-json-jaxb2-xml-spring/
 layout: post
-title: Configuring Jackson to use JAXB2 annotations with Spring
+title: "Configuring Jackson to use JAXB2 annotations with Spring"
 date: 2011-12-06 22:17:40
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Quick Tips]

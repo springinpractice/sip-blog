@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2010/07/27/top-ten-operational-excellence-design-principles/
 layout: post
-title: Top ten [and counting] operational excellence design principles
+title: "Top ten [and counting] operational excellence design principles"
 date: 2010-07-27 01:05:26
 comments: true
 categories: [Architecture, Chapter 14 - Site-up]

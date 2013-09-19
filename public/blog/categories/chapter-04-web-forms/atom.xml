@@ -1,0 +1,1097 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Chapter 04 - Web forms | Spring in Practice]]></title>
+  <link href="http://springinpractice.com/blog/categories/chapter-04-web-forms/atom.xml" rel="self"/>
+  <link href="http://springinpractice.com/"/>
+  <updated>2013-09-18T23:53:48-07:00</updated>
+  <id>http://springinpractice.com/</id>
+  <author>
+    <name><![CDATA[Willie Wheeler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Making form:select work nicely using Spring 3 Formatters]]></title>
+    <link href="http://springinpractice.com/2012/01/06/making-formselect-work-nicely-using-spring-3-formatters/"/>
+    <updated>2012-01-06T18:51:10-08:00</updated>
+    <id>http://springinpractice.com/2012/01/06/making-formselect-work-nicely-using-spring-3-formatters</id>
+    <content type="html"><![CDATA[<p>When you&rsquo;re creating a web form, it&rsquo;s often the case that you want to give the user a way to connect one entity up to another entity. This post explains how to do this in a nice, clean way using Spring Formatters.</p>
+
+<h3>A real-life example</h3>
+
+
+<p>To make things concrete, let&rsquo;s use a real-life example. I&rsquo;m working on an open source CMDB called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> that has entities such as farms, environments and data centers. When the user creates or edits a farm, he needs to specify the environment in which the farm lives (e.g., Development, Test, Production, etc.) and also the data center (e.g., US West DC 1, US West DC 2, etc.). We want the user to select an environment and a data center using dropdowns, like so:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/new_farm2.png"><img class="alignnone size-full wp-image-515" title="New farm form" src="http://springinpractice.com/wp-content/uploads/2012/01/new_farm2.png" alt="" width="526" height="312" /></a></p>
+
+<p>For edits, we obviously want the dropdowns to be preset to their current values. We want validation: in our example, all three fields are required. For both edits and creates, when the user submits an invalid farm (e.g., missing name), we want the environment and data center to be preset to whatever value the user just submitted. Standard stuff.</p>
+
+<p>Let&rsquo;s look at three different approaches to solving this in Spring. The first two are ugly and the last one is clean. (If you&rsquo;re impatient, feel free to skip right to the third approach.)</p>
+
+<h3>Approach #1 (ugly): ad hoc ID fields</h3>
+
+
+<p>One approach is to create special fields on the <code>Farm</code> entity to hold the environment and data center IDs, and then write custom code in the controller to map these to <code>Environment</code> and <code>DataCenter</code> instances. Here&rsquo;s how such a <code>Farm</code> might look:</p>
+
+<pre>public class Farm {
+    private Long id;
+    private String name;
+    private Environment environment;
+    private DataCenter dataCenter;
+    private Long environmentId;
+    private Long dataCenterId;
+
+    ... getters and setters for id, name, environment and dataCenter ...
+
+    @NotNull
+    @Transient
+    @XmlTransient
+    public Long getEnvironmentId() { return environmentId; }
+
+    public void setEnvironmentId(Long id) { this.environmentId = id; }
+
+    @NotNull
+    @Transient
+    @XmlTransient
+    public Long getDataCenterId() { return dataCenterId; }
+
+    public void setDataCenterId(Long id) { this.dataCenterId = id; }
+}</pre>
+
+
+<p>And the form code looks something like this (I&rsquo;m suppressing some details just for clarity&rsquo;s sake):</p>
+
+<pre>&lt;form:select path="environmentId"&gt;
+    &lt;form:option value="" label="-- Choose one--" /&gt;
+    &lt;form:options items="${environmentList}" itemValue="id" itemLabel="name" /&gt;
+&lt;/form:select&gt;
+&lt;form:errors path="environmentId"&gt;
+    &lt;span class="help-inline"&gt;&lt;form:errors path="environmentId" /&gt;&lt;/span&gt;
+&lt;/form:errors&gt;</pre>
+
+
+<p>The approach works, but it&rsquo;s stinky for at least a couple of reasons:</p>
+
+<ul>
+    <li>It dirties up the <code>Farm</code> entity. We already have <code>Environment</code> and <code>DataCenter</code> properties, and each of those has an ID, so it's redundant and annoying to have to include extra getters and setters to handle the IDs. If we're doing ORM or OXM, it becomes very clear from the <code>@Transient</code> and <code>@XmlTransient</code> annotations that these extra ID properties aren't really part of the entity at all; they're purely supporting data transfer.</li>
+    <li>It forces us to write custom code in the controller to map the IDs to an <code>Environment</code> and a <code>DataCenter</code> so we can, e.g., save it in the database using Hibernate or whatever.</li>
+</ul>
+
+
+<p>Now let&rsquo;s see a closely related approach that&rsquo;s a step in the right direction, but still stinky.</p>
+
+<h3>Approach #2 (still ugly): use the referenced entities' ID properties</h3>
+
+
+<p>Instead of using redundant ID properties, we can just leave the <code>Farm</code> alone (meaning it has an ID, a name, an environment and a data center, and no extra ID properties) and just point the form at the environment&rsquo;s and data center&rsquo;s IDs:</p>
+
+<pre>&lt;form:select path="environment.id"&gt;
+    &lt;form:option value="" label="-- Choose one--" /&gt;
+    &lt;form:options items="${environmentList}" itemValue="id" itemLabel="name" /&gt;
+&lt;/form:select&gt;
+&lt;form:errors path="environment.id"&gt;
+    &lt;span class="help-inline"&gt;&lt;form:errors path="environment.id" /&gt;&lt;/span&gt;
+&lt;/form:errors&gt;</pre>
+
+
+<p>Spring is fine with complex properties like this. And so this almost works. But there are once again a couple of issues:</p>
+
+<ul>
+    <li>Stylistically, it's a bit inelegant to treat reference-backed properties in a special way. It would be cleaner to deal with <code>environment</code> and <code>dataCenter</code> instead of <code>environment.id</code> and <code>dataCenter.id</code>. Minor issue, but still worth considering.</li>
+    <li>More seriously, validation (at least JSR-303 validation) doesn't work properly anymore. Referencing <code>environment.id</code> in the form causes Spring to create an <code>Environment</code> instance automatically, even if the user picks "-- Choose one --" with ID = "". So the <code>environment</code> and <code>dataCenter</code> properties won't ever be null. And we can't put <code>@NotNull</code> on the environment and data center IDs, because they're allowed (indeed, expected) to be null when creating new ones. So you end up having to write custom code to make sure that the IDs are whatever you want to see. Blech.</li>
+</ul>
+
+
+<p>OK, those are some approaches that aren&rsquo;t very clean. Fortunately Spring 3 has some features that clean things up.</p>
+
+<h3>Approach #3 (good approach): use Formatters</h3>
+
+
+<p>The best practice approach in Spring 3 is to use so-called <code>Formatters</code>. As this blog post is already pretty long, let&rsquo;s just jump right into the code. If you want to see more code details, check out the actual code at the <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase Github site</a>.</p>
+
+<p>First, our entities don&rsquo;t have any ad hoc ID properties like we saw in approach #1 above. <strong>But you do need to implement <code>equals()</code> for your entities, or else form prepopulation won&rsquo;t happen.</strong></p>
+
+<p>Next, here&rsquo;s what the form looks like:</p>
+
+<pre>&lt;form:select path="environment"&gt;
+    &lt;form:option value="" label="-- Choose one--" /&gt;
+    &lt;form:options items="${environmentList}" itemValue="id" itemLabel="name" /&gt;
+&lt;/form:select&gt;
+&lt;form:errors path="environment"&gt;
+    &lt;span class="help-inline"&gt;&lt;form:errors path="environment" /&gt;&lt;/span&gt;
+&lt;/form:errors&gt;</pre>
+
+
+<p>(Same thing for the <code>dataCenter</code> property.) Notice that we&rsquo;re not messing around with IDs at all, other than where we&rsquo;re telling the <code>&lt;form:options&gt;</code> tag which property to use for the option value, which is perfectly fine and legitimate.</p>
+
+<p>Next we need to look at the controller. In earlier versions of Spring we would have had to register some JavaBeans <code>PropertyEditor</code>s in an <code>@InitBinder</code> method, but we don&rsquo;t have to do that anymore. All we have to do is make sure we&rsquo;re prepared to accept a <code>Farm</code> in our handler method, that we annotate it with <code>@Valid</code>, etc.:</p>
+
+<pre>@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+public String putEditForm(
+        @PathVariable Long id,
+        @ModelAttribute("formData") @Valid Farm formData,
+        BindingResult result,
+        Model model) {
+
+    ...
+}</pre>
+
+
+<p>The method body doesn&rsquo;t matter so much for our current purpose&mdash;we can check for validity using <code>result.hasErrors()</code>, save the data if it&rsquo;s valid, return the invalid form if it&rsquo;s not, or whatever. The main thing is that the <code>Farm</code> will come populated with an <code>Environment</code> and a <code>DataCenter</code> (both having the right IDs set) if the user chose them, and they&rsquo;ll be null if the user didn&rsquo;t:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/farm_errors2.png"><img class="alignnone size-full wp-image-539" title="Farm with validation errors" src="http://springinpractice.com/wp-content/uploads/2012/01/farm_errors2.png" alt="" width="520" height="304" /></a></p>
+
+<p>To make the magic work, we need to implement <code>Formatter</code>s to convert our environments and data centers back and forth to IDs. Regarding <code>Formatter</code>s, I&rsquo;ll let you read about them in the <a href="http://static.springsource.org/spring/docs/current/spring-framework-reference/html/validation.html#format">Spring Reference Documentation</a>; here I&rsquo;ll give some code examples. Here&rsquo;s the <code>EnvironmentFormatter</code>:</p>
+
+<pre>package org.zkybase.formatter;
+
+import java.text.ParseException;
+import java.util.Locale;
+import org.zkybase.model.Environment;
+import org.springframework.format.Formatter;
+import org.springframework.stereotype.Component;
+
+@Component
+public class EnvironmentFormatter implements Formatter&lt;Environment&gt; {
+
+    @Override
+    public String print(Environment environment, Locale locale) {
+        return environment.getId().toString();
+    }
+
+    @Override
+    public Environment parse(String id, Locale locale) throws ParseException {
+
+        // IMPORTANT: This approach works only if your equals() method doesn't compare fields
+        // beyond the ID. If it does, then you'll need those fields set too. Consider simply
+        // loading the entity from the database.
+        Environment environment = new Environment();
+        environment.setId(Long.parseLong(id));
+        return environment;
+    }
+}</pre>
+
+
+<p>One more thing we have to do is configure the formatters in our Spring configuration. Here&rsquo;s what that looks like (Spring 3.0.6+; I&rsquo;m suppressing the namespace declarations):</p>
+
+<pre>&lt;context:component-scan base-package="org.zkybase.formatter" /&gt;
+
+&lt;bean id="conversionService"
+    class="org.springframework.format.support.FormattingConversionServiceFactoryBean"&gt;
+    &lt;property name="formatters"&gt;
+        &lt;set&gt;
+            &lt;ref bean="dataCenterFormatter" /&gt;
+            &lt;ref bean="environmentFormatter" /&gt;
+        &lt;/set&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;mvc:annotation-driven conversion-service="conversionService" /&gt;</pre>
+
+
+<p>This tells Spring Web MVC to use the conversion service both when rendering the form and when processing submitted form data. We won&rsquo;t go into all the gory details here since they&rsquo;re not necessarily important to making the whole thing work, but the formatter&rsquo;s <code>print()</code> method is the one that handles form rendering, and the formatter&rsquo;s <code>parse()</code> method handles turning the IDs in the HTML into entities in the Java controller.</p>
+
+<p><strong>Quick tip regarding Firefox.</strong> Before I close, I wanted to offer a quick tip. When you&rsquo;re implementing and troubleshooting this stuff, be aware that <a href="http://stackoverflow.com/questions/4862606/when-using-html-select-tag-changed-selected-value-not-displayed-in-firefox">Firefox has a feature where it remembers your most recently submitted form values when you hit the refresh button</a> instead of resetting the form to its default settings. The feature helps users avoid data loss, but for developers it&rsquo;s a pain because you have to reload the page from the actual address bar (click in there and hit Enter) instead of refreshing the page. I didn&rsquo;t know this and the form was not responding to my code changes in the way I expected.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Getting started with Hibernate Validator]]></title>
+    <link href="http://springinpractice.com/2009/02/02/getting-started-with-hibernate-validator/"/>
+    <updated>2009-02-02T07:00:16-08:00</updated>
+    <id>http://springinpractice.com/2009/02/02/getting-started-with-hibernate-validator</id>
+    <content type="html"><![CDATA[<p>In this tutorial we&rsquo;re going to learn how to get started with Hibernate Validator, which as its name suggests is a validation framework associated with the Hibernate project. This article is really a follow-up to <a href="http://springinpractice.com/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/">my earlier article on using the Bean Validation Framework</a> (part of the larger <a href="https://springmodules.dev.java.net/">Spring Modules</a> project), which is a competing framework that seems to have lost the battle for Spring&rsquo;s &ldquo;preferred validation provider&rdquo; status to Hibernate Validator. Both Uri Boness (in an e-mail correspondence) and Juergen Hoeller (at SpringOne) agreed that people should start moving toward Hibernate Validator since that will eventually support the emerging <a href="http://jcp.org/en/jsr/detail?id=303">JSR 303</a> standard.</p>
+
+<p>Hibernate Validator is nice because it (like the Bean Validation Framework) supports declarative validation via <a href="http://java.sun.com/j2se/1.5.0/docs/guide/language/annotations.html">Java 5 annotations</a>. Let&rsquo;s say you create a bean class, like an <code>Account</code> or a <code>PurchaseOrder</code> or whatever. With Hibernate Validator you can attach validation annotations to the bean properties and that will define the validation constraints for the bean. Moreover, unlike earlier approaches to validation (such as Struts Validation), Hibernate Validator isn&rsquo;t tied to the web tier, and so if you want to validate your beans from within your service beans, or within your DAOs, or even just before you ORM them into your database, no sweat. You can do just that.</p>
+
+<p>Anyway, for now we&rsquo;re just going to look at some of the basics: how to specify annotation constraints and how to check for constraint violations. We&rsquo;re not going to worry about integrating Hibernate Validator with Spring&rsquo;s native validation framework (so that, for instance, we might render Hibernate Validator error messages out using Spring Web MVC taglibs) though I&rsquo;ll probably write another article on that sometime in the future if people are interested.</p></p>
+
+<p>For this article we&rsquo;re using Java 5 or higher (we need Java 5 annotations) and Hibernate Validator 3.1.0. For your convenience I&rsquo;ve created a <a href="http://maven.apache.org/">Maven 2</a> project that you can download: <a href="http://wheelersoftware.s3.amazonaws.com/articles/hibernate-validator/hibernate-validator-demo.zip">hibernate-validator-demo.zip</a></p>
+
+<p>OK, let&rsquo;s jump into some examples of annotated bean classes.</p>
+
+<h3>Specifying validation constraints with Hibernate Validator annotations</h3>
+
+
+<p>Here are a couple of examples of annotated bean classes: a <code>User</code> class and an <code>Address</code> class. Note that the two objects are related in a parent-child fashion.</p>
+
+<p>First, here is the <code>User</code> bean class:</p>
+
+<pre>package com.wheelersoftware.demos.hibernatevalidator;
+
+import org.hibernate.validator.Email;
+import org.hibernate.validator.Length;
+import org.hibernate.validator.NotEmpty;
+import org.hibernate.validator.Valid;
+
+public class User {
+    private String username;
+    private String firstName;
+    private String lastName;
+    private Address address;
+    private String email;
+    private String password;
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getUsername() { return username; }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getFirstName() { return firstName; }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getLastName() { return lastName; }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    @Valid
+    public Address getAddress() { return address; }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    @NotEmpty
+    @Email
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getPassword() { return password; }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}</pre>
+
+
+<p>Let&rsquo;s talk a little about what&rsquo;s going on with the code above. As we noted earlier, we have a bean class (here, a class that represents user accounts of some sort) and we&rsquo;re using annotations to specify validation constraints. For a full list of the built-in constraints, see the <a href="http://www.hibernate.org/hib_docs/validator/reference/en/html/validator-defineconstraints.html#validator-defineconstraints-builtin">official Hibernate Validator documentation</a>, but we&rsquo;ll just focus on a small handful for right now.</p>
+
+<p>First notice that we&rsquo;ve attached our annotations to the getter methods. This is how we specify the validation constraints that attach to the associated properties.</p>
+
+<p>We&rsquo;ve used <code>@NotEmpty</code> in several places. This annotation means that the annotated property can&rsquo;t be null and it can&rsquo;t be the empty string either. There&rsquo;s also a <code>@NotNull</code> annotation that we could have used if we&rsquo;d wanted to, but in this case I wanted to prevent the empty string from being used as values.</p>
+
+<p>Another annotation that appears multiple times is the <code>@Length</code> annotation. We can specify associated minimum and maximum lengths by using the <code>min</code> and <code>max</code> elements, respectively, though in the example above we&rsquo;ve specified only maximum lengths. (In the example that follows we&rsquo;ll see how to specify a minimum length as well.) So for example we&rsquo;ve specified that passwords can&rsquo;t be any longer than 20 characters.</p>
+
+<p>A third annotation is the <code>@Email</code> annotation. As you would guess, this indicates that the property must contain a valid e-mail address.</p>
+
+<p>The fourth and final annotation of the ones that appear above is the <code>@Valid</code> annotation. This tells Hibernate Validator that it should validate the associated object&mdash;here an associated <code>Address</code> object&mdash;using whatever validation annotations we define on the <code>Address</code> class.</p>
+
+<p>And that&rsquo;s our segue into our second example, the <code>Address</code> bean class, which appears below.</p>
+
+<pre>package com.wheelersoftware.demos.hibernatevalidator;
+
+import org.hibernate.validator.Length;
+import org.hibernate.validator.NotEmpty;
+import org.hibernate.validator.Pattern;
+
+public class Address {
+    private String street1;
+    private String street2;
+    private String city;
+    private String state;
+    private String zip;
+
+    @NotEmpty
+    @Length(max = 40)
+    public String getStreet1() { return street1; }
+
+    public void setStreet1(String street1) {
+        this.street1 = street1;
+    }
+
+    // No validation constraints
+    public String getStreet2() { return street2; }
+
+    public void setStreet2(String street2) {
+        this.street2 = street2;
+    }
+
+    @NotEmpty
+    @Length(max = 40)
+    public String getCity() { return city; }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    @NotEmpty
+    @Length(max = 3)
+    public String getState() { return state; }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    @NotEmpty
+    @Length(min = 5, max = 5, message = "{zip.length}")
+    @Pattern(regex = "[0-9]+")
+    public String getZip() { return zip; }
+
+    public void setZip(String zip) {
+        this.zip = zip;
+    }
+}</pre>
+
+
+<p>Our validation annotations for <code>Address</code> are pretty similar to what we saw for <code>User</code>, but there are a few differences worth mentioning. First, notice that we don&rsquo;t have to attach validation constraints to every property. It&rsquo;s OK, for example, for <code>street2</code> to be null or anything else, so we simply refrain from defining validation constraints for this property.</p>
+
+<p>Second, we&rsquo;re using a <code>@Pattern</code> annotation for the <code>zip</code> property. This allows us to specify regular expression match patterns.</p>
+
+<p>The third and final difference is the <code>@Length</code> annotation we&rsquo;ve defined for the <code>zip</code> property. Besides including a <code>min</code> element (which, when combined with the <code>max</code> element, indicates that the ZIP code must be exactly five characters long), we&rsquo;ve also included a <code>message</code> element. We can use this element to do either of two things. First, we can use it to define a hardcoded message to display when the given validation constraint fails. That&rsquo;s not what we&rsquo;re doing here. Instead we&rsquo;re doing the second thing we can do, which is specify a message key using the brace syntax: <code>message = {key_name}</code>. The idea is that we&rsquo;ll eventually use this message key to look up a message in a resource bundle, thus externalizing the message. Later in the tutorial we&rsquo;ll map the <code>zip.length</code> message key to an actual message using a resource bundle.</p>
+
+<p>That&rsquo;s it for the validation constraints themselves. Now let&rsquo;s see how we can tell Hibernate Validator to use them to perform our bean validation.</p>
+
+<h3>How to tell Hibernate Validator to validate annotated beans</h3>
+
+
+<p>It&rsquo;s fairly straightforward to get Hibernate Validator to validate our annotated beans. The following listing presents some demo code for doing exactly this. Let&rsquo;s take a look.</p>
+
+<pre>package com.wheelersoftware.demos.hibernatevalidator;
+
+import org.hibernate.validator.ClassValidator;
+import org.hibernate.validator.InvalidValue;
+
+public final class Demo {
+    private static ClassValidator&lt;User&gt;
+        userValidator = new ClassValidator&lt;User&gt;(User.class);
+
+    public static void main(String[] args) {
+        validateUser(createUser());
+    }
+
+    private static User createUser() {
+        User user = new User();
+        user.setFirstName("123456789012345678901");
+        user.setEmail("aol.com");
+
+        Address addr = new Address();
+        addr.setStreet1("");
+        addr.setCity("Moreno Valley");
+        addr.setState("CA");
+        addr.setZip("QWERTY");
+        user.setAddress(addr);
+
+        return user;
+    }
+
+    private static void validateUser(User user) {
+        InvalidValue[] invalidValues = userValidator.getInvalidValues(user);
+        for (InvalidValue value : invalidValues) {
+            System.out.println("========");
+            System.out.println(value);
+            System.out.println("message=" + value.getMessage());
+            System.out.println("propertyName=" + value.getPropertyName());
+            System.out.println("propertyPath=" + value.getPropertyPath());
+            System.out.println("value=" + value.getValue());
+        }
+    }
+}</pre>
+
+
+<p>There are really only a few interesting things happening here. First, we create a <code>ClassValidator&lt;User&gt;</code> instance for validating our <code>User</code> beans. We have to associate the <code>ClassValidator</code> with a type (here, <code>User</code>) because this is where Hibernate Validator goes in and reads all the annotations off of the bean class in question.</p>
+
+<p>Next, we have to create the bean we want to validate. Usually this would come from a user form (for example, a web-based form, or maybe a Swing-based form) though that&rsquo;s not necessarily the case. Here we just create a bean manually, and we intentionally make a lot of the fields invalid so we can see how Hibernate Validator responds.</p>
+
+<p>Finally we make the call <code>userValidator.getInvalidValues(user)</code>. This generates an array of <code>InvalidValue</code> instances&mdash;one for each validation constraint violation. Let&rsquo;s examine the <code>InvalidValue</code> class in more detail.</p>
+
+<h3>Understanding InvalidValue</h3>
+
+
+<p>To understand <code>InvalidValue</code> it will help to run the demo. So do that right now. You should see output that looks something like this:</p>
+
+<pre>26 [main] INFO org.hibernate.validator.Version - Hibernate Validator 3.1.0.GA
+45 [main] INFO org.hibernate.annotations.common.Version - Hibernate Commons Annotations 3.1.0.GA
+========
+username may not be null or empty
+message=may not be null or empty
+propertyName=username
+propertyPath=username
+value=null
+========
+firstName length must be between 0 and 20
+message=length must be between 0 and 20
+propertyName=firstName
+propertyPath=firstName
+value=123456789012345678901
+========
+lastName may not be null or empty
+message=may not be null or empty
+propertyName=lastName
+propertyPath=lastName
+value=null
+========
+email not a well-formed email address
+message=not a well-formed email address
+propertyName=email
+propertyPath=email
+value=aol.com
+========
+password may not be null or empty
+message=may not be null or empty
+propertyName=password
+propertyPath=password
+value=null
+========
+street1 may not be null or empty
+message=may not be null or empty
+propertyName=street1
+propertyPath=address.street1
+value=
+========
+zip {zip.length}
+message={zip.length}
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY
+========
+zip must match "[0-9]+"
+message=must match "[0-9]+"
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY</pre>
+
+
+<p>If you look at the source code for <code>Demo.validateUser()</code> you&rsquo;ll see that we&rsquo;re printing out each <code>InvalidValue</code> instance itself (the first line) as well as the values of the <code>message</code>, <code>propertyName</code>, <code>propertyPath</code> and <code>value</code> properties (the rest of the lines). When we print out the instance itself, we get Hibernate Validator&rsquo;s attempt at a user-friendly validation eror message. It starts with the property name and then appends the message; examples include</p>
+
+<ul class="square">
+<li><code>email not a well-formed e-mail address</code></li>
+<li><code>password may not be null or empty</code></li>
+<li><code>zip must match "[0-9]+"</code></li>
+</ul>
+
+
+<p>Each <code>message</code> value (such as <code>may not be null or empty</code>) is a default associated with a validation annotation (such as <code>@NotEmpty</code>). Note that in the case of the length violation for the <code>zip</code> property, we&rsquo;re seeing not the default length message, but instead the new message key name (namely, <code>zip.length</code>) we specified in listing 2. We&rsquo;ll see how to map <code>zip.length</code> to an actual message using a resource bundle in a little bit. For now we&rsquo;re seeing just the key name because we haven&rsquo;t yet associated a message with the key.</p>
+
+<p>The <code>propertyName</code> property specifies the name of the bean property whose value is invalid. For example, if we provide a bad ZIP code, then <code>propertyName</code> is <code>zip</code>.</p>
+
+<p>The <code>propertyPath</code> property is similar to <code>propertyName</code> property, except that with <code>propertyPath</code> we get to see the path from the top-level bean down to the invalid property. You can see the difference, for instance, with the invalid ZIP code: <code>propertyName</code> is <code>zip</code> but <code>propertyValue</code> is <code>address.zip</code>.</p>
+
+<p>Finally, <code>value</code> is just the bad value that violated the validation constraint in the first place.</p>
+
+<p>While we can use <code>InvalidValue</code> itself as a source of semi-user-friendly messages, it&rsquo;s clear that the defaults leave something to be desired. After all, <code>zip must match &ldquo;[0-9]+&rdquo;</code> wouldn&rsquo;t be what most users would consider user-friendly. We can however provide a resource bundle to improve the error messages and that&rsquo;s what we&rsquo;ll look at now.</p>
+
+<h3>Improving validation error messages using ValidatorMessages.properties</h3>
+
+
+<p>With Hibernate Validator we can override the default messages associated with the various validation annotations. We can also provide highly specific error messages associated with property/constraint pairs. We do this using resource bundles. Though it&rsquo;s possible to provide Hibernate Validator with arbitrary resource bundles, the easiest approach is to create a <code>ValidatorMessages.properties</code> resource bundle on the classpath and use that. Hibernate Validator knows to look for that particular bundle (including any associated localizations) and use it as a message source. The next listing presents a simple example.</p>
+
+<pre>validator.notEmpty=may not be null or empty!
+validator.length=must be {max} or fewer characters.
+zip.length=Please enter a {max}-character ZIP code.</pre>
+
+
+<p>The first two lines of listing 3 provide alternatives for the <code>validator.notEmpty</code> and <code>validator.length</code> message keys. The key names are defined by the validation annotations themselves, so consult the Javadocs for the annotations if you need the key names (though you should be able to figure them out using the examples above).</p>
+
+<p>Notice the <code>{max}</code> that appears in the message for the <code>validator.length</code> key. You can reference annotation elements from messages using the brace syntax. Consult the Javadocs for the various annotations&mdash;or else the Hibernate Validator reference manual&mdash;for a complete list of annotations and annotation elements.</p>
+
+<p>The third line also specifies a message, but this time we&rsquo;re associating a message with the <code>zip.length</code> custom key we defined in listing 2. Note that here we don&rsquo;t use the braces for the key name. And also note that we can still reference annotation elements using the brace syntax. The custom message key approach is useful when you want to be very specific about the error message you provide to the end user.</p>
+
+<p>Here's what it looks like when you run it:</p>
+
+
+
+
+<pre>29 [main] INFO org.hibernate.validator.Version - Hibernate Validator 3.1.0.GA
+59 [main] INFO org.hibernate.annotations.common.Version - Hibernate Commons Annotations 3.1.0.GA
+========
+username may not be null or empty!
+message=may not be null or empty!
+propertyName=username
+propertyPath=username
+value=null
+========
+firstName must be 20 or fewer characters.
+message=must be 20 or fewer characters.
+propertyName=firstName
+propertyPath=firstName
+value=123456789012345678901
+========
+lastName may not be null or empty!
+message=may not be null or empty!
+propertyName=lastName
+propertyPath=lastName
+value=null
+========
+email not a well-formed email address
+message=not a well-formed email address
+propertyName=email
+propertyPath=email
+value=aol.com
+========
+password may not be null or empty!
+message=may not be null or empty!
+propertyName=password
+propertyPath=password
+value=null
+========
+street1 may not be null or empty!
+message=may not be null or empty!
+propertyName=street1
+propertyPath=address.street1
+value=
+========
+zip Please enter a 5-character ZIP code.
+message=Please enter a 5-character ZIP code.
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY
+========
+zip must match "[0-9]+"
+message=must match "[0-9]+"
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY</pre>
+
+
+
+
+<h3>Discussion</h3>
+
+
+<p>That wraps it up for this tutorial. It&rsquo;s a good idea to get familiar with Hibernate Validator for a number of reasons:</p>
+
+<ul class="square">
+<li>Annotation-based declarative annotations are an intuitive and convenient way to specify validation constraints.</li>
+<li>Hibernate Validator isn't tied to any particular application tier.</li>
+<li>It will support the JSR 303 standard once that finalizes.</li>
+</ul>
+
+
+<p>We haven&rsquo;t explored everything that Hibernate Validator has to offer. For instance, it&rsquo;s possible to configure it such that Hibernate ORM automatically runs Hibernate Validator when performing persistence operations.</p>
+
+<p>One slight annoyance that I&rsquo;ve found is that there doesn&rsquo;t seem to be built-in way to substitute the bad value into the message itself. Sometimes I like to have messages like</p>
+
+<p><code>willie2gmail.com is not a valid e-mail address</code></p>
+
+<p>I suppose that I could create messages like</p>
+
+<p><code>{1} is not a valid e-mail address</code></p>
+
+<p>and then perform the substitution when processing the <code>InvalidValue</code> array, but it would be nice to be able to do this out of the box. Maybe there&rsquo;s a way to do it after all, but if so, I haven&rsquo;t found it.</p>
+
+<p>Also, the documentation for Hibernate Validator is a little thin, both with respect to the reference manual and the Javadocs. Hopefully as JSR 303 matures we&rsquo;ll see improvements in this area. In the meantime, this tutorial will be my contribution to helping people understand Hibernate Validator.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Annotation-based validation with the Spring Bean Validation Framework]]></title>
+    <link href="http://springinpractice.com/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/"/>
+    <updated>2008-07-17T16:35:36-07:00</updated>
+    <id>http://springinpractice.com/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework</id>
+    <content type="html"><![CDATA[<div class="alert warning">This post predates JSR 303, which describes a standard around bean validation. The Spring Modules Bean Validation Framework isn't compliant with that JSR, and anyway, it's a defunct library. Use <a href="http://springinpractice.com/2009/02/02/getting-started-with-hibernate-validator/">Hibernate Validator</a> instead.</div>
+
+
+<p>The Spring Bean Validation Framework, which is part of the <a href="https://springmodules.dev.java.net/">Spring Modules</a> project, allows you to perform validation declaratively using Java annotations. I&rsquo;ve always liked the declarative approach, which we saw for instance in Commons Validator, but annotation-based validation is especially convenient.</p>
+
+<p><a href="http://jcp.org/en/jsr/detail?id=303">JSR 303 (Bean Validation)</a> specifies some standards around bean validation, though the Spring Bean Validation Framework does not adopt those standards. The <a href="http://www.hibernate.org/412.html">Hibernate Validator</a> project, on the other hand, aims to provide an implementation of the emerging JSR 303 standard.</p>
+
+<p>While it very well could be subpar Googling skills on my part, there doesn&rsquo;t seem to be much detailed how-to information out there on actually using the Bean Validation Framework.  Hence this article.</p>
+
+<p>I&rsquo;m using Spring 2.5.x (specifically, Spring 2.5.5) and Spring Modules 0.9.  I assume that you already know Spring and Spring Web MVC in particular.</p>
+
+<p>If you want to download the code, you can do so here:</p>
+
+<center><span class="icon archive"><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-bean-validation-framework/contact-example.zip">contact-example.zip</a></span></center>
+
+
+<p>You&rsquo;ll have to download the dependencies separately though.</p>
+
+<h3>Dependencies</h3>
+
+
+<p>Here&rsquo;s what you&rsquo;ll need (again, I&rsquo;m using Spring 2.5.x and Spring Modules 0.9):</p>
+
+<ul class="square">
+    <li><code>commons-collections.jar</code></li>
+    <li><code>commons-lang.jar</code></li>
+    <li><code>commons-logging.jar</code></li>
+    <li><code>spring.jar</code></li>
+    <li><code>spring-modules-validation.jar</code></li>
+    <li><code>spring-webmvc.jar</code></li>
+</ul>
+
+
+
+
+<h3>Java sources</h3>
+
+
+<p>I&rsquo;m going to do things a little differently than I normally do, and start with the Java first.  We&rsquo;re going to build a very simple &ldquo;Contact Us&rdquo; form of the sort that you might use to ask a question, complain about lousy service, or whatever.  Since we&rsquo;re just showing how validation works, I&rsquo;ve left out the service and persistence tiers.  We&rsquo;re going to do everything with a form bean and a controller.</p>
+
+<p>Here&rsquo;s the form bean:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>contact.UserMessage</code>
+<pre name="code" class="java">
+package contact;
+
+import org.springmodules.validation.bean.conf.loader.annotation.handler.Email;
+import org.springmodules.validation.bean.conf.loader.annotation.handler.Length;
+import org.springmodules.validation.bean.conf.loader.annotation.handler.NotBlank;
+
+public final class UserMessage {
+    
+    @NotBlank
+    @Length(max = 80)
+    private String name;
+    
+    @NotBlank
+    @Email
+    @Length(max = 80)
+    private String email;
+    
+    @NotBlank
+    @Length(max = 4000)
+    private String text;
+    
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+    
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) { this.email = email; }
+
+    public String getText() { return text; }
+
+    public void setText(String text) { this.text = text; }
+}
+</pre>
+</div>
+
+
+<p>The bean itself is pretty uninteresting&mdash;I have field for the user&rsquo;s name, e-mail address, and the message text.  But the cool part is that I&rsquo;ve included annotations that specify validation constraints.  It&rsquo;s probably self-explanatory, but I&rsquo;ve specified that none of the fields is allowed to be blank, and I&rsquo;ve also specified the maximum lengths for each.  (You can also specify minimum lengths, which one could use instead of <code>@NotBlank</code>, but I&rsquo;m using <code>@NotBlank</code> instead for a reason I&rsquo;ll explain in just a bit.)  Finally, I&rsquo;ve specified that <code>email</code> needs to be a valid e-mail address.  It&rsquo;s that simple!</p>
+
+<p>Here are <a href="https://springmodules.dev.java.net/docs/reference/0.8/html_single/#d0e9699">the rest of the validation rules</a> you can use.</p>
+
+<p>Now here&rsquo;s the Spring MVC controller, which I&rsquo;ve implemented as a POJO controller:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>contact.ContactController</code>
+<pre name="code" class="java">
+package contact;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@Controller
+public final class ContactController {
+    
+    @Autowired
+    private Validator validator;
+    
+    public void setValidator(Validator validator) {
+        this.validator = validator;
+    }
+    
+    @RequestMapping(value = "/form", method = RequestMethod.GET)
+    public ModelMap get() {
+        
+        // Because we're not specifying a logical view name, the
+        // DispatcherServlet's DefaultRequestToViewNameTranslator kicks in.
+        return new ModelMap("userMessage", new UserMessage());
+    }
+    
+    @RequestMapping(value = "/form", method = RequestMethod.POST)
+    public String post(@ModelAttribute("userMessage") UserMessage userMsg,
+            BindingResult result) {
+        
+        validator.validate(userMsg, result);
+        if (result.hasErrors()) { return "form"; }
+        
+        // Use the redirect-after-post pattern to reduce double-submits.
+        return "redirect:thanks";
+    }
+    
+    @RequestMapping("/thanks")
+    public void thanks() {
+    }
+}
+</pre>
+</div>
+
+
+<p>The Bean Validation Framework includes its own <code>Validator</code> implementation, called <code>BeanValidator</code>, and I&rsquo;m making that injectable here.  Also, note that we&rsquo;re going to autowire it in.</p>
+
+<p>It may be that there&rsquo;s a standard, predefined interceptor to apply <code>BeanValidator</code> (as opposed to injecting the <code>Validator</code> into the controller), but if there is, I haven&rsquo;t seen it.  I&rsquo;d be interested to hear if you, gentle reader, know of one.</p>
+
+<p>The noteworthy method here is the second <code>post()</code> method, which contains the validation code.  I just call the standard <code>validate()</code> method, passing in the form bean and the <code>BindingResult</code>, and return the current logical view name if there&rsquo;s an error.  That way the form shows the validation error messages, which we&rsquo;ll see below.  If everything passes validation, I just redirect to a &ldquo;thank you&rdquo; page.</p>
+
+<p>Now let&rsquo;s look at how we define the validation messages that the end user sees if his form submission fails validation.</p>
+
+<h3>Validation messages</h3>
+
+
+
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/classes/errors.properties</code>
+<pre name="code" class="java">
+UserMessage.name[not.blank]=Please enter your name.
+UserMessage.name[length]=Please enter no more than {2} characters.
+UserMessage.email[not.blank]=Please enter your e-mail address.
+UserMessage.email[email]=Please enter a valid e-mail address.
+UserMessage.email[length]=Please enter no more than {2} characters.
+UserMessage.text[not.blank]=Please enter a message.
+UserMessage.text[length]=Please enter no more than {2} characters.
+</pre>
+</div>
+
+
+<p>The keys should be fairly self-explanatory given <code>UserMessage</code> above.  Each key involves a class, a field and an annotation.  The values are parametrizable messages, not unlike Commons Validator messages if you&rsquo;re familiar with those.  In the three <code>length</code> messages, I&rsquo;m using <code>{2}</code> to indicate argument #2&mdash;viz., <code>max</code>&mdash;for the <code>length</code> validation rule.  Argument #1 happens to be <code>min</code>, and argument #0 in general appears to be the form bean itself.  I can imagine that it would be nice to be able to use the form bean to get at the specific submitted value so you could say things like &ldquo;You entered 4012 characters, but the limit is 4000 characters.&rdquo;  And I think there&rsquo;s actually a way to do that though I don&rsquo;t myself know how to do it yet.  (This is another one of those areas where I&rsquo;d appreciate whatever information you may have.)</p>
+
+<p>I mentioned above that I chose <code>@NotBlank</code> instead of <code>@Length(min = 1, max = 80)</code>.  The reason is that I wanted to use a specific error message (&ldquo;Please enter your name&rdquo;) if the message is blank.  I could have just used &ldquo;Please enter a name between 1-80 characters&rdquo; but that sounds slightly silly compared to &ldquo;Please enter your name&rdquo;, and since I&rsquo;m a usability guy I care about such things.</p>
+
+<h3>The JSPs</h3>
+
+
+<p>We have two JSPs: the form itself, and a basic (really basic) &ldquo;thank you&rdquo; page.</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/form.jsp</code>
+<pre name="code" class="xml">
+&lt;%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %&gt;
+
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+    &lt;head&gt;
+        &lt;title&gt;Contact Us&lt;/title&gt;
+        &lt;style&gt;
+            .form-item { margin: 20px 0; }
+            .form-label { font-weight: bold; }
+            .form-error-field { background-color: #FFC; }
+            .form-error-message { font-weight: bold; color: #900; }
+        &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    
+&lt;h1&gt;Contact Us&lt;/h1&gt;
+
+&lt;%-- Give command object a meaningful name instead of using default name, 'command' --%&gt;
+&lt;form:form commandName="userMessage"&gt;
+    &lt;div class="form-item"&gt;
+        &lt;div class="form-label"&gt;Your name:&lt;/div&gt;
+        &lt;form:input path="name" size="40" cssErrorClass="form-error-field"/&gt;
+        &lt;div class="form-error-message"&gt;&lt;form:errors path="name"/&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="form-item"&gt;
+        &lt;div class="form-label"&gt;Your e-mail address:&lt;/div&gt;
+        &lt;form:input path="email" size="40" cssErrorClass="form-error-field"/&gt;
+        &lt;div class="form-error-message"&gt;&lt;form:errors path="email"/&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="form-item"&gt;
+        &lt;div class="form-label"&gt;Your message:&lt;/div&gt;
+        &lt;form:textarea path="text" rows="12" cols="60" cssErrorClass="form-error-field"/&gt;
+        &lt;div class="form-error-message"&gt;&lt;form:errors path="text"/&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="form-item"&gt;
+        &lt;input type="submit" value="Submit" /&gt;
+    &lt;/div&gt;
+&lt;/form:form&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div>
+
+
+<p>This is just a standard Spring Web MVC form, so I&rsquo;ll invoke my &ldquo;I assume you know Spring Web MVC&rdquo; assumption here.  The <code>cssErrorClass</code> attribute is kind of fun if you don&rsquo;t already know about it.  It indicates the CSS class to use in the event of a validation error.  You can combine that with the <code>cssClass</code> attribute (which applies in the non-error case) though I haven&rsquo;t done that here.</p>
+
+<p>Now here&rsquo;s the basic &ldquo;thank you&rdquo; page:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/thanks.jsp</code>
+<pre name="code" class="xml">
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+    &lt;head&gt;
+        &lt;title&gt;Thank You&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Thank You&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div>
+
+
+<p>(I told you it was basic&hellip;)</p>
+
+<p>OK, now we&rsquo;re ready to move onto application configuration.  Almost done!</p>
+
+<h3>Servlet and Spring configuration</h3>
+
+
+<p>Here&rsquo;s our completely standard <code>web.xml</code>:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/web.xml</code>
+<pre name="code" class="xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;web-app xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+        http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5"&gt;
+    
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;contact&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;
+            org.springframework.web.servlet.DispatcherServlet
+        &lt;/servlet-class&gt;
+    &lt;/servlet&gt;
+    
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;contact&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/contact/*&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;        
+&lt;/web-app&gt;
+</pre>
+</div>
+
+
+<p>Though I said I&rsquo;m assuming you already know Spring Web MVC, I&rsquo;ll just point out that since I didn&rsquo;t specify a custom location for the application context file, I have to put it at <code>/WEB-INF/contact-servlet.xml</code>.  If you want the file to live elsewhere, or if you want it to be associated with the servlet context instead of the <code>DispatcherServlet</code>, you&rsquo;ll have to set that up in <code>web.xml</code> accordingly.</p>
+
+<p>Here&rsquo;s the Spring application context:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/contact-servlet.xml</code>
+<pre name="code" class="xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"&gt;
+    
+    &lt;!-- Enable annotation-based validation using Bean Validation Framework --&gt;
+    &lt;!-- Using these instead of vld namespace to prevent Eclipse from complaining --&gt;
+    &lt;bean id="configurationLoader"
+        class="org.springmodules.validation.bean.conf.loader.annotation.AnnotationBeanValidationConfigurationLoader"/&gt;
+    &lt;bean id="validator" class="org.springmodules.validation.bean.BeanValidator"
+        p:configurationLoader-ref="configurationLoader"/&gt;
+    
+    &lt;!-- Load messages --&gt;
+    &lt;bean id="messageSource"
+        class="org.springframework.context.support.ResourceBundleMessageSource"
+        p:basenames="errors"/&gt;
+
+    &lt;!-- Discover POJO @Components --&gt;
+    &lt;!-- These automatically register an AutowiredAnnotationBeanPostProcessor --&gt;
+    &lt;context:component-scan base-package="contact"/&gt;
+    
+    &lt;!-- Map logical view names to physical views --&gt;
+    &lt;bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+        p:prefix="/WEB-INF/"
+        p:suffix=".jsp"/&gt;
+&lt;/beans&gt;
+</pre>
+</div>
+
+
+<p>(<strong>IMPORTANT:</strong> In the <code>configurationLoader</code> definition, make sure you put the class name on a single line.  I had to break it up for formatting purposes.)</p>
+
+<p>If you&rsquo;re not familiar with it, I&rsquo;m using the <code>p</code> namespace here for syntactic sugar&mdash;it allows me to specify properties using a nice shorthand.</p>
+
+<p>The first two beans basically create the <code>BeanValidator</code> instance we&rsquo;re going to use.  It turns out that instead of defining these two beans explicitly, you can use a special element from a special namespace:</p>
+
+<ul class="square">
+    <li>namespace is <code>xmlns:vld="http://www.springmodules.org/validation/bean/validator"</code>;</li>
+    <li>purported schema location is <code>http://www.springmodules.org/validation/bean/validator-2.0.xsd</code>;</li>
+    <li>element is <code>&lt;vld:annotation-based-validator id="validator"/&gt;</code></li>
+</ul>
+
+
+<p>But when I do it, Eclipse complains (even though the code works when you run it) since there isn&rsquo;t at the time of this writing actually an XSD at the specified location.  (At least there&rsquo;s a <a href="http://jira.springframework.org/browse/MOD-464">JIRA ticket</a> for it.)  So I&rsquo;ll just use the two beans for now.</p>
+
+<p>The other stuff is mostly normal Spring Web MVC stuff.  I put the message source on the app context, scan for the controller (which is why I&rsquo;m autowiring the validator into the controller), and put a view resolver on the context too.</p>
+
+<h3>Finis</h3>
+
+
+<p>Build and deploy your WAR, and then point your browser to your web app; for example:</p>
+
+<center>http://localhost:8080/contact-example/contact/form</center>
+
+
+<p>Try submitting the form with empty fields, or an invalid e-mail address, or fields that are too long.  If things are working correctly, you ought to see error messages and even field highlighting when validation fails.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[How to reCAPTCHA your Java application]]></title>
+    <link href="http://springinpractice.com/2008/03/13/how-to-recaptcha-your-java-application/"/>
+    <updated>2008-03-13T07:42:36-07:00</updated>
+    <id>http://springinpractice.com/2008/03/13/how-to-recaptcha-your-java-application</id>
+    <content type="html"><![CDATA[<p>reCAPTCHA is a novel CAPTCHA system developed by the School of Computer Science at my alma mater, Carnegie Mellon University. I won&rsquo;t explain its coolness here since they do a good job of <a href="http://recaptcha.net/learnmore.html" target="_blank">explaining that coolness themselves</a>. What I will do here, though, is explain how to get your Java app reCAPTCHAed very quickly. Note however that reCAPTCHA is not tied specifically to Java.</p>
+
+<p>In this tutorial I&rsquo;m using Spring 2.5 MVC with annotations, and Commons Validator, but you&rsquo;ll be able to follow this whether or not you&rsquo;re using Spring and Validator.</p>
+
+<p>These instructions are based on the <a href="http://recaptcha.net/apidocs/captcha/client.html" target="_blank">instructions from the reCAPTCHA site</a>, but I&rsquo;m focusing specifically on Java integration whereas the site makes you dig around a bit to get the information. Not too bad, but enough that there&rsquo;s value in my writing a Java-specific tutorial. :&ndash;)</p>
+
+<h3>Step 1. Get your account and key pair</h3>
+
+
+<p>First, go to <a href="http://recaptcha.net/" target="_blank">the reCAPTCHA web site</a> and create an account. As part of that account creation process you&rsquo;ll have to specify the domain your reCAPTCHA will be protecting. The reCAPTCHA site will will give you a key pair for that domain. The key pair allows you to authenticate your reCAPTCHA requests to the reCAPTCHA servers, as we&rsquo;ll see.</p>
+
+<h3>Step 2. Put the reCAPTCHA JavaScript in your app's form</h3>
+
+
+
+
+<p><p>Here&rsquo;s the JavaScript you need to put in your form, meaning in between the &lt;form&gt; and &lt;/form&gt; tags. Put it wherever you would have normally put a CAPTCHA text box. This JavaScript will generate the reCAPTCHA box when users request the page:</p>
+
+<p><pre>&lt;script type=&ldquo;text/javascript&rdquo;</p>
+
+<pre><code>src="http://api.recaptcha.net/challenge?k=&amp;lt;your_public_key&amp;gt;"&amp;gt;
+</code></pre>
+
+<p>&lt;/script&gt;
+&lt;noscript&gt;</p>
+
+<pre><code>&amp;lt;iframe src="http://api.recaptcha.net/noscript?k=&amp;lt;your_public_key&amp;gt;"
+    height="300" width="500" frameborder="0"&amp;gt;&amp;lt;/iframe&amp;gt;&amp;lt;br&amp;gt;
+&amp;lt;textarea name="recaptcha_challenge_field" rows="3" cols="40"&amp;gt;
+&amp;lt;/textarea&amp;gt;
+&amp;lt;input type="hidden" name="recaptcha_response_field" 
+    value="manual_challenge"&amp;gt;
+</code></pre>
+
+<p>&lt;/noscript&gt;</pre></p>
+
+<p>It probably goes without saying, but I&rsquo;ll say it anyway: you need to replace the two instances of &lt;your_public_key&gt; with the public key that you received during the account creation process. Be careful that you don&rsquo;t use your private key by mistake. If you do that then everybody will be able to see your private key and act like they&rsquo;re you.</p>
+
+<p><h3>Step 3. Run your app and make sure the reCAPTCHA is showing up</h3></p>
+
+<p>You should see it there in your form. It&rsquo;s OK if you are coming from <code>localhost</code> or <code>127.0.0.1</code> instead of the domain that you specified in the account creation step; reCAPTCHA will allow that. You should be able to click the buttons on the reCAPTCHA box and they should work.</p>
+
+<p>After you goof around with that a bit, you&rsquo;ll need to update your app itself so that it actually uses the reCAPTCHA box to validate the form submission.</p>
+
+<p>Let&rsquo;s turn now to the Java piece, where we validate the form and reCAPTCHA.</p>
+
+<p><h3>Step 4: Validate the form, including the reCAPTCHA</h3></p>
+
+<p>You&rsquo;ll find it convenient to <a href="http://code.google.com/p/recaptcha/downloads/list?q=label:java-Latest" target="_blank">download the recaptcha4j library</a>. It provides a simple API for submitting user responses to the reCAPTCHA server and finding out whether a user&rsquo;s response is valid.</p>
+
+<p>At this point I&rsquo;m just going to lay some code on you. As mentioned above I&rsquo;m using <a href="spring-mvc-annotations.html">Spring 2.5 MVC with annotations</a> and Commons Validator, but the main thing is for you to look at how I&rsquo;m using the <code>ReCaptchaImpl</code> class and just copy that.</p>
+
+<p><pre>import net.tanesha.recaptcha.ReCaptchaImpl;
+import net.tanesha.recaptcha.ReCaptchaResponse;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;</p>
+
+<p>&hellip;</p>
+
+<p>@RequestMapping(value = &ldquo;/comments/postcomment.do&rdquo;, method = RequestMethod.POST)
+public String doPost(</p>
+
+<pre><code>    HttpServletRequest req,
+    @RequestParam("articleId") long articleId,
+    @RequestParam("recaptcha_challenge_field") String challenge,
+    @RequestParam("recaptcha_response_field") String response,
+    @ModelAttribute("comment") Comment comment,
+    BindingResult result) {
+
+// Validate the form (other than the reCAPTCHA)
+validator.validate(comment, result);
+
+// Validate the reCAPTCHA
+String remoteAddr = req.getRemoteAddr();
+ReCaptchaImpl reCaptcha = new ReCaptchaImpl();
+
+// Probably don't want to hardcode your private key here but
+// just to get it working is OK...
+reCaptcha.setPrivateKey("&amp;lt;your_private_key&amp;gt;");
+
+ReCaptchaResponse reCaptchaResponse =
+    reCaptcha.checkAnswer(remoteAddr, challenge, response);
+
+if (!reCaptchaResponse.isValid()) {
+    FieldError fieldError = new FieldError(
+        "comment",
+        "captcha",
+        response,
+        false,
+        new String[] { "errors.badCaptcha" },
+        null,
+        "Please try again.");
+    result.addError(fieldError);
+}
+
+// If there are errors, then validation fails.
+if (result.hasErrors()) {
+    String path = comment.getPagePath();
+    log.debug("Form validation error; forwarding to " + path);
+    return "forward:" + path;
+}
+
+// Else validation succeeds.
+log.debug("Form validation passed");
+comment.setIpAddress(remoteAddr);
+comment.setDate(new Date());
+
+// Post the comment
+log.debug("Posting the comment");
+articleService.postComment(articleId, comment);
+log.debug("Comment posted");
+
+return "redirect:" + comment.getPagePath() + "#comments";
+</code></pre>
+
+<p>}</pre></p>
+
+<p>Here&rsquo;s the <a href="http://static.springframework.org/spring/docs/2.5.x/api/org/springframework/validation/FieldError.html" target="_blank">API for FieldError</a> since I know that&rsquo;s not clear from the code. Basically I&rsquo;m using that to indicate that a validation error occurred and set up an error message for the user. If you&rsquo;re not using Spring/Validator then you&rsquo;ll do something else here.</p>
+
+<p>The <code>Comment</code> class is just a class from my app, so don&rsquo;t worry about that one.</p>
+
+<p><h3>You did it</h3></p>
+
+<p>Good job. If you&rsquo;re feeling ambitious, try to defeat reCAPTCHA with super-advanced OCR. If you succeed then it represents an advance in OCR technology. Tell somebody and become famous. :&ndash;)</p>
+
+<p><div class="endnote">Post migrated from my Wheeler Software site.</div></p>
+]]></content>
+  </entry>
+  
+</feed>

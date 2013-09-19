@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/03/13/how-to-recaptcha-your-java-application/
 layout: post
-title: How to reCAPTCHA your Java application
+title: "How to reCAPTCHA your Java application"
 date: 2008-03-13 14:42:36
 comments: true
 categories: [Chapter 04 - Web forms, Chapter 08 - Communicating, Tutorials]

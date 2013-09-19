@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Tutorials | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/tutorials/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-16T02:13:12-07:00</updated>
+  <updated>2013-09-18T23:53:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -154,6 +154,765 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
 </code></pre>
 
 <p>Spring Data JPA makes it very nice and simple. And Twitter Bootstrap looks great too.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Dynamic DAOs and queries using Spring Data JPA]]></title>
+    <link href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/"/>
+    <updated>2012-04-24T16:18:27-07:00</updated>
+    <id>http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa</id>
+    <content type="html"><![CDATA[<p>For a long time, creating a DAO layer in Spring has been a largely manual process:</p>
+
+<ol>
+    <li>Create a base generic DAO interface.</li>
+    <li>Create a generic abstract DAO implementation with general-purpose CRUD methods and common queries (e.g., <code>findAll</code>()).</li>
+    <li>For each DAO we want, extend the base DAO interface with an entity-specific interface (e.g., <code>CustomerDao</code>).</li>
+    <li>For each DAO we want, extend the abstract DAO class with an entity-specific concrete class (e.g., <code>HibernateCustomerDao</code>).</li>
+</ol>
+
+
+<p>Items 1 and 2 amount to creating a homegrown DAO framework, and items 3 and 4 amount to using it to implement DAOs.</p>
+
+<p>Now there&rsquo;s a better way to do things. The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don&rsquo;t have to implement it ourselves.</p>
+
+<p>Moreover, Spring Data is able to generate concrete DAO implementations and custom queries automatically. So even step 4 above goes away in many cases. With Spring Data JPA you can create DAO tiers by defining interfaces.</p>
+
+<p>In this post we&rsquo;ll learn how to use Spring Data JPA to clean up our DAO tier. Let&rsquo;s get the POM and configuration out of the way first. Then we&rsquo;ll get into the actual repository code. We won&rsquo;t get into the details of mapping actual entities (via JPA annotations or otherwise) as that&rsquo;s outside the scope of what we want to cover here.</p>
+
+<h3>POM</h3>
+
+
+<p>First we need to choose which JPA provider and which package versions we want to work with. For the JPA provider, we&rsquo;ll use Hibernate. For the package versions, we&rsquo;ll use Spring 3.1.1, Spring Data JPA 1.0.3 and Hibernate 4.1.1 since those are current at the time I&rsquo;m writing this.</p>
+
+<p>Here are the relevant Maven dependencies for <code>pom.xml</code>:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project ...&gt;
+
+    ...
+
+    &lt;!-- Use whatever versions make sense for your project. --&gt;
+    &lt;properties&gt;
+        &lt;hibernate.version&gt;4.1.1.Final&lt;/hibernate.version&gt;
+        &lt;spring.version&gt;3.1.1.RELEASE&lt;/spring.version&gt;
+        &lt;spring.data.version&gt;1.0.3.RELEASE&lt;/spring.data.version&gt;
+    &lt;/properties&gt;
+
+    &lt;dependencies&gt;
+
+        ... standard Spring dependencies (beans, context, core, etc.) ...
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.data&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-data-jpa&lt;/artifactId&gt;
+            &lt;version&gt;${spring.data.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+            &lt;artifactId&gt;hibernate-core&lt;/artifactId&gt;
+            &lt;version&gt;${hibernate.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+            &lt;artifactId&gt;hibernate-entitymanager&lt;/artifactId&gt;
+            &lt;version&gt;${hibernate.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+            &lt;artifactId&gt;hibernate-ehcache&lt;/artifactId&gt;
+            &lt;version&gt;${hibernate.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+
+    ...
+
+&lt;/project&gt;
+</pre>
+
+
+
+
+<h3>JPA configuration</h3>
+
+
+<p>The JPA configuration goes here: <code>/src/main/resources/META-INF/persistence.xml</code>. Here&rsquo;s the configuration itself. (Adjust as necessary if you&rsquo;re not using MySQL.)</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;persistence xmlns="http://java.sun.com/xml/ns/persistence"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
+    version="1.0"&gt;
+   
+    &lt;persistence-unit name="RunbookManager" transaction-type="RESOURCE_LOCAL"&gt;
+        &lt;description&gt;This unit manages runbooks.&lt;/description&gt;
+        &lt;provider&gt;org.hibernate.ejb.HibernatePersistence&lt;/provider&gt;
+        &lt;jta-data-source&gt;jdbc/RunbookDS&lt;/jta-data-source&gt;
+        &lt;properties&gt;
+            &lt;property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5Dialect" /&gt;
+            &lt;property name="hibernate.show_sql" value="false" /&gt;
+        &lt;/properties&gt;
+    &lt;/persistence-unit&gt;
+&lt;/persistence&gt;</pre>
+
+
+<p>The configuration above is where we declare Hibernate as our JPA provider.</p>
+
+<p>Now let&rsquo;s look at the Spring configuration.</p>
+
+<h3>Spring configuration</h3>
+
+
+
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+        http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.0.xsd
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.1.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd"&gt;
+        
+    &lt;jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/RunbookDS" resource-ref="true" /&gt;
+    
+    &lt;bean id="entityManagerFactory"
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+        p:persistenceUnitName="RunbookManager"
+        p:dataSource-ref="dataSource" /&gt;
+
+    &lt;bean id="transactionManager"
+        class="org.springframework.orm.jpa.JpaTransactionManager"
+        p:entityManagerFactory-ref="entityManagerFactory" /&gt;
+
+    &lt;jpa:repositories base-package="com.example.runbooks.repo" /&gt;
+    
+    &lt;tx:annotation-driven /&gt;
+
+    ... other beans ...
+
+&lt;/beans&gt;
+</pre>
+
+
+<p>Note the use of the <code>jpa</code> namespace to declare a package containing the repositories. This package contains the various interfaces we&rsquo;re about to define. The <code>&lt;jpa:repositories&gt;</code> configuration tells Spring to scan for interfaces and create the repository implementations, magically.</p>
+
+<h3>Repository interfaces</h3>
+
+
+<p>OK, now we&rsquo;ve made it to the good stuff. We&rsquo;ll look at a few examples here.</p>
+
+<p>To create a new DAO, we simply extend the <code>JpaRepository</code> interface, which is part of Spring Data JPA. It takes two type parameters: the relevant entity type, and its ID type. The interface comes with a bunch of standard CRUD operations and queries; see the <a href="http://static.springsource.org/spring-data/data-jpa/docs/current/api/org/springframework/data/jpa/repository/JpaRepository.html">JpaRepository API documentation</a> for details on those.</p>
+
+<h4>Example 1: A barebones repo</h4>
+
+
+<p>First, the most barebones example would be where we&rsquo;re perfectly happy with the standard CRUD and query operations that the Spring Data <code>JpaRepository</code> already provides. In that case, all we have to do is extend the interface and we&rsquo;re done.</p>
+
+<pre>package com.example.runbooks.repo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.runbooks.model.RunbookGroup;
+
+public interface RunbookGroupRepo
+    extends JpaRepository&lt;RunbookGroup, Long&gt; { }</pre>
+
+
+<p>With that simple interface definition, Spring Data JPA will be able to create an implementation dynamically that gives us methods like <code>count()</code>, <code>findAll()</code>, <code>findOne()</code>, <code>save()</code>, <code>delete()</code>, <code>deleteAll()</code>, <code>deleteInBatch()</code> and more for free.</p>
+
+<h4>Example 2. A simple custom query</h4>
+
+
+<p>Say we have a <code>ChapterType</code> entity with a <code>key</code> property, and we want a query that can find chapter types by key. No problem. We can use conventions around method names to tell Spring Data JPA which query we&rsquo;d like to see:</p>
+
+<pre>package com.example.runbooks.repo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.runbooks.model.ChapterType;
+
+public interface ChapterTypeRepo
+    extends JpaRepository&lt;ChapterType, Long&gt; {
+
+    ChapterType findByKey(String key);
+}</pre>
+
+
+<p>Spring Data maps the method to a query that effectively accomplishes</p>
+
+<blockquote>
+<code>from ChapterType where key = :key</code>
+</blockquote>
+
+
+
+
+<h4>Example 3. A more complex custom query</h4>
+
+
+<p>The scheme from example 2 above extends to cases where the properties in question are complex, in a couple of different ways: first, they might involve multiple conditions in the &ldquo;where&rdquo; clause; second, they might involve joins. Suppose, for instance, that we want to find a chapter having a certain runbook ID and a certain chapter number. Suppose also that the JPQL would be</p>
+
+<blockquote>
+<code>from Chapter c where c.runbook.id = :runbookId and<br />
+c.chapterType.number = :chapterNumber</code>
+</blockquote>
+
+
+<p>Here&rsquo;s how to build a repo supporting that query:</p>
+
+<pre>package com.example.runbooks.repo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.runbooks.model.Chapter;
+
+public interface ChapterRepo
+    extends JpaRepository&lt;Chapter, Long&gt; {
+
+    Chapter findByRunbookIdAndChapterTypeNumber(
+        Long runbookId, Integer chapterNumber);
+}</pre>
+
+
+<p>The convention implicit in the method name is fairly obvious, especially in light of the JPQL query. The convention can admittedly lead to some awkward method names, as it does in this case. (A better name might be <code>findByRunbookIdAndChapterNumber()</code>.) But the convenience is tough to beat.</p>
+
+<div class="endnote">Interested in learning more about Spring Data JPA? See my post <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">Pagination and sorting with Spring Data JPA</a>.</div>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Using Spring Social GitHub to access secured GitHub data]]></title>
+    <link href="http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code/"/>
+    <updated>2012-03-05T16:40:28-08:00</updated>
+    <id>http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code</id>
+    <content type="html"><![CDATA[<p>At my <a title="Skydingo blog" href="http://skydingo.com/blog/">Skydingo blog</a> (a devops blog written in collaboration with Paul Jenson) I just wrote a <a href="http://skydingo.com/blog/2012/03/skybase-now-supports-authorized-access-to-github-via-spring-social-github/" title="Skybase now supports authorized access to GitHub via Spring Social GitHub">quick post</a> with some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+
+<p>[caption id=&ldquo;attachment_672&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;529&rdquo; caption=&ldquo;Authorize access to get GitHub repo hooks and other sensitive data&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png"><img src="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png" alt="" title="hooks" width="529" height="195" class="size-full wp-image-672" /></a>[/caption]</p>
+
+<h3>Spring application configuration</h3>
+
+
+<p>This goes in the app context. I lifted it more or less as-is from the Spring Social reference documentation, except that I&rsquo;m using GitHub as the provider instead of Facebook, Twitter or LinkedIn.</p>
+
+<pre>&lt;bean id="connectionFactoryLocator" class="org.springframework.social.connect.support.ConnectionFactoryRegistry"&gt;
+    &lt;property name="connectionFactories"&gt;
+        &lt;list&gt;
+            &lt;bean class="org.springframework.social.github.connect.GitHubConnectionFactory"&gt;
+                &lt;constructor-arg value="${gitHub.clientId}" /&gt;
+                &lt;constructor-arg value="${gitHub.clientSecret}" /&gt;
+            &lt;/bean&gt;
+        &lt;/list&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;bean id="textEncryptor" class="org.springframework.security.crypto.encrypt.Encryptors" factory-method="noOpText" /&gt;
+
+&lt;bean id="usersConnectionRepository" class="org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository"&gt;
+    &lt;constructor-arg ref="dataSource" /&gt;
+    &lt;constructor-arg ref="connectionFactoryLocator" /&gt;
+    &lt;constructor-arg ref="textEncryptor" /&gt;
+&lt;/bean&gt;
+
+&lt;!-- This requires authentication via Spring Security --&gt;
+&lt;bean id="connectionRepository"
+    factory-bean="usersConnectionRepository"
+    factory-method="createConnectionRepository" 
+    scope="request"&gt;
+    
+    &lt;constructor-arg value="#{request.userPrincipal.name}" /&gt;
+    &lt;aop:scoped-proxy proxy-target-class="false" /&gt;
+&lt;/bean&gt;</pre>
+
+
+
+
+<h3>Spring web configuration</h3>
+
+
+
+
+<pre>&lt;bean class="org.springframework.social.connect.web.ConnectController" /&gt;</pre>
+
+
+
+
+<h3>Service code for the user account page</h3>
+
+
+<p>Here&rsquo;s how I&rsquo;m looking up the GitHub user profile information:</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import javax.inject.Inject;
+
+import org.skydingo.skybase.model.UserAccount;
+import org.skydingo.skybase.repository.UserAccountRepository;
+import org.skydingo.skybase.service.UserAccountService;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubUserProfile;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserAccountServiceImpl extends AbstractCIService implements UserAccountService {
+    @Inject private ConnectionRepository connectionRepo;
+    
+    public GitHubUserProfile getCurrentUserProfile() {
+        if (gitHub().isAuthorized()) {
+            return gitHub().userOperations().getUserProfile();
+        } else {
+            return null;
+        }
+    }
+    
+    private GitHub gitHub() {
+        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
+        return (conn != null ? conn.getApi() : new GitHubTemplate());
+    }
+
+    ... other methods ...
+}</pre>
+
+
+<p>In the <code>gitHub()</code> method you can see that I return an existing <code>GitHub</code> object if the connection exists; otherwise I just create a new <code>GitHub</code> (in the form of the template, which implements <code>GitHub</code>) so that the app can at least perform non-sensitive read operations.</p>
+
+<h3>Service to get the GitHub service hooks</h3>
+
+
+<p>This one&rsquo;s pretty similar to the above.</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import java.util.List;
+import javax.inject.Inject;
+import org.skydingo.skybase.model.Application;
+import org.skydingo.skybase.service.ApplicationService;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubHook;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ApplicationServiceImpl extends AbstractCIService implements ApplicationService {
+    @Inject private ConnectionRepository connectionRepo;
+    
+    public List findHooks(String user, String repo) {
+        return gitHub().repoOperations().getHooks(user, repo);
+    }
+
+    private GitHub gitHub() {
+        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
+        return (conn != null ? conn.getApi() : new GitHubTemplate());
+    }
+
+    ... various other methods ...
+}</pre>
+
+
+<p>I should probably factor out that common <code>gitHub()</code> method. :&ndash;)</p>
+
+<h3>User account JSP</h3>
+
+
+<p>Here&rsquo;s the JSP code for rendering the connect/disconnect buttons. The CSS classes come from <a title="Twitter Bootstrap" href="http://twitter.github.com/bootstrap/">Bootstrap 2.0</a>, in case you were wondering.</p>
+
+<pre>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+&lt;%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %&gt;
+&lt;%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %&gt;
+&lt;%@ taglib prefix="social" uri="http://www.springframework.org/spring-social/social/tags" %&gt;
+
+&lt;c:url var="connectUrl" value="/connect" /&gt;
+&lt;c:url var="githubUrl" value="/connect/github" /&gt;
+
+&lt;sec:authentication var="user" property="principal" /&gt;
+
+&lt;h1&gt;Account details&lt;/h1&gt;
+
+&lt;section class="first"&gt;
+    &lt;div class="well"&gt;
+        &lt;table class="grid"&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Username:&lt;/td&gt;
+                &lt;td&gt;&lt;c:out value="${user.username}" /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+    &lt;h2&gt;GitHub&lt;/h2&gt;
+
+    &lt;social:connected provider="github"&gt;
+        &lt;p&gt;Your Skybase and GitHub accounts are connected.&lt;/p&gt;
+        &lt;div class="well"&gt;
+            &lt;table class="grid"&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;Blog:&lt;/td&gt;
+                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.blog}" default="None" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;Location:&lt;/td&gt;
+                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.location}" default="None" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;form method="post" action="${githubUrl}"&gt;
+            &lt;input type="hidden" name="_method" value="delete" /&gt;
+            &lt;input class="btn btn-danger" type="submit" value="Disconnect from GitHub" /&gt;
+        &lt;/form&gt;
+    &lt;/social:connected&gt;
+
+    &lt;social:notConnected provider="github"&gt;
+        &lt;p&gt;Your Skybase and GitHub accounts are not yet connected. Connect them for additional Skybase features.&lt;/p&gt;
+        &lt;form method="post" action="${githubUrl}"&gt;
+            &lt;input type="hidden" name="scope" value="user, repo, gist" /&gt;
+            &lt;input class="btn btn-primary" type="submit" value="Connect to GitHub" /&gt;
+        &lt;/form&gt;
+    &lt;/social:notConnected&gt;
+&lt;/section&gt;</pre>
+
+
+<p>Note the use of the Spring Social <code>&lt;social:connected&gt;</code> and <code>&lt;social:notConnected&gt;</code> tags to show different content based on whether the user is or isn&rsquo;t connected to the provider in question.</p>
+
+<p>Notice also that the connect button sends a hidden <code>scope</code> parameter to the GitHub URL. This allows us to specify the kinds of operation we want the user to authorize.</p>
+
+<p>Anyway, there you have it. This post was a bit quick, so let me know if I left anything important out and I&rsquo;m happy to add it. Have fun.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Working with the Neo4j shell]]></title>
+    <link href="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/"/>
+    <updated>2012-02-12T06:06:54-08:00</updated>
+    <id>http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell</id>
+    <content type="html"><![CDATA[<p>In this post we&rsquo;re going to learn how to work with a local Neo4j database using the <a href="http://neo4j.org/" title="Neo4j">Neo4j</a> shell. This isn&rsquo;t really a Spring post, but <a href="http://www.springsource.org/spring-data/neo4j" title="Spring Data Neo4j">Spring Data Neo4j</a> users will probably find it useful.</p>
+
+<p><strong>Set environment variable (optional).</strong> First, set the <code>NEO4J_HOME</code> environment variable to point to the top-level Neo4j directory, and put the <code>bin</code> directory on your path.</p>
+
+<p><strong>Start the Neo4j shell.</strong> Type</p>
+
+<p><code>neo4j-shell -path path/to/neo4j-db</code></p>
+
+<p>with the actual path to your database substituted in. If you want to run in read-only mode, you can do this instead:</p>
+
+<p><code>neo4j-shell -readonly -path path/to/neo4j-db</code></p>
+
+<p>If everything went well, you should see something that looks like this:</p>
+
+<pre>/lib/neo4j-community-1.5/bin$ neo4j-shell -path ~/projects/skydingo/skybase/neo4j/db
+NOTE: Local Neo4j graph database service at '/Users/williewheeler/projects/skydingo/skybase/neo4j/db'
+Welcome to the Neo4j Shell! Enter 'help' for a list of commands
+
+Welcome to the Neo4j Shell! Enter 'help' for a list of commands
+
+neo4j-sh (0)$</pre>
+
+
+<p>I&rsquo;m not sure why it welcomes me twice (friendly shell, I suppose), but that&rsquo;s what it does.</p>
+
+<p><strong>Try some commands.</strong> Now we&rsquo;re in the shell. The command set is bash-like, which is kind of nice if you&rsquo;re already familiar with bash. Let&rsquo;s play around with some commands.</p>
+
+<p>First, we&rsquo;ll set the current node to node 22:</p>
+
+<pre>neo4j-sh (0)$ cd -a 22
+neo4j-sh (willie,22)$</pre>
+
+
+<p>The <code>-a</code> flag stands for &ldquo;absolute path&rdquo;, and it just means that I can navigate to any node at all in the graph, instead of being limited to adjacent nodes.</p>
+
+<p>Now let&rsquo;s see what node 22 looks like:</p>
+
+<pre>neo4j-sh (willie,22)$ ls
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-111-2222]
+neo4j-sh (willie,22)$</pre>
+
+
+<p>Let&rsquo;s change the work phone:</p>
+
+<pre>neo4j-sh (willie,22)$ set workPhone "999-867-5309"
+neo4j-sh (willie,22)$ ls
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-867-5309]
+neo4j-sh (willie,22)$ </pre>
+
+
+<p>You can tell that I created the node above using Spring Data Neo4j since it has the <code><strong>type</strong></code> property that Spring Data Neo4j uses.</p>
+
+<p>Now let&rsquo;s create a new node. With Neo4j we create new nodes by relating them to existing nodes. Witness:</p>
+
+<pre>neo4j-sh (willie,22)$ mkrel -t HAS_HOBBY -d OUTGOING -c
+neo4j-sh (willie,22)$ ls    
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-867-5309]
+(me) --[HAS_HOBBY]-&gt; (48)
+neo4j-sh (willie,22)$</pre>
+
+
+<p>Notice that there&rsquo;s now a node 48. Let&rsquo;s navigate to that node and give it a title:</p>
+
+<pre>neo4j-sh (willie,22)$ cd 48
+neo4j-sh (48)$ ls
+(me) &lt;-[HAS_HOBBY]-- (willie,22)
+neo4j-sh (48)$ set name &quot;Playing guitar&quot;
+neo4j-sh (Playing guitar,48)$ ls
+*name =[Playing guitar]
+(me) &lt;-[HAS_HOBBY]-- (willie,22)
+neo4j-sh (Playing guitar,48)$</pre>
+
+
+<p>Alright, that was cool, but I don&rsquo;t want that node anymore. We&rsquo;re going to delete both the node and the relationship we created:</p>
+
+<pre>neo4j-sh (Playing guitar,48)$ rmnode 48
+(Playing guitar,48) cannot be deleted because it still has relationships. Use -f to force deletion of its relationships
+neo4j-sh (Playing guitar,48)$ rmnode -f 48
+Relationship [HAS_HOBBY,26] deleted
+neo4j-sh (?)$ cd -a 22
+neo4j-sh (willie,22)$ ls
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-867-5309]
+neo4j-sh (willie,22)$</pre>
+
+
+<p>We can do Cypher queries too. Here&rsquo;s a pretty basic one:</p>
+
+<pre>neo4j-sh (willie,22)$ start n=node(2) return n
++------------------------------------------------------------------------+
+| n                                                                      |
++------------------------------------------------------------------------+
+| Node[2]{name-&gt;"US West",__type__-&gt;"org.skydingo.skybase.model.Region"} |
++------------------------------------------------------------------------+
+1 rows, 0 ms
+neo4j-sh (willie,22)$</pre>
+
+
+<p>OK, it&rsquo;s quitting time:</p>
+
+<pre>neo4j-sh (willie,22)$ quit
+/lib/neo4j-community-1.5/bin$</pre>
+
+
+<p>There are other commands too, and for those, see the <a href="http://docs.neo4j.org/" title="Neo4j Reference Manual">Neo4j reference manual</a>. But now you should be able to perform basic operations inside the shell.</p>
+
+<p>Have fun!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring Social GitHub: revisiting GitHub integration]]></title>
+    <link href="http://springinpractice.com/2012/01/17/spring-social-github-revisiting-github-integration/"/>
+    <updated>2012-01-17T15:44:56-08:00</updated>
+    <id>http://springinpractice.com/2012/01/17/spring-social-github-revisiting-github-integration</id>
+    <content type="html"><![CDATA[<p>In my last post, <a title="Calling the GitHub API using Spring’s RestTemplate" href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/">Calling the GitHub API using Spring&rsquo;s RestTemplate</a>, I explained how to call a public endpoint that retrieves a repository&rsquo;s watchers on the <a href="http://developer.github.com/v3/">GitHub API</a> using Spring&rsquo;s RestTemplate.</p>
+
+<p>I was happy to receive a <a href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/#comment-230">comment</a> by <a title="Craig Walls' Twitter page" href="https://twitter.com/#!/habuma">Craig Walls</a> pointing out that <a title="Spring Social" href="http://www.springsource.org/spring-social">Spring Social</a> has a <a title="Spring Social GitHub's GitHub site" href="https://github.com/SpringSource/spring-social-github">GitHub binding</a>, which came with an invitation to contribute code to that binding. Sounded great&mdash;I forked the project on GitHub and dug in. I discovered two factoids:</p>
+
+<ol>
+    <li>The project is <a title="Gradle" href="http://gradle.org/">Gradle</a>-based. Excellent, because I'd been wanting to try it out for a couple of years since Craig first recommended it to me in at Spring One 2GX. I just never got around to it.</li>
+    <li>The Spring Social GitHub binding is nascent. (Understandably, Facebook, Twitter and LinkedIn get the lion's share of development attention.) Outstanding, because I could implement whatever I wanted.</li>
+</ol>
+
+
+<p>I ended up writing a handful of public endpoints for Spring Social GitHub. I focused on the public ones instead of the personal ones requiring OAuth (GitHub supports OAuth2 among others) since the <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase app</a> I&rsquo;m building probably doesn&rsquo;t need any of the personal endpoints. I&rsquo;ll show you some of what I did since it&rsquo;s fairly straightforward and since some of you might be interested in contributing further code. The Spring Social documentation has a <a title="Contributing code" href="http://static.springsource.org/spring-social/docs/1.0.x/reference/html/implementing.html">chapter on how to create or elaborate a binding</a>, and there are existing bindings for <a href="https://github.com/SpringSource/spring-social-facebook">Facebook</a>, <a href="https://github.com/SpringSource/spring-social-twitter">Twitter</a> and <a href="https://github.com/SpringSource/spring-social-linkedin">LinkedIn</a> that provide good guidance as to how to structure things. The GitHub site has <a title="Mechanics" href="https://github.com/SpringSource/spring-social/wiki/Contributing">useful information on the mechanics as well.</a> I was a little bit lazy and just shot Craig a few questions. He was <a href="https://github.com/SpringSource/spring-social-github/pull/1">good-natured</a> about it, and pointed me to the right examples.</p>
+
+<h3>Implementing support for repository watching in Spring Social GitHub</h3>
+
+
+<p><strong>Implementing a user class.</strong> In the last post I implemented a <code>User</code> class and then just called the GitHub URL with the RestTemplate, deserializing the JSON into my User. As it turns out, this isn&rsquo;t that different than what I added to Spring Social GitHub. In fact, the revised version is almost exactly the same:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import java.io.Serializable;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonProperty;
+
+@SuppressWarnings("serial")
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class GitHubUser implements Serializable {
+    private Long id;
+    private String url;
+    private String login;
+    private String avatarUrl;
+    private String gravatarId;
+
+    public Long getId() { return id; }
+
+    public void setId(Long id) { this.id = id; }
+
+    public String getUrl() { return url; }
+
+    public void setUrl(String url) { this.url = url; }
+
+    public String getLogin() { return login; }
+
+    public void setLogin(String login) { this.login = login; }
+
+    @JsonProperty("avatar_url")
+    public String getAvatarUrl() { return avatarUrl; }
+
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    @JsonProperty("gravatar_id")
+    public String getGravatarId() { return gravatarId; }
+
+    public void setGravatarId(String gravatarId) { this.gravatarId = gravatarId; }
+}</pre>
+
+
+<p>I added the <code>@JsonIgnoreProperties</code> annotation to try to future-proof the class a little, and I renamed it to <code>GitHubUser</code> since that was more in line with the Spring Social convention around naming data transfer objects.</p>
+
+<p><strong>Creating the client interfaces.</strong> Spring Social basically wraps <code>RestTemplate</code> with provider-specific methods and support for OAuth authorization. So instead of passing <code><a href="https://api.github.com/repos/williewheeler/skybase">https://api.github.com/repos/williewheeler/skybase</a> to RestTemplate.getForObject()</code>, we call a <code>getWatchers()</code> method on the Spring Social GitHub API.</p>
+
+<p>The general pattern is for there to be a top-level Java client interface, which is called <code>Facebook</code>, or <code>Twitter</code>, or <code>LinkedIn</code>, or <code>GitHub</code>, and then for this interface to have smaller sub-APIs to group related operations. This avoids having a monster interface with dozens and dozens of methods. Here, for example, is what the <code>GitHub</code> interface looks like so far:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import org.springframework.social.ApiBinding;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+
+public interface GitHub extends ApiBinding {
+
+    RepoOperations repoOperations();
+
+    UserOperations userOperations();
+}</pre>
+
+
+<p>GitHub has a lot more sets of operations than that (e.g. gists, issues, orgs, pull requests, etc.), but I was just getting my feet wet and so I only created a couple of <code>XxxOperations</code> interfaces here.</p>
+
+<p>Here&rsquo;s what <code>RepoOperations</code> looks like so far:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import java.util.List;
+
+public interface RepoOperations {
+    List getCollaborators(String user, String repo);
+    List getCommits(String user, String repo);
+    List getWatchers(String user, String repo);
+}</pre>
+
+
+<p>(As I mentioned, I implemented a few things beyond <code>getWatchers()</code>.)</p>
+
+<p><strong>Filling in the client implementations.</strong> With the interfaces in place, it was time to write their implementations. This looked pretty close to the code from my previous article, but a little more industrial-strength to handle API modularity and also personal endpoints. Here for instance is the <code>RepoTemplate</code>.</p>
+
+<pre>package org.springframework.social.github.api.impl;
+
+import static java.util.Arrays.asList;
+
+import java.util.List;
+import org.springframework.social.github.api.GitHubCommit;
+import org.springframework.social.github.api.GitHubUser;
+import org.springframework.social.github.api.RepoOperations;
+import org.springframework.web.client.RestTemplate;
+
+public class RepoTemplate extends AbstractGitHubOperations
+    implements RepoOperations {
+
+    private final RestTemplate restTemplate;
+
+    public RepoTemplate(RestTemplate restTemplate, boolean isAuthorizedForUser) {
+        super(isAuthorizedForUser);
+        this.restTemplate = restTemplate;
+    }
+
+    public List getCollaborators(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/collaborators"), GitHubUser[].class, user, repo));
+    }
+
+    public List getCommits(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/commits"), GitHubCommit[].class, user, repo));
+    }
+
+    public List getWatchers(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/watchers"), GitHubUser[].class, user, repo));
+    }
+
+    private String buildRepoUri(String path) {
+        return buildUri("repos/{user}/{repo}" + path);
+    }
+}</pre>
+
+
+<p><strong>Test cases.</strong> I wrote some test cases as well, using the test framework that the Spring guys put together. It is basically a mock server that serves up JSON files so you don&rsquo;t have to hit the real GitHub and put your rate limit in danger.</p>
+
+<h3>Using Spring Social GitHub</h3>
+
+
+<p>With all that in place, I was excited to try out my new code. Spring Social GitHub hasn&rsquo;t had an actual release yet (Spring Social Core has, but not the GitHub binding), so you&rsquo;ll need to hit a snapshot repository to get it:</p>
+
+<pre>&lt;repository&gt;
+    &lt;id&gt;spring-snapshot&lt;/id&gt;
+    &lt;name&gt;Spring Maven Snapshot Repository&lt;/name&gt;
+    &lt;url&gt;http://maven.springframework.org/snapshot&lt;/url&gt;
+&lt;/repository&gt;
+
+...
+
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.social&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-social-core&lt;/artifactId&gt;
+    &lt;version&gt;1.0.1.RELEASE&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.social&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-social-github&lt;/artifactId&gt;
+    &lt;version&gt;1.0.0.BUILD-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p>Here&rsquo;s the actual Java code:</p>
+
+<pre>import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubUser;
+
+...
+
+GitHub gitHub = ... injected or whatever ...
+List&lt;GitHubUser&gt; watchers =
+    gitHub.repoOperations().getWatchers("williewheeler", "skybase");</pre>
+
+
+<p>Couldn&rsquo;t be much easier.</p>
+
+<p>Here are some Skybase screenshots that show what sort of information I&rsquo;m pulling down from GitHub using Spring Social GitHub:</p>
+
+<p>[gallery columns=&ldquo;2&rdquo;]</p>
 ]]></content>
   </entry>
   

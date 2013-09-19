@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Chapter 14 - Site-up | Spring in Practice]]></title>
+  <link href="http://springinpractice.com/blog/categories/chapter-14-site-up/atom.xml" rel="self"/>
+  <link href="http://springinpractice.com/"/>
+  <updated>2013-09-18T23:53:48-07:00</updated>
+  <id>http://springinpractice.com/</id>
+  <author>
+    <name><![CDATA[Willie Wheeler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Top ten [and counting] operational excellence design principles]]></title>
+    <link href="http://springinpractice.com/2010/07/26/top-ten-operational-excellence-design-principles/"/>
+    <updated>2010-07-26T18:05:26-07:00</updated>
+    <id>http://springinpractice.com/2010/07/26/top-ten-operational-excellence-design-principles</id>
+    <content type="html"><![CDATA[<p><a href="http://www.flickr.com/photos/kim_scarborough/147973192/"><img src="http://springinpractice.s3.amazonaws.com/blog/images/noc.jpg" alt="Operational excellence" align="right" /></a></p>
+
+<p>Here are some key operational excellence design principles. These are intended for system architects (both on the software and infrastructure side) and operational staff.</p>
+
+<p>This started out as a top ten list, but it&rsquo;s been growing.</p>
+
+<p><strong>1. Organizational focus.</strong> OK, this one isn&rsquo;t a design principle, but it&rsquo;s too important to neglect. Having an organizational focus on operational excellence really matters. Everything from isolating core development from production support (that is, create a group within development whose daily responsibility is to insulate core development from production), creating a top-ten hit list and just working that weekly, setting explicit availability and performance goals and then tracking to them&mdash;speaking from personal experience, those are things that can create dramatic and almost immediate results.</p>
+
+<p><strong>2. Aggressively automate processes and controls.</strong> Automate ticket workflow, local builds, integration builds, tests, provisioning, OS installs, patching, deployments, rollbacks, monitoring, alerting, diagnostics, escalation, backups, log rotation, reporting, auditing&mdash;everything you can! Automation increases speed and limits variance, which is an operations-killer.</p>
+
+<p>On the control side, in cases where it&rsquo;s possible to use a technical means to enforce policy (automation, tightly constrained configuration schemas, access controls, etc.), use it. The ideal control makes the undesirable action or state technically impossible.</p>
+
+<p><strong>3. Design for supportability.</strong> The NOC should have the tools and information necessary to resolve at least 80% of production issues without directly involving the development team. Put the right monitoring, diagnostic and management (e.g., SNMP, JMX) capability in place.</p>
+
+<p><strong>4. High availability is all about redundancy.</strong> In general high availability involves redundancy at all levels: power sources, network interfaces, switches, RAIDs, RAC nodes, Internet pipes and even data centers if you want to withstand site failures. Redundancy means that you&rsquo;ve deployed independent, readily-available (perhaps active) capacity beyond what&rsquo;s normally needed to hit performance SLAs. Without this extra capacity, component failures often create complete system unavailability through a chain reaction mechanism that looks like this: (1) one component fails; (2) other components take on the excess demand, creating performance issues; (3) other components fail under load; and (4) system is unavailable.</p>
+
+<p>Don’t confuse high availability with load balancing. If all <em>n</em> instances in a load-balanced pool are required to meet a given performance SLA, then there is no redundancy, because there&rsquo;s no spare capacity to take up the slack in the event of a node failure. Indeed exposure is substantially <em>increased</em>, because all it takes is any one node to fail, and your pool is at best missing performance SLAs, and at worst rendered completely unavailable as described above.</p>
+
+<p><strong>5. Control failure modes.</strong> Components will fail. Failure modes should be designed, not emergent or accidental. Design failures to be transparent and limited in impact, using techniques such as <a href="http://springinpractice.com/2010/07/06/annotation-based-circuit-breakers-with-spring/">circuit breakers</a>. Test the design to ensure that it behaves as expected. Create automation and knowledge base articles to target specific failure modes for fast remediation.</p>
+
+<p><strong>6. Prefer horizontal approaches to scalability.</strong> You will sometimes need to add capacity, either to accommodate business growth or else to handle production issues. Prefer horizontal scalability to vertical scalability, since vertical scalability is more tightly coupled to technology. The database is often the constraint here, so consider approaches that support horizontal scalability, such as data sharding, separating reads from writes and farming out reads, and non-relational data stores.</p>
+
+<p><strong>7. Virtualize aggressively.</strong> Virtualization makes it easier to enforce standards, control drift, add capacity, increase utilization and in general create configuration options.</p>
+
+<p><strong>8. Capacity management = capacity planning + JIT capacity.</strong> Capacity planning is an art, not a science, and it&rsquo;s not always possible to anticipate exactly how much capacity you will need. There&rsquo;s a balance to strike between ensuring sufficient capacity and using resources efficiently, and sometimes the drive to be efficient will result in underestimates. In such situations, a JIT capability is key.</p>
+
+<p>For rollouts (e.g., new apps, new features, betas, promotions, or anything that might reasonably impact demand in a material way), it&rsquo;s better to overallocate and then scale back than it is to underallocate and scale up. Both approaches use resources efficiently, but only the former will allow you to meet aggressive SLAs. Virtualization helps tremendously here, partly because it pools excess physical capacity for shared use (thus limiting cost), and partly because it makes reaping excess capacity during scale-backs much easier.</p>
+
+<p><strong>9. Account for operational excellence overhead costs.</strong> Treat overheads such as monitoring and virtualization as costs that the design needs to account for, not as an excuse to neglect key operational requirements. Deal with instrumentation overhead, for example, by being selective about what you instrument. If your instrumentation adds 1 ms to a 200 ms call, that may not be a big deal. If it adds 1 ms to a 5 ms call inside a tight loop, that may be a bigger problem.</p>
+
+<p><strong>10. Focus monitoring efforts on ensuring that the business is running.</strong> It doesn’t matter whether a particular CPU is running at 90% utilization if you can’t connect that to a business or customer impact. Start by identifying the metrics that the business or customer cares about, and monitor those to ensure that the numbers are within expected bounds. Work backwards to correlated technical metrics.</p>
+
+<h3>Bonus principles</h3>
+
+
+<p><strong>11. Defense in depth applies to operational excellence too.</strong> A well-known security principle, defense in depth applies to operational excellence too. Automation controls configuration drift, but so does keeping people off the servers, being able to refresh the environment on demand, and using a configuration schema that makes certain types of drift impossible. Layer your defenses.</p>
+
+<p><strong>12. Treat support processes and staff as part of the system.</strong> All the monitoring, diagnostics and knowledge base articles in the world won’t help if the support staff doesn’t know how to use them. Test the human component of the system (training, communication, etc.) on a regular basis to ensure that when problems arise, the human response will be the one that was designed.</p>
+
+<p>The next three principles are courtesy of Satish Menon. Thanks Satish.</p>
+
+<p><strong>13. Design for graceful degradation:</strong> One example, if load increases, serve out of stale cache (where it is appropriate) rather than go to the origin server (database or whatever). We added a mechanism to Squid at Yahoo to give hints on what can be served stale.</p>
+
+<p><strong>14. Design for independent scalability (this conflicts your horizontal vs. vertical scalability).</strong> I am saying you need both. If there is a heavy hit on one of the services (e.g. Gradebook) over other, isolating the pathway to that in the design would allow you to scale that one service without scaling all of the rest of the infrastructure.</p>
+
+<p><strong>15. Put data in front of engineers.</strong> Define and measure SLAs for each of the major server interactions and put dashboards in place so people can see how their subsystems are doing.</p>
+
+<p>Here&rsquo;s another one that I find myself repeating often. Don&rsquo;t know how I missed it the first time around.</p>
+
+<p><strong>16. Minimize the number of moving parts.</strong> More moving parts mean that more things can break. Better for example to templatize your middleware into a VM template and instantiate than to instantiate a bunch of bare-bones VMs and then follow up with a a lot of middleware installations. You can even get aggressive and take the same approach to app deployments (i.e., templatize a build that includes the app to be released). All things being equal, designs should try to minimize the number of things that can go wrong.</p>
+
+<h3>References</h3>
+
+
+
+
+<ul>
+    <li><a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a>, by Michael Nygard (Pragmatic)</li>
+    <li><a href="http://www.amazon.com/Scalable-Internet-Architectures-Theo-Schlossnagle/dp/067232699X">Scalable Internet Architectures</a>, by Theo Schlossnagle</li>
+    <li><a href="http://jprall.vox.com/library/post/85-operations-rules-to-live-by.html">(85) Operations Rules to Live By</a>, by Jon Prall</li>
+</ul>
+
+
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Annotation-based circuit breakers with Spring]]></title>
+    <link href="http://springinpractice.com/2010/07/06/annotation-based-circuit-breakers-with-spring/"/>
+    <updated>2010-07-06T15:10:11-07:00</updated>
+    <id>http://springinpractice.com/2010/07/06/annotation-based-circuit-breakers-with-spring</id>
+    <content type="html"><![CDATA[<h3>The punch line</h3>
+
+
+<p>First, here&rsquo;s the punch line for readers who already know what a circuit breaker is:</p>
+
+<pre style="margin:20px 0;">
+@Service
+@Transactional(
+    propagation = Propagation.REQUIRED,
+    isolation = Isolation.DEFAULT,
+    readOnly = true)
+public class MessageServiceImpl implements MessageService {
+    @Inject private MessageDao messageDao;
+
+    @GuardedByCircuitBreaker("messageServiceBreaker")
+    public Message getMotd() {
+        return messageDao.getMotd();
+    }
+
+    @GuardedByCircuitBreaker("messageServiceBreaker")
+    public List getImportantMessages() {
+        return messageDao.getImportantMessages();
+    }
+}
+</pre>
+
+
+<p>If you find that exciting (or at least interesting, if you don&rsquo;t know about circuit breakers yet), read on&hellip;</p>
+
+<h3>A proper introduction</h3>
+
+
+<p>One of my favorite books is Michael Nygard&rsquo;s <a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a> (Pragmatic). The idea behind the book is that when we build apps, the feature set isn&rsquo;t the only thing that matters. We need to pay attention to app vulnerabilities that too often result in performance issues or else downtime. A central thesis is that plenty of vulnerabilities are sufficiently common to warrant being classified as antipatterns, and there are corresponding patterns of correct engineering practice to address the antipatterns.</p>
+
+<p>Let&rsquo;s look at one of Nygard&rsquo;s antipatterns, the cascading failure.</p>
+
+<h3>Cascading failures</h3>
+
+
+<p>Probably everybody has seen cascading failures. It&rsquo;s essentially vertical fault propagation. The system has a fault somewhere low in the stack and the fault travels up the stack in an uncontrolled fashion until the outage is much worse than it should have been. Consider for instance the following system:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/portal.png" alt="Portal" /></p>
+
+<p>In this system we have a portal home page that depends upon a web service to deliver important messages to end users. The web service in turn pulls messages out of a database. Standard stuff.</p>
+
+<p>Now suppose there&rsquo;s some kind of problem with the database. Maybe a missing index leads to a bad execution plan, which leads to slow query times, leading to the web service&rsquo;s database calls queuing up and exhausting threads, causing the portal&rsquo;s calls to the web service to do the same thing, causing the browser&rsquo;s calls to the portal to do the same. Here&rsquo;s what that looks like:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/portal-cascade.png" alt="Broken portal" /></p>
+
+<p>While it goes without saying that the important messages are important, it&rsquo;s doubtful that they&rsquo;re so important that a missing index should be allowed to create complete system unavailability. (In this example, we took out a portal home page, so nobody can get in. If users are using other apps in the portal then they can continue to use them, but nobody new can enter.)</p>
+
+<p>Not good. But probably pretty common. I know I&rsquo;ve seen my fair share.</p>
+
+<h3>Circuit breakers to the rescue</h3>
+
+
+<p>A nice way to deal with cascading failures is to engineer the integration points to stop propagating failure. The pattern is called the circuit breaker, and it&rsquo;s modeled after physical circuit breakers in the real world. We install a circuit breaker at each integration point we want to treat. Under normal conditions, requests and responses flow over the breaker just like current flows over a real circuit breaker. But when the breaker detects a problem with the service at the far end of the breaker, it trips, thus preventing requests and responses from crossing over the integration point, at least until the breaker is reset.</p>
+
+<p>The circuit breaker pattern has two major benefits:</p>
+
+<ul>
+    <li><b>Breakers protect the client:</b> We don't want breakers wasting valuable resources (e.g., threads, network connections, their associated physical resources) calling services that are known to be down. Especially since the antipattern normally involves the thread just sitting there waiting for a response. The breaker prevents this by failing fast.</li>
+    <li><b>Breakers protect the service:</b> Sometimes the service is bogging down just due to insufficient capacity. In that situation, breakers prevent a capacity issue from becoming complete service unavailability by throttling load to the service. (There's still an availability issue here, but it's partial.)</li>
+</ul>
+
+
+<p>That&rsquo;s the concept. From a technical perspective, a breaker is a state machine with three states:</p>
+
+<ul>
+    <li><b>Closed:</b> The breaker's normal state. Requests and responses flow freely across the integration point.</li>
+    <li><b>Open:</b> The breaker's state when there's a problem. No requests can make it across the integration point. In effect, problems with the service are contained, and no propagation occurs.</li>
+    <li><b>Half-open:</b> The breaker's state when it decides it's time to "try again". The breaker doesn't stay open forever. Periodically it will allow a single request through to see whether the service is working again. If so, the breaker resets (goes closed). Otherwise the breaker trips again (goes open).</li>
+</ul>
+
+
+<p>Here&rsquo;s a state transition diagram for a circuit breaker. This is adapted from a diagram in Nygard&rsquo;s book:</p>
+
+<p><img src="http://kite.s3.amazonaws.com/wiki/images/circuit-breaker-state-transition.png" alt="Circuit breaker state transition diagram" /></p>
+
+<p>From the diagram we can see that the trip condition is a certain number of consecutive exceptions. In principle we could use whatever trip condition we like. For example, it could be too many exceptions within a specified time window (i.e. excessive exception rate), too many SLA misses, or perhaps something else. In the implementation we&rsquo;ll describe below it&rsquo;s too many consecutive exceptions of specific types. In general we want to filter out exceptions that the user can intentionally generate (for example, by manipulating HTTP parameters or path variables in a URL) because we don&rsquo;t want to create a vector for DoS attacks.</p>
+
+<p>The other thing the diagram reveals is a timeout parameter. This is just the amount of time the breaker should remain open before going half-open and trying the service again.</p>
+
+<p>That&rsquo;s how breakers work in the abstract. Now let&rsquo;s look at a specific implementation based on Spring.</p>
+
+<h3>My circuit breaker implementation</h3>
+
+
+<p>My circuit breaker implementation is part of a nascent open source effort called <a href="http://code.google.com/p/kite-lib/">Kite</a> that I started a few months back. I haven&rsquo;t done terribly much with the project yet, mostly because I&rsquo;m trying to get the book wrapped up, but once I get above water again I&rsquo;ll be returning to the effort. Fortunately though I was able to get a fairly robust circuit breaker implementation out there with some useful features.</p>
+
+<p>The breaker is based on Spring, and that being the case, it&rsquo;s code-level design is very Spring-like. It&rsquo;s pretty similar to transaction management in Spring. You configure some doodads in the application context file and then you have the choice between programmatic application of breakers (via templates; again, very similar to other templates like JdbcTemplate) or else declarative configuration. The declarative approach further supports XML-based configuration and annotation-based configuration.</p>
+
+<p>Let&rsquo;s look at each in turn.</p>
+
+<h4>Programmatic circuit breakers</h4>
+
+
+<p>This will be familiar to anybody who has used HibernateTemplate, JdbcTemplate, TransactionTemplate, etc. The following is an example of what a Spring Web MVC controller might look like when using programmatic circuit breakers:</p>
+
+<pre style="margin:20px 0;">
+@Inject MessageService messageService;
+@Inject CircuitBreakerTemplate breaker;
+...
+
+public String getMotd() {
+    ...
+    try {
+        Message motd = breaker.execute(new CircuitBreakerCallback() {
+            public Message doInCircuitBreaker() throws Exception {
+                return messageService.getMotd();
+            }
+        });
+        model.addAttribute("motd", motd);
+    } catch (Exception e) {
+        log.error("Couldn't get MOTD: {}", e.getMessage());
+    }
+    ...
+}
+</pre>
+
+
+<p>While it&rsquo;s nice to have the flexibility to go programmatic, usually we don&rsquo;t want to go through all that trouble. The next pair of approaches simplifies things quite a bit.</p>
+
+<h4>Declarative circuit breakers using XML</h4>
+
+
+<p>Spring of course offers XML-based configuration for its various frameworks, and since Spring 2.0, Spring has supported custom namespaces that effectively let framework designers design a domain-specific language for framework configuration. That feature is too cool to pass up, so I built that into my implementation. Here&rsquo;s what the app context config looks like:</p>
+
+<pre style="margin:20px 0;">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans:beans xmlns="http://springinpractice.com/schema/kite"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://springinpractice.com/schema/kite
+        http:// ... kite schema location ... "&gt;
+
+    &lt;context:mbean-export /&gt;
+    
+    &lt;circuit-breaker
+        id="messageServiceBreaker"
+        exceptionThreshold="3"
+        timeout="30000" /&gt;
+
+    &lt;circuit-breaker-advice
+        id="messageServiceBreakerAdvice"
+        breaker="messageServiceBreaker" /&gt;
+
+    &lt;aop:config&gt;
+        &lt;aop:pointcut id="messageServicePointcut"
+            expression="execution(* kite.sample02.service.MessageServiceImpl.*(..))" /&gt;
+        &lt;aop:advisor advice-ref="messageServiceBreakerAdvice"
+            pointcut-ref="messageServicePointcut"
+            order="0" /&gt;
+    &lt;/aop:config&gt;
+&lt;/beans:beans&gt;
+</pre>
+
+
+<p>In this configuration you can see that I&rsquo;ve made <code>kite</code> the default namespace, and then I&rsquo;ve done a bunch of config that&rsquo;s hopefully mostly self-explanatory, if you know AOP anyway. (If not, that&rsquo;s fine. Read on.) The <code>&lt;context:mbean-export /&gt;</code> is there because the breaker implementation is JMX-enabled so your NOC or support staff (maybe it&rsquo;s you) can manually trip and reset the breaker as needed. That&rsquo;s a must-have feature in my opinion. Then I define a breaker, an AOP advice for the breaker, and then a pointcut and advisor to apply the breaker to the desired location.</p>
+
+<p>This is a nice approach, especially if you&rsquo;re not a big fan of annotations, which a lot of people aren&rsquo;t. I however like annotations quite a bit, so I went ahead and implemented support for annotation-based configuration too, as described below.</p>
+
+<h4>Declarative circuit breakers using annotations</h4>
+
+
+<p>Here&rsquo;s the app context:</p>
+
+<pre style="margin:20px 0;">
+&lt;beans:beans xmlns="http://springinpractice.com/schema/kite"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://springinpractice.com/schema/kite
+        http:// ... kite schema location ... "&gt;
+
+    &lt;context:mbean-export /&gt;
+
+    &lt;circuit-breaker
+        id="messageServiceBreaker"
+        exceptionThreshold="3"
+        timeout="30000" /&gt;
+    
+    &lt;annotation-config order="0" /&gt;
+&lt;/beans:beans&gt;
+</pre>
+
+
+<p>And here&rsquo;s the annotated service bean:</p>
+
+<pre style="margin:20px 0;">
+package kite.sample03.service;
+
+import java.util.List;
+import javax.inject.Inject;
+import kite.annotation.GuardedByCircuitBreaker;
+import kite.sample03.dao.MessageDao;
+import kite.sample03.model.Message;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional(
+    propagation = Propagation.REQUIRED,
+    isolation = Isolation.DEFAULT,
+    readOnly = true)
+public class MessageServiceImpl implements MessageService {
+    @Inject private MessageDao messageDao;
+
+    @GuardedByCircuitBreaker("messageServiceBreaker")
+    public Message getMotd() {
+        return messageDao.getMotd();
+    }
+
+    @GuardedByCircuitBreaker("messageServiceBreaker")
+    public List getImportantMessages() {
+        return messageDao.getImportantMessages();
+    }
+}
+</pre>
+
+
+<p>Nice and clean Spring-style annotation-based configuration.</p>
+
+<h3>Conclusion</h3>
+
+
+<p>Hope you enjoyed the post. If you want to give it a try, go to the <a href="http://code.google.com/p/kite-lib/">Kite project</a> and try it out. Also, chapter 14 in my book <a href="http://www.manning.com/wheeler/">Spring in Practice</a> shows how to go about implementing your own Spring-style framework code, should you get the itch, and it&rsquo;s based on the circuit breaker implementation we just described. It explains how to implement a template, a custom namespace, JMX support, AOP-based configuration and also annotation-based configuration.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Balancing frontend and backend server capacity]]></title>
+    <link href="http://springinpractice.com/2009/05/15/balancing-frontend-and-backend-server-capacity/"/>
+    <updated>2009-05-15T07:03:54-07:00</updated>
+    <id>http://springinpractice.com/2009/05/15/balancing-frontend-and-backend-server-capacity</id>
+    <content type="html"><![CDATA[<p>In <a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a>, Michael Nygard explains that a key approach to managing capacity is to balance the capacity of your front-end servers (e.g.,web servers or app servers) with that of your back-end servers. In this brief article we&rsquo;re going to look at what that means and why it&rsquo;s such a good idea to pay attention to this aspect of capacity management.</p>
+
+<h3>A simple example of wasted capacity</h3>
+
+
+<p>For the sake of example, let&rsquo;s say that we need to design an application that can support up to 100,000 concurrent user sessions within some given response time SLA. The app domain is such that we can partition the user population and employ a horizontally-scalable, sharded design. When there are problems, we want to try to limit the impact to at most 10% of the users. So we decide to go with ten pools that can handle 10,000 concurrent user sessions each. Each pool will have some number of application servers and some number of database servers.</p>
+
+<p>We don&rsquo;t know the number of app and database servers required, but we guess that we&rsquo;re going to need twice as many app servers as database servers. So we try stress testing various pools with that server ratio. Our stress testing reveals that a 6:3 pool can&rsquo;t handle the necessary load but an 8:4 pool can. It&rsquo;s important to us to have fault tolerance, so we decide to add one app node and one database node to the pool. That gives us a 9:5 pool ratio, for a total of 90 app servers and 50 database servers, or 140 servers in all as seen in figure 1:</p>
+
+<p><img src="http://wheelersoftware.s3.amazonaws.com/articles/balancing-server-capacity/pools.jpg" alt="Figure 1. Server pools" /></p>
+
+<p>So what do you think?</p>
+
+<h3>Improving the utilization of server capacity</h3>
+
+
+<p>It may seem like we did a good job with this. After all, we defined our load requirements, defined a goal around limiting the impact of outages, created a horizontally scalable design to support the requirements, and then performed stress testing to ensure that our individual pools can handle the required load. So our system ought to be able to meet the stated requirements. But could we have done better?</p>
+
+<p>You may have noticed that in our stress testing of individual pools, we began with an assumption that we&rsquo;d need twice as many app servers as database servers, but we never actually tested that assumption. Let&rsquo;s say that we repeat our stress testing and discover that even though a 8:4 ratio handles the load, stress-induced failure lies squarely with the database side of the pool. When the pool &ldquo;fails&rdquo; (e.g., stops meeting whatever response time SLA we defined),database server CPU is at 90-95% and app server CPU is humming along at 45%. Through further stress testing we discover that we can reduce the ratio to 5:4 while still meeting the overall requirement to service 10,000 concurrent user sessions within the SLA. We still want to be fault-tolerant, so we revise our pool ratio to 6:5, giving us 60 app servers and 50 database servers, or 110 servers total. That&rsquo;s a savings of 30 servers over our previous configuration,or 21.4%, and we get it without having to give anything up. Not bad, except for our hardware vendor!</p>
+
+<p>Here&rsquo;s what&rsquo;s going on. In the first configuration, each pool had three app servers too many. This represents excess capacity in the system. But&mdash;and this is an important point that&rsquo;s easy to miss&mdash; it isn&rsquo;t excess capacity that would allow us to service additional user load. It&rsquo;s inherently unusable capacity. This is because the database tier breaks well before we use that extra app server capacity. So that extra capacity is pure waste. It incurs extra cost (initial purchase price along with operational costs like support, maintenance, rackspace, power,cooling, etc.) and it increases the overall complexity of the system simply by representing additional moving parts that can break or cause (sometimes hard-to-diagnose) problems.</p>
+
+<p>The point bears repeating that the excess capacity is not usable, so it isn&rsquo;t correct to argue that it helps us if our user base grows. We can&rsquo;t tap into it, so it doesn&rsquo;t help. Anyway, the point of the horizontally scalable design here is to support adding capacity by adding pools rather than by growing individual pools.</p>
+
+<h3>Summary</h3>
+
+
+<p>The bottom line is that proper capacity management involves balancing the capacity of front-end servers with that of the back-end servers. This doesn&rsquo;t mean that the number of app servers needs to be the same as the number of database servers; rather it means that we want the set of app servers and the set of database servers to converge toward failure roughly together. Any systematic delta between the two represents unusable excess capacity and hence undue waste and moving parts.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+
+
+]]></content>
+  </entry>
+  
+</feed>

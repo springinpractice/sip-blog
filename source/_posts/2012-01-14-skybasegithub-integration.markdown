@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/01/14/skybasegithub-integration/
 layout: post
-title: Skybase/GitHub integration
+title: "Skybase/GitHub integration"
 date: 2012-01-14 15:55:43
 comments: true
 categories: [Chapter 11 - CMDB, News]

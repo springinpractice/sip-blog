@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Mavenizing an empty GitHub project in Eclipse - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="This post is for myself more than anything else, just because I keep forgetting the steps involved. I&rsquo;m using SpringSource Tool Suite 2.9.1. &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2012/05/06/mavenizing-an-empty-github-project-in-eclipse">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Mavenizing an Empty GitHub Project in Eclipse</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-06T12:30:15-07:00" pubdate data-updated="true">May 6<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>This post is for myself more than anything else, just because I keep forgetting the steps involved.</p>
+
+<p>I&rsquo;m using SpringSource Tool Suite 2.9.1.RELEASE, which is based on Eclipse 3.7.2 (Indigo). I have the egit and m2e Eclipse plugins installed.</p>
+
+<h3>The scenario</h3>
+
+
+<p>You have a brand new, pretty-much-empty GitHub project (other than the README, say&mdash;but no Maven stuff yet), and you want to import it into Eclipse as a Maven project.</p>
+
+<h3>The steps</h3>
+
+
+
+
+<ol>
+
+<li>Add the remote GitHub repo to your list of Git repos in Eclipse.</li>
+
+<li>In Eclipse, go to File &rarr; Import &rarr; Git &rarr; Projects from Git. (I&#8217;m on a Mac; the menu may be a little different for other platforms.)</li>
+
+<li>On the &#8220;Select Repository Source&#8221;, choose &#8220;URI&#8221;.</li>
+
+<li>On the &#8220;Source Git Repository&#8221; pane, enter the URI info. It might be something like <code>ssh://git@github.com/williewheeler/sip11.git</code>, for example.</li>
+
+<li>On the &#8220;Branch Selection&#8221; pane, choose the master branch.</li>
+
+<li>On the &#8220;Local Destination&#8221; pane, decide where you want the local copy to live.</li>
+
+<li>Where it asks you to select an import wizard, choose &#8220;Use the New Project wizard&#8221; and click &#8220;Finish&#8221;.</li>
+
+<li>Now you have to choose a New Project wizard. Choose Maven &rarr; Maven Project.</li>
+
+<li>From here just create the project like you would any other new Maven project. Once you&#8217;re done, it will show up in your list of projects in the Package Explorer view, and sharing should be activated.</li>
+
+</ol>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-06T12:30:15-07:00" pubdate data-updated="true">May 6<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2012/05/06/mavenizing-an-empty-github-project-in-eclipse/" data-via="williewheeler" data-counturl="http://springinpractice.com/2012/05/06/mavenizing-an-empty-github-project-in-eclipse/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2012/05/05/combined-my-two-blogs/" title="Previous Post: Combined my two blogs">&laquo; Combined my two blogs</a>
+      
+      
+        <a class="basic-alignment right" href="/2012/05/07/springs-constructor-namespace-is-a-bad-idea/" title="Next Post: Spring's constructor namespace is a bad idea">Spring's constructor namespace is a bad idea &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

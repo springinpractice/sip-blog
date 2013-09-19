@@ -1,0 +1,327 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Supporting XML and JSON web service endpoints in Spring 3.1 using @ResponseBody - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="In an earlier post I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Supporting XML and JSON Web Service Endpoints in Spring 3.1 Using @ResponseBody</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-02-21T18:21:32-08:00" pubdate data-updated="true">Feb 21<span>st</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>In <a href="http://springinpractice.com/2011/12/06/jackson-json-jaxb2-xml-spring/" title="Configuring Jackson to use JAXB2 annotations with Spring">an earlier post</a> I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the idea was to configure the Jackson <code>ObjectMapper</code> to understand JAXB2 annotations.</p>
+
+<h3>The problem</h3>
+
+
+<p>One of the things that was a little unsatisfactory about that post was that I was using views to generate the XML and JSON representations. We can do that, of course, but a more direct approach to generating the desired data payloads is to use <code>@ResponseBody</code> in conjunction with Spring&rsquo;s <code>HttpMessageConverter</code>s. The idea here is that handler methods simply return the object to be mapped (whether to XML or to JSON), and then HTTP message converters sitting on the app context map the object to XML or JSON. Correspondingly, there are HTTP message converters for both JAXB2 and Jackson (among several others). I say this is more direct because there&rsquo;s no need to involve a model or a view at all: the controller simply returns the object and the converters do the rest.</p>
+
+<p>In Spring 3.0 this was somewhat challenging to pull off, because both the JAXB2 message converter and the Jackson message converter are able to map the object, and so whichever message converter appears first in the list (the JAXB2 converter, it seems) would always map the object. So we ended up either having to treat JSON as a special case (invoke the <code>ObjectMapper</code> directly), or else just use views after all.</p>
+
+<p>In Spring 3.1 things are a lot better: we can use the <code>@ResponseBody</code> and HTTP message converter approach quite cleanly, owing to an enhancement to <code>@RequestMapping</code> and also to an enhancement to the <code>&lt;mvc:annotation-driven&gt;</code> configuration.</p>
+
+<p>Let&rsquo;s see how it works.</p>
+
+<h3>Implementing the controller</h3>
+
+
+<p>We&rsquo;ll look at the controller code first:</p>
+
+<pre>@RequestMapping(
+    value = "/{id}.json",
+    method = RequestMethod.GET,
+    produces = "application/json")
+@ResponseBody
+public Person getDetailsAsJson(@PathVariable Long id) {
+    return personRepo.findOne(id);
+}
+
+@RequestMapping(
+    value = "/{id}.xml",
+    method = RequestMethod.GET,
+    produces = "application/xml")
+@ResponseBody
+public Person getDetailsAsXml(@PathVariable Long id) {
+    return personRepo.findOne(id);
+}</pre>
+
+
+<p>To use the <code>@ResponseBody</code> approach, we obviously need to annotate the handler methods with that annotation, so that&rsquo;s what we&rsquo;ve done here. The other thing we do here is return the actual entity (in this case, a <code>Person</code>) from the method instead of returning a logical view name.</p>
+
+<p>We&rsquo;ve also specified the extension (either <code>.json</code> or <code>.xml</code>) in the value to route requests correctly.</p>
+
+<p>So far, everything we&#039;ve described was available in Spring 3.0. But notice the new <code>produces</code> element, introduced with Spring 3.1, in the <code>@RequestMapping</code> annotation. This element has two effects. First, it excludes requests with <code>Accepts</code> headers incompatible with the specified media type. Second, it ensures that the generated response is consistent with the specified media type. It&rsquo;s this second effect that we care about, because this is what allows Spring to figure out which HTTP message converter to use, even when we&rsquo;re using JAXB2 annotations for both XML and JSON mapping.</p>
+
+<h3>Configuration</h3>
+
+
+<p>We need some configuration too. Here are the relevant bits. Be sure you&rsquo;re using Spring 3.1, that you&rsquo;ve declared the <code>oxm</code> and <code>mvc</code> namespaces, etc.</p>
+
+<pre>&lt;oxm:jaxb2-marshaller id="marshaller"&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Person" /&gt;
+&lt;/oxm:jaxb2-marshaller&gt;
+    
+&lt;bean id="jaxbAnnIntrospector" class="org.codehaus.jackson.xc.JaxbAnnotationIntrospector" /&gt;
+&lt;bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper"&gt;
+    &lt;property name="serializationConfig.annotationIntrospector" ref="jaxbAnnIntrospector" /&gt;
+    &lt;property name="deserializationConfig.annotationIntrospector" ref="jaxbAnnIntrospector" /&gt;
+&lt;/bean&gt;
+
+&lt;mvc:annotation-driven&gt;
+    &lt;mvc:message-converters&gt;
+        &lt;bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"
+            p:objectMapper-ref="jacksonObjectMapper" /&gt;
+    &lt;/mvc:message-converters&gt;
+&lt;/mvc:annotation-driven&gt;</pre>
+
+
+<p>The JAXB2 marshaller and Jackson <code>ObjectMapper</code> are the same as they were in my earlier post. The thing that&rsquo;s different is the <code>&lt;mvc:annotation-driven&gt;</code> definition, and specifically, my inclusion of the new Spring 3.1 <code>&lt;mvc:message-converters&gt;</code> configuration. This allows us to define converters that override the defaults. Here I want to override the default Jackson converter with one that knows about my JAXB2-enabled <code>ObjectMapper</code>.</p>
+
+<p>You don&rsquo;t need to include XML or JSON views anymore. If you don&rsquo;t have anything other than the normal JSP view, you can probably get rid of the <code>ContentNegotiatingViewResolver</code> entirely.</p>
+
+<h3>The end result</h3>
+
+
+<p>The result is that we can now generate XML and JSON payloads in a simple and consistent fashion. There&rsquo;s no more need for models and views here (at least with respect to generating XML and JSON), and there&rsquo;s no need to invoke <code>ObjectMapper</code>s directly or anything like that.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-02-21T18:21:32-08:00" pubdate data-updated="true">Feb 21<span>st</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-11-cmdb/'>Chapter 11 - CMDB</a>, <a class='category' href='/blog/categories/chapter-13-integration/'>Chapter 13 - Integration</a>, <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/" data-via="williewheeler" data-counturl="http://springinpractice.com/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2012/02/12/working-with-the-neo4j-shell/" title="Previous Post: Working with the Neo4j shell">&laquo; Working with the Neo4j shell</a>
+      
+      
+        <a class="basic-alignment right" href="/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/" title="Next Post: Zkybase now supports authorized access to GitHub via Spring Social GitHub">Zkybase now supports authorized access to GitHub via Spring Social GitHub &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

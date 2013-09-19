@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/01/17/spring-social-github-revisiting-github-integration/
 layout: post
-title: Spring Social GitHub: revisiting GitHub integration
+title: "Spring Social GitHub: revisiting GitHub integration"
 date: 2012-01-17 23:44:56
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Tutorials]

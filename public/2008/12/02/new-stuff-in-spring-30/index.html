@@ -1,0 +1,343 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>New stuff in Spring 3.0 - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="This morning I attended a talk by Juergen Hoeller on what&rsquo;s coming in Spring 3.0. First, he said that we can expect the first milestone release &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2008/12/02/new-stuff-in-spring-30">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">New Stuff in Spring 3.0</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-12-02T11:59:26-08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>This morning I attended a talk by Juergen Hoeller on what&rsquo;s coming in Spring 3.0. First, he said that we can expect the first milestone release sometime this week, and said that he expected there to be about three milestone releases I think. RC1 is supposed to be out around March 2009 and final around April 2009.</p>
+
+<p>Echoing something I&rsquo;ve heard Keith Donald say, Juergen said that Spring 3.0 is intended to complete the work that was started in Spring 2.5. Keith described the release as being &ldquo;evolutionary, not revolutionary.&rdquo; That may be, but there&rsquo;s still quite a bit to be excited about.  Here&rsquo;s what I got from the talk today. (Hold onto your hats because I took good notes.)</p>
+
+<h3>Java and JEE compatibility</h3>
+
+
+<p>Spring 3.0 will be the first release that requires Java 5+. From SpringSource&rsquo;s perspective this is nice because they can avail themselves to generics, varargs, etc. But from the app developer&rsquo;s perspective, the idea is that the platform is really pushing use of annotations as the preferred way of doing configuration. So that means Java 5+.</p>
+
+<p>Spring 3.0 will continue to be compatible with J2EE 1.4 and JEE 5. Also, as JEE 6 matures, Spring 3.0 will try to provide early support, but progress on JEE 6 has been somewhat slow and Spring 3.0 should be out before JEE 6. So Spring 3.1 and 3.2 will probably continue work in this direction. Anyway, SpringSource plans to support JSF 2.0, JPA 2.0, Servlet 3.0 when it&rsquo;s ready, etc.)</p>
+
+<h3>Spring EL (Unified EL++)</h3>
+
+
+<p>Juergen described support for expression languages as probably the most important and powerful feature in Spring 3.0. It will be a proprietary EL parser implementation&mdash;one of the few new modules that Spring 3.0 will introduce&mdash;and it sounded like it would like Unified EL but on steroids. They&rsquo;re trying to keep the EL pretty similar to how it works in JSF, and Spring&rsquo;s EL is designed to be stylistically and syntactically compatible with Unified EL. Also, even though right now Spring Web Flow 2 uses external EL implementations (JBoss EL implementation of Unified EL, I think, or else OGNL), SWF 3 will use Spring EL instead of an external implementation.</p>
+
+<p>Here&rsquo;s a code example he gave. This one is for EL in bean definitions:</p>
+
+<pre>&lt;bean class="mycompany.RewardsTestDatabase"&gt;
+    &lt;property name="databaseName" value="#{systemProperties.databaseName}"/&gt;
+    &lt;property name="keyGenerator" value="#{strategyBean.databaseKeyGenerator}"/&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>The idea is this. Just like in other ELs, you will have some implicit objects&mdash;objects that you can reference in your EL either because the objects are global in scope or else because the object lives in your current scope (e.g., request scope, session scope, etc.). So in the example above, <code>systemProperties</code> is a global implicit object, and <code>strategyBean</code> is a bean name. Bean names will be available as EL objects then.</p>
+
+<p>I&rsquo;m assuming that the <code>databaseName</code> and <code>keyGenerator</code> properties will be evaluated each time they are accessed. Otherwise it wouldn&rsquo;t be much of an expression language. I&rsquo;m kind of curious to see how they do this. My guess is that the approach will be to proxy beans with EL-based properties, with the proxies evaluating the reference upon demand.</p>
+
+<p>Juergen gave another example, this time of EL in component annotations. Here it is:</p>
+
+<pre>
+@Repository
+public class RewardsTestDatabase {
+
+    @Value("#{systemProperties.databaseName}")
+    public void setDatabaseName(String dbName) { ... }
+
+    @Value("#{strategyBean.databaseKeyGenerator}")
+    public void setKeyGenerator(KeyGenerator kg) { ... }
+}
+</pre>
+
+
+<p>I <i>believe</i> these two configuration examples are different in a subtle way. The value of the <code>@Value</code> attribute is a default value for the property if a value isn&rsquo;t explicitly defined in the app context. One practical benefit we get has to do with how component scanning currently works. When we component scan, we depend on autowiring to establish injected references. The problem is that if our dependencies are primitive types, autowiring is no longer an option and so we have to go explicit with our bean definitions. With EL-based defaults, we can keep the component scanning, and just set the primitive types using a bean, or maybe using system properties, etc.</p>
+
+<h3>REST support</h3>
+
+
+<p>Another big topic in Spring 3.0 is REST support. Spring Web MVC will provide first-class support for RESTful web services, and not necessarily just XML-based. Keith was saying that there will be a JSON view as well. So the web services would be useful not only in integration efforts but also for example when you have JavaScript widgets that want to make AJAX calls back to the server and get JSON. Anyway, Spring Web MVC&rsquo;s current design is such that it&rsquo;s really easy to tweak it a bit to support REST, and that&rsquo;s what they&rsquo;re doing. So one aspect of this would be to continue to use <code>@RequestMapping</code> to specify an HTTP method, such as <code>RequestMethod.PUT</code>.  Another piece would be to introduce a new <code>@PathVariable</code> annotation that works pretty much like <code>@RequestParam</code> currently works, but handles URL path segments instead of HTTP parameters. Here&rsquo;s a code example that shows how it will work:</p>
+
+<pre>
+@RequestMapping(value = "/show/{id}", method = GET)
+public Reward show(@PathVariable("id") long id) {
+    return this.rewardsAdminService.findReward(id);
+}
+</pre>
+
+
+<p>I like it!</p>
+
+<p>Another feature of the REST support is support for different representations, i.e. content negotiation. They want to use the HTTP <code>Accept</code> header as a new way to do view resolution. So presumably there will be a new <code>ViewResolver</code> implementation that looks at the <code>Accept</code> header and returns, say, an XML view (accepts <code>application/xml</code>), a JSON view (accepts <code>application/json</code>) or an ATOM view (accepts <code>application/atom+xml</code>) according to that header. This would be the preferred way of doing view resolution for the hardcore REST purists. But Spring Web MVC would also support extension-based resolution; e.g. <code>.json</code> maps to a <code>JsonView</code>, etc.</p>
+
+<h3>Some @MVC refinements</h3>
+
+
+<p>They&rsquo;re planning to add a couple of new @MVC annotations besides <code>@RequestParam</code> (which already exists) and the new <code>@PathVariable</code> annotation. These are:</p>
+
+<ul>
+<li><code>@RequestHeader</code>: Grab HTTP request header data.</li>
+<li><code>@CookieValue</code>: Grab cookie value. (Surprise!)</li>
+</ul>
+
+
+<p>These will allow us to get at the data without having to declare the raw <code>HttpServletRequest</code> as we currently have to do.  Here&rsquo;s a code sample:</p>
+
+<pre>
+@RequestMapping("/show")
+public Reward show(@RequestHeader("region") long regionId,
+    @CookieValue("language") String langId) {
+
+    ...
+}
+</pre>
+
+
+<p>There&rsquo;s quite a bit more, but this post is pretty long as it is and I need to hit the sack. I&rsquo;ll try to post a little more tomorrow.</p>
+
+<p>[Update: Here&rsquo;s <a href="http://springinpractice.wordpress.com/2008/12/03/new-stuff-in-spring-30-part-2/">part 2</a>.]</p>
+
+<p>[Update: Here&rsquo;s <a href="http://www.infoq.com/news/2008/12/springone-2008">a related InfoQ article</a>.]</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-12-02T11:59:26-08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/news/'>News</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2008/12/02/new-stuff-in-spring-30/" data-via="williewheeler" data-counturl="http://springinpractice.com/2008/12/02/new-stuff-in-spring-30/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/12/01/rod-johnsons-keynote-address-at-springone-americas-2008/" title="Previous Post: Rod Johnson's keynote address at SpringOne Americas 2008">&laquo; Rod Johnson's keynote address at SpringOne Americas 2008</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/12/03/new-stuff-in-spring-30-part-2/" title="Next Post: New stuff in Spring 3.0, part 2">New stuff in Spring 3.0, part 2 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/05/06/mavenizing-an-empty-github-project-in-eclipse/
 layout: post
-title: Mavenizing an empty GitHub project in Eclipse
+title: "Mavenizing an empty GitHub project in Eclipse"
 date: 2012-05-06 19:30:15
 comments: true
 categories: [Quick Tips]

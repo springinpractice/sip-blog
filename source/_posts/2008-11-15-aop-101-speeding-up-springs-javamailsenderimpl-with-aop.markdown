@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/11/15/aop-101-speeding-up-springs-javamailsenderimpl-with-aop/
 layout: post
-title: AOP 101: Speeding up Spring's JavaMailSenderImpl with AOP
+title: "AOP 101: Speeding up Spring's JavaMailSenderImpl with AOP"
 date: 2008-11-15 18:40:35
 comments: true
 categories: [Chapter 08 - Communicating, Tutorials]

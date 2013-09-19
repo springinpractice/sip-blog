@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2010/10/28/springone-2gx-takeaways/
 layout: post
-title: SpringOne 2GX takeaways
+title: "SpringOne 2GX takeaways"
 date: 2010-10-28 00:06:28
 comments: true
 categories: [News]

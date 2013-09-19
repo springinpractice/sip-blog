@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/01/03/closed-loops-the-secret-to-collecting-configuration-management-data/
 layout: post
-title: Closed loops: the secret to collecting configuration management data
+title: "Closed loops: the secret to collecting configuration management data"
 date: 2012-01-03 02:45:19
 comments: true
 categories: [Architecture, Chapter 11 - CMDB]

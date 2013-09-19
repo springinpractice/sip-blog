@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/03/19/setting-up-public-key-authentication-pka-over-ssh/
 layout: post
-title: Setting up public key authentication (PKA) over SSH
+title: "Setting up public key authentication (PKA) over SSH"
 date: 2008-03-19 14:18:48
 comments: true
 categories: [Quick Tips]

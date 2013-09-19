@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2010/10/10/quick-tip-avoid-rule-duplication-when-using-securityauthorize/
 layout: post
-title: Quick tip: avoid rule duplication when using security:authorize
+title: "Quick tip: avoid rule duplication when using security:authorize"
 date: 2010-10-10 22:56:42
 comments: true
 categories: [Chapter 07 - Authorization, Quick Tips]

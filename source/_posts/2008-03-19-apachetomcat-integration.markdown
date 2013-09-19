@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/03/19/apachetomcat-integration/
 layout: post
-title: Apache/Tomcat integration
+title: "Apache/Tomcat integration"
 date: 2008-03-19 13:51:54
 comments: true
 categories: [Tutorials]

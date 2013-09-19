@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/
 layout: post
-title: Concurrent programming for practicing software engineers, part 2
+title: "Concurrent programming for practicing software engineers, part 2"
 date: 2008-10-14 15:44:32
 comments: true
 categories: [Tutorials]

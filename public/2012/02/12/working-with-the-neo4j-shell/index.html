@@ -1,0 +1,387 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Working with the Neo4j shell - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="In this post we&rsquo;re going to learn how to work with a local Neo4j database using the Neo4j shell. This isn&rsquo;t really a Spring post, but &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Working With the Neo4j Shell</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-02-12T06:06:54-08:00" pubdate data-updated="true">Feb 12<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>In this post we&rsquo;re going to learn how to work with a local Neo4j database using the <a href="http://neo4j.org/" title="Neo4j">Neo4j</a> shell. This isn&rsquo;t really a Spring post, but <a href="http://www.springsource.org/spring-data/neo4j" title="Spring Data Neo4j">Spring Data Neo4j</a> users will probably find it useful.</p>
+
+<p><strong>Set environment variable (optional).</strong> First, set the <code>NEO4J_HOME</code> environment variable to point to the top-level Neo4j directory, and put the <code>bin</code> directory on your path.</p>
+
+<p><strong>Start the Neo4j shell.</strong> Type</p>
+
+<p><code>neo4j-shell -path path/to/neo4j-db</code></p>
+
+<p>with the actual path to your database substituted in. If you want to run in read-only mode, you can do this instead:</p>
+
+<p><code>neo4j-shell -readonly -path path/to/neo4j-db</code></p>
+
+<p>If everything went well, you should see something that looks like this:</p>
+
+<pre>/lib/neo4j-community-1.5/bin$ neo4j-shell -path ~/projects/skydingo/skybase/neo4j/db
+NOTE: Local Neo4j graph database service at '/Users/williewheeler/projects/skydingo/skybase/neo4j/db'
+Welcome to the Neo4j Shell! Enter 'help' for a list of commands
+
+Welcome to the Neo4j Shell! Enter 'help' for a list of commands
+
+neo4j-sh (0)$</pre>
+
+
+<p>I&rsquo;m not sure why it welcomes me twice (friendly shell, I suppose), but that&rsquo;s what it does.</p>
+
+<p><strong>Try some commands.</strong> Now we&rsquo;re in the shell. The command set is bash-like, which is kind of nice if you&rsquo;re already familiar with bash. Let&rsquo;s play around with some commands.</p>
+
+<p>First, we&rsquo;ll set the current node to node 22:</p>
+
+<pre>neo4j-sh (0)$ cd -a 22
+neo4j-sh (willie,22)$</pre>
+
+
+<p>The <code>-a</code> flag stands for &ldquo;absolute path&rdquo;, and it just means that I can navigate to any node at all in the graph, instead of being limited to adjacent nodes.</p>
+
+<p>Now let&rsquo;s see what node 22 looks like:</p>
+
+<pre>neo4j-sh (willie,22)$ ls
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-111-2222]
+neo4j-sh (willie,22)$</pre>
+
+
+<p>Let&rsquo;s change the work phone:</p>
+
+<pre>neo4j-sh (willie,22)$ set workPhone "999-867-5309"
+neo4j-sh (willie,22)$ ls
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-867-5309]
+neo4j-sh (willie,22)$ </pre>
+
+
+<p>You can tell that I created the node above using Spring Data Neo4j since it has the <code><strong>type</strong></code> property that Spring Data Neo4j uses.</p>
+
+<p>Now let&rsquo;s create a new node. With Neo4j we create new nodes by relating them to existing nodes. Witness:</p>
+
+<pre>neo4j-sh (willie,22)$ mkrel -t HAS_HOBBY -d OUTGOING -c
+neo4j-sh (willie,22)$ ls    
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-867-5309]
+(me) --[HAS_HOBBY]-&gt; (48)
+neo4j-sh (willie,22)$</pre>
+
+
+<p>Notice that there&rsquo;s now a node 48. Let&rsquo;s navigate to that node and give it a title:</p>
+
+<pre>neo4j-sh (willie,22)$ cd 48
+neo4j-sh (48)$ ls
+(me) &lt;-[HAS_HOBBY]-- (willie,22)
+neo4j-sh (48)$ set name &quot;Playing guitar&quot;
+neo4j-sh (Playing guitar,48)$ ls
+*name =[Playing guitar]
+(me) &lt;-[HAS_HOBBY]-- (willie,22)
+neo4j-sh (Playing guitar,48)$</pre>
+
+
+<p>Alright, that was cool, but I don&rsquo;t want that node anymore. We&rsquo;re going to delete both the node and the relationship we created:</p>
+
+<pre>neo4j-sh (Playing guitar,48)$ rmnode 48
+(Playing guitar,48) cannot be deleted because it still has relationships. Use -f to force deletion of its relationships
+neo4j-sh (Playing guitar,48)$ rmnode -f 48
+Relationship [HAS_HOBBY,26] deleted
+neo4j-sh (?)$ cd -a 22
+neo4j-sh (willie,22)$ ls
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-867-5309]
+neo4j-sh (willie,22)$</pre>
+
+
+<p>We can do Cypher queries too. Here&rsquo;s a pretty basic one:</p>
+
+<pre>neo4j-sh (willie,22)$ start n=node(2) return n
++------------------------------------------------------------------------+
+| n                                                                      |
++------------------------------------------------------------------------+
+| Node[2]{name-&gt;"US West",__type__-&gt;"org.skydingo.skybase.model.Region"} |
++------------------------------------------------------------------------+
+1 rows, 0 ms
+neo4j-sh (willie,22)$</pre>
+
+
+<p>OK, it&rsquo;s quitting time:</p>
+
+<pre>neo4j-sh (willie,22)$ quit
+/lib/neo4j-community-1.5/bin$</pre>
+
+
+<p>There are other commands too, and for those, see the <a href="http://docs.neo4j.org/" title="Neo4j Reference Manual">Neo4j reference manual</a>. But now you should be able to perform basic operations inside the shell.</p>
+
+<p>Have fun!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-02-12T06:06:54-08:00" pubdate data-updated="true">Feb 12<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-02-data/'>Chapter 02 - Data</a>, <a class='category' href='/blog/categories/chapter-11-cmdb/'>Chapter 11 - CMDB</a>, <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/" data-via="williewheeler" data-counturl="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2012/01/17/spring-social-github-revisiting-github-integration/" title="Previous Post: Spring Social GitHub: revisiting GitHub integration">&laquo; Spring Social GitHub: revisiting GitHub integration</a>
+      
+      
+        <a class="basic-alignment right" href="/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/" title="Next Post: Supporting XML and JSON web service endpoints in Spring 3.1 using @ResponseBody">Supporting XML and JSON web service endpoints in Spring 3.1 using @ResponseBody &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2010/07/06/spring-security-database-schemas-for-mysql/
 layout: post
-title: Spring Security 3 database schemas for MySQL
+title: "Spring Security 3 database schemas for MySQL"
 date: 2010-07-06 00:36:28
 comments: true
 categories: [Chapter 06 - Authentication, Chapter 07 - Authorization, Reference]

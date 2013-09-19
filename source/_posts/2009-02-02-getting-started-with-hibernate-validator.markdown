@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2009/02/02/getting-started-with-hibernate-validator/
 layout: post
-title: Getting started with Hibernate Validator
+title: "Getting started with Hibernate Validator"
 date: 2009-02-02 15:00:16
 comments: true
 categories: [Chapter 04 - Web forms, Tutorials]

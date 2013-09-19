@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/08/31/about-our-book/
 layout: post
-title: About our book
+title: "About our book"
 date: 2008-08-31 05:20:06
 comments: true
 categories: [News]

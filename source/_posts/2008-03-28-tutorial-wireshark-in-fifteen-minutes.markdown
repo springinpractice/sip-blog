@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/03/28/tutorial-wireshark-in-fifteen-minutes/
 layout: post
-title: Tutorial: Wireshark in fifteen minutes
+title: "Tutorial: Wireshark in fifteen minutes"
 date: 2008-03-28 01:15:29
 comments: true
 categories: [Tutorials]

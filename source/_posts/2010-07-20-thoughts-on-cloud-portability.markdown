@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2010/07/20/thoughts-on-cloud-portability/
 layout: post
-title: Thoughts on cloud portability
+title: "Thoughts on cloud portability"
 date: 2010-07-20 12:40:37
 comments: true
 categories: [Random Thoughts]

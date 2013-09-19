@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/10/01/some-thoughts-on-the-new-springsource-maintenance-policy/
 layout: post
-title: Some thoughts on the new SpringSource maintenance policy
+title: "Some thoughts on the new SpringSource maintenance policy"
 date: 2008-10-01 22:38:35
 comments: true
 categories: [Random Thoughts]

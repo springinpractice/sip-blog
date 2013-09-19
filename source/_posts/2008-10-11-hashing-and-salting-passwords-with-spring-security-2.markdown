@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/10/11/hashing-and-salting-passwords-with-spring-security-2/
 layout: post
-title: Hashing and salting passwords with Spring Security 2
+title: "Hashing and salting passwords with Spring Security 2"
 date: 2008-10-11 19:02:44
 comments: true
 categories: [Chapter 06 - Authentication, Tutorials]

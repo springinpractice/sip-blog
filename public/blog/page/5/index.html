@@ -1,0 +1,1648 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="Here are some key operational excellence design principles. These are intended for system architects (both on the software and infrastructure side) &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/blog/page/5">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/07/26/top-ten-operational-excellence-design-principles/">Top Ten [and Counting] Operational Excellence Design Principles</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-07-26T18:05:26-07:00" pubdate data-updated="true">Jul 26<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><a href="http://www.flickr.com/photos/kim_scarborough/147973192/"><img src="http://springinpractice.s3.amazonaws.com/blog/images/noc.jpg" alt="Operational excellence" align="right" /></a></p>
+
+<p>Here are some key operational excellence design principles. These are intended for system architects (both on the software and infrastructure side) and operational staff.</p>
+
+<p>This started out as a top ten list, but it&rsquo;s been growing.</p>
+
+<p><strong>1. Organizational focus.</strong> OK, this one isn&rsquo;t a design principle, but it&rsquo;s too important to neglect. Having an organizational focus on operational excellence really matters. Everything from isolating core development from production support (that is, create a group within development whose daily responsibility is to insulate core development from production), creating a top-ten hit list and just working that weekly, setting explicit availability and performance goals and then tracking to them&mdash;speaking from personal experience, those are things that can create dramatic and almost immediate results.</p>
+
+<p><strong>2. Aggressively automate processes and controls.</strong> Automate ticket workflow, local builds, integration builds, tests, provisioning, OS installs, patching, deployments, rollbacks, monitoring, alerting, diagnostics, escalation, backups, log rotation, reporting, auditing&mdash;everything you can! Automation increases speed and limits variance, which is an operations-killer.</p>
+
+<p>On the control side, in cases where it&rsquo;s possible to use a technical means to enforce policy (automation, tightly constrained configuration schemas, access controls, etc.), use it. The ideal control makes the undesirable action or state technically impossible.</p>
+
+<p><strong>3. Design for supportability.</strong> The NOC should have the tools and information necessary to resolve at least 80% of production issues without directly involving the development team. Put the right monitoring, diagnostic and management (e.g., SNMP, JMX) capability in place.</p>
+
+<p><strong>4. High availability is all about redundancy.</strong> In general high availability involves redundancy at all levels: power sources, network interfaces, switches, RAIDs, RAC nodes, Internet pipes and even data centers if you want to withstand site failures. Redundancy means that you&rsquo;ve deployed independent, readily-available (perhaps active) capacity beyond what&rsquo;s normally needed to hit performance SLAs. Without this extra capacity, component failures often create complete system unavailability through a chain reaction mechanism that looks like this: (1) one component fails; (2) other components take on the excess demand, creating performance issues; (3) other components fail under load; and (4) system is unavailable.</p>
+
+<p>Don’t confuse high availability with load balancing. If all <em>n</em> instances in a load-balanced pool are required to meet a given performance SLA, then there is no redundancy, because there&rsquo;s no spare capacity to take up the slack in the event of a node failure. Indeed exposure is substantially <em>increased</em>, because all it takes is any one node to fail, and your pool is at best missing performance SLAs, and at worst rendered completely unavailable as described above.</p>
+
+<p><strong>5. Control failure modes.</strong> Components will fail. Failure modes should be designed, not emergent or accidental. Design failures to be transparent and limited in impact, using techniques such as <a href="http://springinpractice.com/2010/07/06/annotation-based-circuit-breakers-with-spring/">circuit breakers</a>. Test the design to ensure that it behaves as expected. Create automation and knowledge base articles to target specific failure modes for fast remediation.</p>
+
+<p><strong>6. Prefer horizontal approaches to scalability.</strong> You will sometimes need to add capacity, either to accommodate business growth or else to handle production issues. Prefer horizontal scalability to vertical scalability, since vertical scalability is more tightly coupled to technology. The database is often the constraint here, so consider approaches that support horizontal scalability, such as data sharding, separating reads from writes and farming out reads, and non-relational data stores.</p>
+
+<p><strong>7. Virtualize aggressively.</strong> Virtualization makes it easier to enforce standards, control drift, add capacity, increase utilization and in general create configuration options.</p>
+
+<p><strong>8. Capacity management = capacity planning + JIT capacity.</strong> Capacity planning is an art, not a science, and it&rsquo;s not always possible to anticipate exactly how much capacity you will need. There&rsquo;s a balance to strike between ensuring sufficient capacity and using resources efficiently, and sometimes the drive to be efficient will result in underestimates. In such situations, a JIT capability is key.</p>
+
+<p>For rollouts (e.g., new apps, new features, betas, promotions, or anything that might reasonably impact demand in a material way), it&rsquo;s better to overallocate and then scale back than it is to underallocate and scale up. Both approaches use resources efficiently, but only the former will allow you to meet aggressive SLAs. Virtualization helps tremendously here, partly because it pools excess physical capacity for shared use (thus limiting cost), and partly because it makes reaping excess capacity during scale-backs much easier.</p>
+
+<p><strong>9. Account for operational excellence overhead costs.</strong> Treat overheads such as monitoring and virtualization as costs that the design needs to account for, not as an excuse to neglect key operational requirements. Deal with instrumentation overhead, for example, by being selective about what you instrument. If your instrumentation adds 1 ms to a 200 ms call, that may not be a big deal. If it adds 1 ms to a 5 ms call inside a tight loop, that may be a bigger problem.</p>
+
+<p><strong>10. Focus monitoring efforts on ensuring that the business is running.</strong> It doesn’t matter whether a particular CPU is running at 90% utilization if you can’t connect that to a business or customer impact. Start by identifying the metrics that the business or customer cares about, and monitor those to ensure that the numbers are within expected bounds. Work backwards to correlated technical metrics.</p>
+
+<h3>Bonus principles</h3>
+
+
+<p><strong>11. Defense in depth applies to operational excellence too.</strong> A well-known security principle, defense in depth applies to operational excellence too. Automation controls configuration drift, but so does keeping people off the servers, being able to refresh the environment on demand, and using a configuration schema that makes certain types of drift impossible. Layer your defenses.</p>
+
+<p><strong>12. Treat support processes and staff as part of the system.</strong> All the monitoring, diagnostics and knowledge base articles in the world won’t help if the support staff doesn’t know how to use them. Test the human component of the system (training, communication, etc.) on a regular basis to ensure that when problems arise, the human response will be the one that was designed.</p>
+
+<p>The next three principles are courtesy of Satish Menon. Thanks Satish.</p>
+
+<p><strong>13. Design for graceful degradation:</strong> One example, if load increases, serve out of stale cache (where it is appropriate) rather than go to the origin server (database or whatever). We added a mechanism to Squid at Yahoo to give hints on what can be served stale.</p>
+
+<p><strong>14. Design for independent scalability (this conflicts your horizontal vs. vertical scalability).</strong> I am saying you need both. If there is a heavy hit on one of the services (e.g. Gradebook) over other, isolating the pathway to that in the design would allow you to scale that one service without scaling all of the rest of the infrastructure.</p>
+
+<p><strong>15. Put data in front of engineers.</strong> Define and measure SLAs for each of the major server interactions and put dashboards in place so people can see how their subsystems are doing.</p>
+
+<p>Here&rsquo;s another one that I find myself repeating often. Don&rsquo;t know how I missed it the first time around.</p>
+
+<p><strong>16. Minimize the number of moving parts.</strong> More moving parts mean that more things can break. Better for example to templatize your middleware into a VM template and instantiate than to instantiate a bunch of bare-bones VMs and then follow up with a a lot of middleware installations. You can even get aggressive and take the same approach to app deployments (i.e., templatize a build that includes the app to be released). All things being equal, designs should try to minimize the number of things that can go wrong.</p>
+
+<h3>References</h3>
+
+
+
+
+<ul>
+    <li><a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a>, by Michael Nygard (Pragmatic)</li>
+    <li><a href="http://www.amazon.com/Scalable-Internet-Architectures-Theo-Schlossnagle/dp/067232699X">Scalable Internet Architectures</a>, by Theo Schlossnagle</li>
+    <li><a href="http://jprall.vox.com/library/post/85-operations-rules-to-live-by.html">(85) Operations Rules to Live By</a>, by Jon Prall</li>
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/07/20/thoughts-on-cloud-portability/">Thoughts on Cloud Portability</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-07-20T05:40:37-07:00" pubdate data-updated="true">Jul 20<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A colleague sent me a <a href="http://bits.blogs.nytimes.com/2010/07/20/the-recipe-for-clouds-goes-open-source/?ref=technology">NY Times story on cloud portability</a> today.</p>
+
+<p>There&rsquo;s lots of interest on both the consumer and provider side in cloud portability. Consumers want to avoid vendor lock-in and providers often want to lock customers in. Among the lock-in approaches are the following:</p>
+
+<ul class="square">
+<li><b>Technology-based lock-in:</b> Offer compelling technology that other providers don&#8217;t offer, or technology that&#8217;s hard to migrate away from.</li>
+<li><b>Data-based lock-in:</b> Make it hard for customers to move data from one provider to another.</li>
+</ul>
+
+
+<p>Those are tried and true approaches, but historically they have been overcome. For example, providers copy each others&#8217; technology and create migration tools. Industry defines standards to commoditize individual offerings.</p>
+
+<p>Where cloud portability gets interesting is on the data side. There are two types:</p>
+
+<ul class="square">
+<li>Data the customer owns</li>
+<li>Data the provider owns, and offers up as a feature of the platform</li>
+</ul>
+
+
+<p>Provider-owned data is inherently unportable. Or at least it sure seems that way to me.</p>
+
+<p>To the extent that customers depend on provider-proprietary data, there is a real lock-in danger. I think that&rsquo;s one of the major reasons that lots of companies are excited about the idea of providing cloud services. Build a platform with compelling data that nobody else has, and you have a powerful lock-in mechanism.</p>
+
+<p>Any organization contemplating moving applications to the cloud needs to consider how it wants to deal with this sort of lock-in risk.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/07/13/spring-roo-in-under-nine-minutes/">Spring Roo in Under Nine Minutes</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-07-13T18:48:36-07:00" pubdate data-updated="true">Jul 13<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Here&rsquo;s a quick demo I created to give people an idea as to what Spring Roo is about. It&rsquo;s not really a tutorial, but I hope it will be a useful introduction. Note that it is available in HD.</p>
+
+<p>[youtube=<a href="http://www.youtube.com/watch?v=K78vL72XDqw&amp;amp;hl=en&amp;amp;fs=1">http://www.youtube.com/watch?v=K78vL72XDqw&amp;amp;hl=en&amp;amp;fs=1</a>]</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/07/11/spring-security-3-dzone-refcard-and-interview/">Spring Security 3 DZone Refcard and Interview</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-07-11T18:23:20-07:00" pubdate data-updated="true">Jul 11<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/refcard106/ss3_refcard.png" alt="Spring Security 3 DZone Refcard" style="float:right;margin:0 0 20px 20px;" /></p>
+
+<p>My <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization?oid=hom25493">Spring Security 3 Refcard</a> is out. It covers expression-based authorization in Spring Security 3.</p>
+
+<p>There is also a supporting <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">interview</a> about the Refcard. The interview goes into more depth about some security principles like whitelisting and data-driven security, and explains how to implement these ideas using Spring Security 3.</p>
+
+<p>Thanks to <a href="http://www.scottbattaglia.com/">Scott Battaglia</a>, David Harp, Joe Koberstein, <a href="http://www.mularien.com/blog/">Peter Mularien</a>, <a href="http://pveentjer.wordpress.com/">Peter Veentjer</a> and John Wheeler for their helpful suggestions and also for catching typos.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/07/06/annotation-based-circuit-breakers-with-spring/">Annotation-based Circuit Breakers With Spring</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-07-06T15:10:11-07:00" pubdate data-updated="true">Jul 6<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>The punch line</h3>
+
+
+<p>First, here&rsquo;s the punch line for readers who already know what a circuit breaker is:</p>
+
+<pre style="margin:20px 0;">
+@Service
+@Transactional(
+    propagation = Propagation.REQUIRED,
+    isolation = Isolation.DEFAULT,
+    readOnly = true)
+public class MessageServiceImpl implements MessageService {
+    @Inject private MessageDao messageDao;
+
+    @GuardedByCircuitBreaker("messageServiceBreaker")
+    public Message getMotd() {
+        return messageDao.getMotd();
+    }
+
+    @GuardedByCircuitBreaker("messageServiceBreaker")
+    public List getImportantMessages() {
+        return messageDao.getImportantMessages();
+    }
+}
+</pre>
+
+
+<p>If you find that exciting (or at least interesting, if you don&rsquo;t know about circuit breakers yet), read on&hellip;</p>
+
+<h3>A proper introduction</h3>
+
+
+<p>One of my favorite books is Michael Nygard&rsquo;s <a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a> (Pragmatic). The idea behind the book is that when we build apps, the feature set isn&rsquo;t the only thing that matters. We need to pay attention to app vulnerabilities that too often result in performance issues or else downtime. A central thesis is that plenty of vulnerabilities are sufficiently common to warrant being classified as antipatterns, and there are corresponding patterns of correct engineering practice to address the antipatterns.</p>
+
+<p>Let&rsquo;s look at one of Nygard&rsquo;s antipatterns, the cascading failure.</p>
+
+<h3>Cascading failures</h3>
+
+
+<p>Probably everybody has seen cascading failures. It&rsquo;s essentially vertical fault propagation. The system has a fault somewhere low in the stack and the fault travels up the stack in an uncontrolled fashion until the outage is much worse than it should have been. Consider for instance the following system:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/portal.png" alt="Portal" /></p>
+
+<p>In this system we have a portal home page that depends upon a web service to deliver important messages to end users. The web service in turn pulls messages out of a database. Standard stuff.</p>
+
+<p>Now suppose there&rsquo;s some kind of problem with the database. Maybe a missing index leads to a bad execution plan, which leads to slow query times, leading to the web service&rsquo;s database calls queuing up and exhausting threads, causing the portal&rsquo;s calls to the web service to do the same thing, causing the browser&rsquo;s calls to the portal to do the same. Here&rsquo;s what that looks like:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/portal-cascade.png" alt="Broken portal" /></p>
+
+<p>While it goes without saying that the important messages are important, it&rsquo;s doubtful that they&rsquo;re so important that a missing index should be allowed to create complete system unavailability. (In this example, we took out a portal home page, so nobody can get in. If users are using other apps in the portal then they can continue to use them, but nobody new can enter.)</p>
+
+<p>Not good. But probably pretty common. I know I&rsquo;ve seen my fair share.</p>
+
+<h3>Circuit breakers to the rescue</h3>
+
+
+<p>A nice way to deal with cascading failures is to engineer the integration points to stop propagating failure. The pattern is called the circuit breaker, and it&rsquo;s modeled after physical circuit breakers in the real world. We install a circuit breaker at each integration point we want to treat. Under normal conditions, requests and responses flow over the breaker just like current flows over a real circuit breaker. But when the breaker detects a problem with the service at the far end of the breaker, it trips, thus preventing requests and responses from crossing over the integration point, at least until the breaker is reset.</p>
+
+<p>The circuit breaker pattern has two major benefits:</p>
+
+<ul>
+    <li><b>Breakers protect the client:</b> We don&#8217;t want breakers wasting valuable resources (e.g., threads, network connections, their associated physical resources) calling services that are known to be down. Especially since the antipattern normally involves the thread just sitting there waiting for a response. The breaker prevents this by failing fast.</li>
+    <li><b>Breakers protect the service:</b> Sometimes the service is bogging down just due to insufficient capacity. In that situation, breakers prevent a capacity issue from becoming complete service unavailability by throttling load to the service. (There&#8217;s still an availability issue here, but it&#8217;s partial.)</li>
+</ul>
+
+
+<p>That&rsquo;s the concept. From a technical perspective, a breaker is a state machine with three states:</p>
+
+<ul>
+    <li><b>Closed:</b> The breaker&#8217;s normal state. Requests and responses flow freely across the integration point.</li>
+    <li><b>Open:</b> The breaker&#8217;s state when there&#8217;s a problem. No requests can make it across the integration point. In effect, problems with the service are contained, and no propagation occurs.</li>
+    <li><b>Half-open:</b> The breaker&#8217;s state when it decides it&#8217;s time to &#8220;try again&#8221;. The breaker doesn&#8217;t stay open forever. Periodically it will allow a single request through to see whether the service is working again. If so, the breaker resets (goes closed). Otherwise the breaker trips again (goes open).</li>
+</ul>
+
+
+<p>Here&rsquo;s a state transition diagram for a circuit breaker. This is adapted from a diagram in Nygard&rsquo;s book:</p>
+
+<p><img src="http://kite.s3.amazonaws.com/wiki/images/circuit-breaker-state-transition.png" alt="Circuit breaker state transition diagram" /></p>
+
+<p>From the diagram we can see that the trip condition is a certain number of consecutive exceptions. In principle we could use whatever trip condition we like. For example, it could be too many exceptions within a specified time window (i.e. excessive exception rate), too many SLA misses, or perhaps something else. In the implementation we&rsquo;ll describe below it&rsquo;s too many consecutive exceptions of specific types. In general we want to filter out exceptions that the user can intentionally generate (for example, by manipulating HTTP parameters or path variables in a URL) because we don&rsquo;t want to create a vector for DoS attacks.</p>
+
+<p>The other thing the diagram reveals is a timeout parameter. This is just the amount of time the breaker should remain open before going half-open and trying the service again.</p>
+
+<p>That&rsquo;s how breakers work in the abstract. Now let&rsquo;s look at a specific implementation based on Spring.</p>
+
+<h3>My circuit breaker implementation</h3>
+
+
+<p>My circuit breaker implementation is part of a nascent open source effort called <a href="http://code.google.com/p/kite-lib/">Kite</a> that I started a few months back. I haven&rsquo;t done terribly much with the project yet, mostly because I&rsquo;m trying to get the book wrapped up, but once I get above water again I&rsquo;ll be returning to the effort. Fortunately though I was able to get a fairly robust circuit breaker implementation out there with some useful features.</p>
+
+<p>The breaker is based on Spring, and that being the case, it&rsquo;s code-level design is very Spring-like. It&rsquo;s pretty similar to transaction management in Spring. You configure some doodads in the application context file and then you have the choice between programmatic application of breakers (via templates; again, very similar to other templates like JdbcTemplate) or else declarative configuration. The declarative approach further supports XML-based configuration and annotation-based configuration.</p>
+
+<p>Let&rsquo;s look at each in turn.</p>
+
+<h4>Programmatic circuit breakers</h4>
+
+
+<p>This will be familiar to anybody who has used HibernateTemplate, JdbcTemplate, TransactionTemplate, etc. The following is an example of what a Spring Web MVC controller might look like when using programmatic circuit breakers:</p>
+
+<pre style="margin:20px 0;">
+@Inject MessageService messageService;
+@Inject CircuitBreakerTemplate breaker;
+...
+
+public String getMotd() {
+    ...
+    try {
+        Message motd = breaker.execute(new CircuitBreakerCallback() {
+            public Message doInCircuitBreaker() throws Exception {
+                return messageService.getMotd();
+            }
+        });
+        model.addAttribute("motd", motd);
+    } catch (Exception e) {
+        log.error("Couldn't get MOTD: {}", e.getMessage());
+    }
+    ...
+}
+</pre>
+
+
+<p>While it&rsquo;s nice to have the flexibility to go programmatic, usually we don&rsquo;t want to go through all that trouble. The next pair of approaches simplifies things quite a bit.</p>
+
+<h4>Declarative circuit breakers using XML</h4>
+
+
+<p>Spring of course offers XML-based configuration for its various frameworks, and since Spring 2.0, Spring has supported custom namespaces that effectively let framework designers design a domain-specific language for framework configuration. That feature is too cool to pass up, so I built that into my implementation. Here&rsquo;s what the app context config looks like:</p>
+
+<pre style="margin:20px 0;">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans:beans xmlns="http://springinpractice.com/schema/kite"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://springinpractice.com/schema/kite
+        http:// ... kite schema location ... "&gt;
+
+    &lt;context:mbean-export /&gt;
+    
+    &lt;circuit-breaker
+        id="messageServiceBreaker"
+        exceptionThreshold="3"
+        timeout="30000" /&gt;
+
+    &lt;circuit-breaker-advice
+        id="messageServiceBreakerAdvice"
+        breaker="messageServiceBreaker" /&gt;
+
+    &lt;aop:config&gt;
+        &lt;aop:pointcut id="messageServicePointcut"
+            expression="execution(* kite.sample02.service.MessageServiceImpl.*(..))" /&gt;
+        &lt;aop:advisor advice-ref="messageServiceBreakerAdvice"
+            pointcut-ref="messageServicePointcut"
+            order="0" /&gt;
+    &lt;/aop:config&gt;
+&lt;/beans:beans&gt;
+</pre>
+
+
+<p>In this configuration you can see that I&rsquo;ve made <code>kite</code> the default namespace, and then I&rsquo;ve done a bunch of config that&rsquo;s hopefully mostly self-explanatory, if you know AOP anyway. (If not, that&rsquo;s fine. Read on.) The <code>&lt;context:mbean-export /&gt;</code> is there because the breaker implementation is JMX-enabled so your NOC or support staff (maybe it&rsquo;s you) can manually trip and reset the breaker as needed. That&rsquo;s a must-have feature in my opinion. Then I define a breaker, an AOP advice for the breaker, and then a pointcut and advisor to apply the breaker to the desired location.</p>
+
+<p>This is a nice approach, especially if you&rsquo;re not a big fan of annotations, which a lot of people aren&rsquo;t. I however like annotations quite a bit, so I went ahead and implemented support for annotation-based configuration too, as described below.</p>
+
+<h4>Declarative circuit breakers using annotations</h4>
+
+
+<p>Here&rsquo;s the app context:</p>
+
+<pre style="margin:20px 0;">
+&lt;beans:beans xmlns="http://springinpractice.com/schema/kite"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://springinpractice.com/schema/kite
+        http:// ... kite schema location ... "&gt;
+
+    &lt;context:mbean-export /&gt;
+
+    &lt;circuit-breaker
+        id="messageServiceBreaker"
+        exceptionThreshold="3"
+        timeout="30000" /&gt;
+    
+    &lt;annotation-config order="0" /&gt;
+&lt;/beans:beans&gt;
+</pre>
+
+
+<p>And here&rsquo;s the annotated service bean:</p>
+
+<pre style="margin:20px 0;">
+package kite.sample03.service;
+
+import java.util.List;
+import javax.inject.Inject;
+import kite.annotation.GuardedByCircuitBreaker;
+import kite.sample03.dao.MessageDao;
+import kite.sample03.model.Message;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional(
+    propagation = Propagation.REQUIRED,
+    isolation = Isolation.DEFAULT,
+    readOnly = true)
+public class MessageServiceImpl implements MessageService {
+    @Inject private MessageDao messageDao;
+
+    @GuardedByCircuitBreaker("messageServiceBreaker")
+    public Message getMotd() {
+        return messageDao.getMotd();
+    }
+
+    @GuardedByCircuitBreaker("messageServiceBreaker")
+    public List getImportantMessages() {
+        return messageDao.getImportantMessages();
+    }
+}
+</pre>
+
+
+<p>Nice and clean Spring-style annotation-based configuration.</p>
+
+<h3>Conclusion</h3>
+
+
+<p>Hope you enjoyed the post. If you want to give it a try, go to the <a href="http://code.google.com/p/kite-lib/">Kite project</a> and try it out. Also, chapter 14 in my book <a href="http://www.manning.com/wheeler/">Spring in Practice</a> shows how to go about implementing your own Spring-style framework code, should you get the itch, and it&rsquo;s based on the circuit breaker implementation we just described. It explains how to implement a template, a custom namespace, JMX support, AOP-based configuration and also annotation-based configuration.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/07/05/spring-security-database-schemas-for-mysql/">Spring Security 3 Database Schemas for MySQL</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-07-05T17:36:28-07:00" pubdate data-updated="true">Jul 5<span>th</span>, 2010</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In preparation for a <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization?oid=hom25493">DZone Refcard on Spring Security 3</a> I&rsquo;m doing, here are the Spring Security database schemas for MySQL.</p>
+
+<p>This isn&rsquo;t intended to be an exhaustive treatment. Rather it&rsquo;s more a reference for the MySQL dialect version of the database schemas, though I included a few brief notes just to help people get a high-level understanding of the schemas. For more detailed information, please consult the <a href="http://static.springsource.org/spring-security/site/reference.html">Spring Security 3 Reference Documentation</a>.</p>
+
+<h3>User schema</h3>
+
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/users_erd.png" alt="User schema ERD" /></p>
+
+<p>Each user can have zero or more &ldquo;authorities&rdquo;, or roles. I think Spring Security expects there to be at least one role, though, because login involving roleless users fail.</p>
+
+<pre>create table users (
+    username varchar(50) not null primary key,
+    password varchar(50) not null,
+    enabled boolean not null
+) engine = InnoDb;
+
+create table authorities (
+    username varchar(50) not null,
+    authority varchar(50) not null,
+    foreign key (username) references users (username),
+    unique index authorities_idx_1 (username, authority)
+) engine = InnoDb;
+</pre>
+
+
+
+
+<h3 style="margin-top:20px;">Group schema</h3>
+
+
+<p>The group schema provides a way to organize users into groups and then assign roles to those groups. Each user inherits the roles from his associated groups.</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/groups_erd.png" alt="Group schema ERD" /></p>
+
+<pre>create table groups (
+    id bigint unsigned not null auto_increment primary key,
+    group_name varchar(50) not null
+) engine = InnoDb;
+
+create table group_authorities (
+    group_id bigint unsigned not null,
+    authority varchar(50) not null,
+    foreign key (group_id) references groups (id)
+) engine = InnoDb;
+
+create table group_members (
+    id bigint unsigned not null auto_increment primary key,
+    username varchar(50) not null,
+    group_id bigint unsigned not null,
+    foreign key (group_id) references groups (id)
+) engine = InnoDb;
+
+</pre>
+
+
+
+
+<h3 style="margin-top:20px;">Remember-me schema</h3>
+
+
+<p>Haven&rsquo;t actually used this one, but from what I understand, this schema supports a hardened, persistent remember-me authentication scheme. Spring Security&rsquo;s default remember-me scheme doesn&rsquo;t use the database at all (just a cookie).</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/remember_erd.png" alt="Remember-me schema ERD" /></p>
+
+<pre>create table persistent_logins (
+    username varchar(64) not null,
+    series varchar(64) primary key,
+    token varchar(64) not null,
+    last_used timestamp not null
+) engine = InnoDb;
+
+</pre>
+
+
+
+
+<h3 style="margin-top:20px;">ACL schema</h3>
+
+
+<p>Access control lists (ACLs) might be the most challenging aspect of Spring Security, but the underlying schema is actually pretty straightforward. The concept is that each secure domain object has an associated ACL that defines who can do what with that domain object. Exactly the same idea as permissions on an OS folder, for example.</p>
+
+<p>The SID (&ldquo;security identity&rdquo;) represents the &ldquo;who&rdquo;, and comes in both principal and role flavors; that is, the SID can be either an individual user or else it can be a role. The class and object identity, taken together, represent the domain object. Finally, the <code>acl_entry</code> table contains all the ACLs; each access control entry (ACE) specifies an ordered triple &lt;domain object, SID, permission&gt; and indicates whether the permission in question is granted or denied for the SID and domain object. To take an example, SID Ben might have the write permission granted for a particular forum message.</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/acl_erd.png" alt="ACL schema ERD" /></p>
+
+<pre>create table acl_sid (
+    id bigint unsigned not null auto_increment primary key,
+    principal tinyint(1) not null,
+    sid varchar(100) not null,
+    unique index acl_sid_idx_1 (sid, principal)
+) engine = InnoDb;
+
+create table acl_class (
+    id bigint unsigned not null auto_increment primary key,
+    class varchar(100) unique not null
+) engine = InnoDb;
+
+create table acl_object_identity (
+    id bigint unsigned not null auto_increment primary key,
+    object_id_class bigint unsigned not null,
+    object_id_identity bigint unsigned not null,
+    parent_object bigint unsigned,
+    owner_sid bigint unsigned,
+    entries_inheriting tinyint(1) not null,
+    unique index acl_object_identity_idx_1
+        (object_id_class, object_id_identity),
+    foreign key (object_id_class) references acl_class (id),
+    foreign key (parent_object) references acl_object_identity (id),
+    foreign key (owner_sid) references acl_sid (id)
+) engine = InnoDb;
+
+create table acl_entry (
+    id bigint unsigned not null auto_increment primary key,
+    acl_object_identity bigint unsigned not null,
+    ace_order int unsigned not null,
+    sid bigint unsigned not null,
+    mask int not null,
+    granting tinyint(1) not null,
+    audit_success tinyint(1) not null,
+    audit_failure tinyint(1) not null,
+    unique index acl_entry_idx_1 (acl_object_identity, ace_order),
+    foreign key (acl_object_identity)
+        references acl_object_identity (id),
+    foreign key (sid) references acl_sid (id)
+) engine = InnoDb;</pre>
+
+
+
+
+<h3>Sample code</h3>
+
+
+
+
+<ul>
+<li><a href="https://github.com/springinpractice/sip06">Spring in Practice, chapter 6 [GitHub]</a> - authentication</li>
+<li><a href="https://github.com/springinpractice/sip07">Spring in Practice, chapter 7 [GitHub]</a> - authorization, including ACLs</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/05/15/balancing-frontend-and-backend-server-capacity/">Balancing Frontend and Backend Server Capacity</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-05-15T07:03:54-07:00" pubdate data-updated="true">May 15<span>th</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In <a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a>, Michael Nygard explains that a key approach to managing capacity is to balance the capacity of your front-end servers (e.g.,web servers or app servers) with that of your back-end servers. In this brief article we&rsquo;re going to look at what that means and why it&rsquo;s such a good idea to pay attention to this aspect of capacity management.</p>
+
+<h3>A simple example of wasted capacity</h3>
+
+
+<p>For the sake of example, let&rsquo;s say that we need to design an application that can support up to 100,000 concurrent user sessions within some given response time SLA. The app domain is such that we can partition the user population and employ a horizontally-scalable, sharded design. When there are problems, we want to try to limit the impact to at most 10% of the users. So we decide to go with ten pools that can handle 10,000 concurrent user sessions each. Each pool will have some number of application servers and some number of database servers.</p>
+
+<p>We don&rsquo;t know the number of app and database servers required, but we guess that we&rsquo;re going to need twice as many app servers as database servers. So we try stress testing various pools with that server ratio. Our stress testing reveals that a 6:3 pool can&rsquo;t handle the necessary load but an 8:4 pool can. It&rsquo;s important to us to have fault tolerance, so we decide to add one app node and one database node to the pool. That gives us a 9:5 pool ratio, for a total of 90 app servers and 50 database servers, or 140 servers in all as seen in figure 1:</p>
+
+<p><img src="http://wheelersoftware.s3.amazonaws.com/articles/balancing-server-capacity/pools.jpg" alt="Figure 1. Server pools" /></p>
+
+<p>So what do you think?</p>
+
+<h3>Improving the utilization of server capacity</h3>
+
+
+<p>It may seem like we did a good job with this. After all, we defined our load requirements, defined a goal around limiting the impact of outages, created a horizontally scalable design to support the requirements, and then performed stress testing to ensure that our individual pools can handle the required load. So our system ought to be able to meet the stated requirements. But could we have done better?</p>
+
+<p>You may have noticed that in our stress testing of individual pools, we began with an assumption that we&rsquo;d need twice as many app servers as database servers, but we never actually tested that assumption. Let&rsquo;s say that we repeat our stress testing and discover that even though a 8:4 ratio handles the load, stress-induced failure lies squarely with the database side of the pool. When the pool &ldquo;fails&rdquo; (e.g., stops meeting whatever response time SLA we defined),database server CPU is at 90-95% and app server CPU is humming along at 45%. Through further stress testing we discover that we can reduce the ratio to 5:4 while still meeting the overall requirement to service 10,000 concurrent user sessions within the SLA. We still want to be fault-tolerant, so we revise our pool ratio to 6:5, giving us 60 app servers and 50 database servers, or 110 servers total. That&rsquo;s a savings of 30 servers over our previous configuration,or 21.4%, and we get it without having to give anything up. Not bad, except for our hardware vendor!</p>
+
+<p>Here&rsquo;s what&rsquo;s going on. In the first configuration, each pool had three app servers too many. This represents excess capacity in the system. But&mdash;and this is an important point that&rsquo;s easy to miss&mdash; it isn&rsquo;t excess capacity that would allow us to service additional user load. It&rsquo;s inherently unusable capacity. This is because the database tier breaks well before we use that extra app server capacity. So that extra capacity is pure waste. It incurs extra cost (initial purchase price along with operational costs like support, maintenance, rackspace, power,cooling, etc.) and it increases the overall complexity of the system simply by representing additional moving parts that can break or cause (sometimes hard-to-diagnose) problems.</p>
+
+<p>The point bears repeating that the excess capacity is not usable, so it isn&rsquo;t correct to argue that it helps us if our user base grows. We can&rsquo;t tap into it, so it doesn&rsquo;t help. Anyway, the point of the horizontally scalable design here is to support adding capacity by adding pools rather than by growing individual pools.</p>
+
+<h3>Summary</h3>
+
+
+<p>The bottom line is that proper capacity management involves balancing the capacity of front-end servers with that of the back-end servers. This doesn&rsquo;t mean that the number of app servers needs to be the same as the number of database servers; rather it means that we want the set of app servers and the set of database servers to converge toward failure roughly together. Any systematic delta between the two represents unusable excess capacity and hence undue waste and moving parts.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/02/02/getting-started-with-hibernate-validator/">Getting Started With Hibernate Validator</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-02-02T07:00:16-08:00" pubdate data-updated="true">Feb 2<span>nd</span>, 2009</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In this tutorial we&rsquo;re going to learn how to get started with Hibernate Validator, which as its name suggests is a validation framework associated with the Hibernate project. This article is really a follow-up to <a href="http://springinpractice.com/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/">my earlier article on using the Bean Validation Framework</a> (part of the larger <a href="https://springmodules.dev.java.net/">Spring Modules</a> project), which is a competing framework that seems to have lost the battle for Spring&rsquo;s &ldquo;preferred validation provider&rdquo; status to Hibernate Validator. Both Uri Boness (in an e-mail correspondence) and Juergen Hoeller (at SpringOne) agreed that people should start moving toward Hibernate Validator since that will eventually support the emerging <a href="http://jcp.org/en/jsr/detail?id=303">JSR 303</a> standard.</p>
+
+<p>Hibernate Validator is nice because it (like the Bean Validation Framework) supports declarative validation via <a href="http://java.sun.com/j2se/1.5.0/docs/guide/language/annotations.html">Java 5 annotations</a>. Let&rsquo;s say you create a bean class, like an <code>Account</code> or a <code>PurchaseOrder</code> or whatever. With Hibernate Validator you can attach validation annotations to the bean properties and that will define the validation constraints for the bean. Moreover, unlike earlier approaches to validation (such as Struts Validation), Hibernate Validator isn&rsquo;t tied to the web tier, and so if you want to validate your beans from within your service beans, or within your DAOs, or even just before you ORM them into your database, no sweat. You can do just that.</p>
+
+<p>Anyway, for now we&rsquo;re just going to look at some of the basics: how to specify annotation constraints and how to check for constraint violations. We&rsquo;re not going to worry about integrating Hibernate Validator with Spring&rsquo;s native validation framework (so that, for instance, we might render Hibernate Validator error messages out using Spring Web MVC taglibs) though I&rsquo;ll probably write another article on that sometime in the future if people are interested.</p></p>
+
+<p>For this article we&rsquo;re using Java 5 or higher (we need Java 5 annotations) and Hibernate Validator 3.1.0. For your convenience I&rsquo;ve created a <a href="http://maven.apache.org/">Maven 2</a> project that you can download: <a href="http://wheelersoftware.s3.amazonaws.com/articles/hibernate-validator/hibernate-validator-demo.zip">hibernate-validator-demo.zip</a></p>
+
+<p>OK, let&rsquo;s jump into some examples of annotated bean classes.</p>
+
+<h3>Specifying validation constraints with Hibernate Validator annotations</h3>
+
+
+<p>Here are a couple of examples of annotated bean classes: a <code>User</code> class and an <code>Address</code> class. Note that the two objects are related in a parent-child fashion.</p>
+
+<p>First, here is the <code>User</code> bean class:</p>
+
+<pre>package com.wheelersoftware.demos.hibernatevalidator;
+
+import org.hibernate.validator.Email;
+import org.hibernate.validator.Length;
+import org.hibernate.validator.NotEmpty;
+import org.hibernate.validator.Valid;
+
+public class User {
+    private String username;
+    private String firstName;
+    private String lastName;
+    private Address address;
+    private String email;
+    private String password;
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getUsername() { return username; }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getFirstName() { return firstName; }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getLastName() { return lastName; }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    @Valid
+    public Address getAddress() { return address; }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    @NotEmpty
+    @Email
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getPassword() { return password; }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}</pre>
+
+
+<p>Let&rsquo;s talk a little about what&rsquo;s going on with the code above. As we noted earlier, we have a bean class (here, a class that represents user accounts of some sort) and we&rsquo;re using annotations to specify validation constraints. For a full list of the built-in constraints, see the <a href="http://www.hibernate.org/hib_docs/validator/reference/en/html/validator-defineconstraints.html#validator-defineconstraints-builtin">official Hibernate Validator documentation</a>, but we&rsquo;ll just focus on a small handful for right now.</p>
+
+<p>First notice that we&rsquo;ve attached our annotations to the getter methods. This is how we specify the validation constraints that attach to the associated properties.</p>
+
+<p>We&rsquo;ve used <code>@NotEmpty</code> in several places. This annotation means that the annotated property can&rsquo;t be null and it can&rsquo;t be the empty string either. There&rsquo;s also a <code>@NotNull</code> annotation that we could have used if we&rsquo;d wanted to, but in this case I wanted to prevent the empty string from being used as values.</p>
+
+<p>Another annotation that appears multiple times is the <code>@Length</code> annotation. We can specify associated minimum and maximum lengths by using the <code>min</code> and <code>max</code> elements, respectively, though in the example above we&rsquo;ve specified only maximum lengths. (In the example that follows we&rsquo;ll see how to specify a minimum length as well.) So for example we&rsquo;ve specified that passwords can&rsquo;t be any longer than 20 characters.</p>
+
+<p>A third annotation is the <code>@Email</code> annotation. As you would guess, this indicates that the property must contain a valid e-mail address.</p>
+
+<p>The fourth and final annotation of the ones that appear above is the <code>@Valid</code> annotation. This tells Hibernate Validator that it should validate the associated object&mdash;here an associated <code>Address</code> object&mdash;using whatever validation annotations we define on the <code>Address</code> class.</p>
+
+<p>And that&rsquo;s our segue into our second example, the <code>Address</code> bean class, which appears below.</p>
+
+<pre>package com.wheelersoftware.demos.hibernatevalidator;
+
+import org.hibernate.validator.Length;
+import org.hibernate.validator.NotEmpty;
+import org.hibernate.validator.Pattern;
+
+public class Address {
+    private String street1;
+    private String street2;
+    private String city;
+    private String state;
+    private String zip;
+
+    @NotEmpty
+    @Length(max = 40)
+    public String getStreet1() { return street1; }
+
+    public void setStreet1(String street1) {
+        this.street1 = street1;
+    }
+
+    // No validation constraints
+    public String getStreet2() { return street2; }
+
+    public void setStreet2(String street2) {
+        this.street2 = street2;
+    }
+
+    @NotEmpty
+    @Length(max = 40)
+    public String getCity() { return city; }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    @NotEmpty
+    @Length(max = 3)
+    public String getState() { return state; }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    @NotEmpty
+    @Length(min = 5, max = 5, message = "{zip.length}")
+    @Pattern(regex = "[0-9]+")
+    public String getZip() { return zip; }
+
+    public void setZip(String zip) {
+        this.zip = zip;
+    }
+}</pre>
+
+
+<p>Our validation annotations for <code>Address</code> are pretty similar to what we saw for <code>User</code>, but there are a few differences worth mentioning. First, notice that we don&rsquo;t have to attach validation constraints to every property. It&rsquo;s OK, for example, for <code>street2</code> to be null or anything else, so we simply refrain from defining validation constraints for this property.</p>
+
+<p>Second, we&rsquo;re using a <code>@Pattern</code> annotation for the <code>zip</code> property. This allows us to specify regular expression match patterns.</p>
+
+<p>The third and final difference is the <code>@Length</code> annotation we&rsquo;ve defined for the <code>zip</code> property. Besides including a <code>min</code> element (which, when combined with the <code>max</code> element, indicates that the ZIP code must be exactly five characters long), we&rsquo;ve also included a <code>message</code> element. We can use this element to do either of two things. First, we can use it to define a hardcoded message to display when the given validation constraint fails. That&rsquo;s not what we&rsquo;re doing here. Instead we&rsquo;re doing the second thing we can do, which is specify a message key using the brace syntax: <code>message = {key_name}</code>. The idea is that we&rsquo;ll eventually use this message key to look up a message in a resource bundle, thus externalizing the message. Later in the tutorial we&rsquo;ll map the <code>zip.length</code> message key to an actual message using a resource bundle.</p>
+
+<p>That&rsquo;s it for the validation constraints themselves. Now let&rsquo;s see how we can tell Hibernate Validator to use them to perform our bean validation.</p>
+
+<h3>How to tell Hibernate Validator to validate annotated beans</h3>
+
+
+<p>It&rsquo;s fairly straightforward to get Hibernate Validator to validate our annotated beans. The following listing presents some demo code for doing exactly this. Let&rsquo;s take a look.</p>
+
+<pre>package com.wheelersoftware.demos.hibernatevalidator;
+
+import org.hibernate.validator.ClassValidator;
+import org.hibernate.validator.InvalidValue;
+
+public final class Demo {
+    private static ClassValidator&lt;User&gt;
+        userValidator = new ClassValidator&lt;User&gt;(User.class);
+
+    public static void main(String[] args) {
+        validateUser(createUser());
+    }
+
+    private static User createUser() {
+        User user = new User();
+        user.setFirstName("123456789012345678901");
+        user.setEmail("aol.com");
+
+        Address addr = new Address();
+        addr.setStreet1("");
+        addr.setCity("Moreno Valley");
+        addr.setState("CA");
+        addr.setZip("QWERTY");
+        user.setAddress(addr);
+
+        return user;
+    }
+
+    private static void validateUser(User user) {
+        InvalidValue[] invalidValues = userValidator.getInvalidValues(user);
+        for (InvalidValue value : invalidValues) {
+            System.out.println("========");
+            System.out.println(value);
+            System.out.println("message=" + value.getMessage());
+            System.out.println("propertyName=" + value.getPropertyName());
+            System.out.println("propertyPath=" + value.getPropertyPath());
+            System.out.println("value=" + value.getValue());
+        }
+    }
+}</pre>
+
+
+<p>There are really only a few interesting things happening here. First, we create a <code>ClassValidator&lt;User&gt;</code> instance for validating our <code>User</code> beans. We have to associate the <code>ClassValidator</code> with a type (here, <code>User</code>) because this is where Hibernate Validator goes in and reads all the annotations off of the bean class in question.</p>
+
+<p>Next, we have to create the bean we want to validate. Usually this would come from a user form (for example, a web-based form, or maybe a Swing-based form) though that&rsquo;s not necessarily the case. Here we just create a bean manually, and we intentionally make a lot of the fields invalid so we can see how Hibernate Validator responds.</p>
+
+<p>Finally we make the call <code>userValidator.getInvalidValues(user)</code>. This generates an array of <code>InvalidValue</code> instances&mdash;one for each validation constraint violation. Let&rsquo;s examine the <code>InvalidValue</code> class in more detail.</p>
+
+<h3>Understanding InvalidValue</h3>
+
+
+<p>To understand <code>InvalidValue</code> it will help to run the demo. So do that right now. You should see output that looks something like this:</p>
+
+<pre>26 [main] INFO org.hibernate.validator.Version - Hibernate Validator 3.1.0.GA
+45 [main] INFO org.hibernate.annotations.common.Version - Hibernate Commons Annotations 3.1.0.GA
+========
+username may not be null or empty
+message=may not be null or empty
+propertyName=username
+propertyPath=username
+value=null
+========
+firstName length must be between 0 and 20
+message=length must be between 0 and 20
+propertyName=firstName
+propertyPath=firstName
+value=123456789012345678901
+========
+lastName may not be null or empty
+message=may not be null or empty
+propertyName=lastName
+propertyPath=lastName
+value=null
+========
+email not a well-formed email address
+message=not a well-formed email address
+propertyName=email
+propertyPath=email
+value=aol.com
+========
+password may not be null or empty
+message=may not be null or empty
+propertyName=password
+propertyPath=password
+value=null
+========
+street1 may not be null or empty
+message=may not be null or empty
+propertyName=street1
+propertyPath=address.street1
+value=
+========
+zip {zip.length}
+message={zip.length}
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY
+========
+zip must match "[0-9]+"
+message=must match "[0-9]+"
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY</pre>
+
+
+<p>If you look at the source code for <code>Demo.validateUser()</code> you&rsquo;ll see that we&rsquo;re printing out each <code>InvalidValue</code> instance itself (the first line) as well as the values of the <code>message</code>, <code>propertyName</code>, <code>propertyPath</code> and <code>value</code> properties (the rest of the lines). When we print out the instance itself, we get Hibernate Validator&rsquo;s attempt at a user-friendly validation eror message. It starts with the property name and then appends the message; examples include</p>
+
+<ul class="square">
+<li><code>email not a well-formed e-mail address</code></li>
+<li><code>password may not be null or empty</code></li>
+<li><code>zip must match "[0-9]+"</code></li>
+</ul>
+
+
+<p>Each <code>message</code> value (such as <code>may not be null or empty</code>) is a default associated with a validation annotation (such as <code>@NotEmpty</code>). Note that in the case of the length violation for the <code>zip</code> property, we&rsquo;re seeing not the default length message, but instead the new message key name (namely, <code>zip.length</code>) we specified in listing 2. We&rsquo;ll see how to map <code>zip.length</code> to an actual message using a resource bundle in a little bit. For now we&rsquo;re seeing just the key name because we haven&rsquo;t yet associated a message with the key.</p>
+
+<p>The <code>propertyName</code> property specifies the name of the bean property whose value is invalid. For example, if we provide a bad ZIP code, then <code>propertyName</code> is <code>zip</code>.</p>
+
+<p>The <code>propertyPath</code> property is similar to <code>propertyName</code> property, except that with <code>propertyPath</code> we get to see the path from the top-level bean down to the invalid property. You can see the difference, for instance, with the invalid ZIP code: <code>propertyName</code> is <code>zip</code> but <code>propertyValue</code> is <code>address.zip</code>.</p>
+
+<p>Finally, <code>value</code> is just the bad value that violated the validation constraint in the first place.</p>
+
+<p>While we can use <code>InvalidValue</code> itself as a source of semi-user-friendly messages, it&rsquo;s clear that the defaults leave something to be desired. After all, <code>zip must match &ldquo;[0-9]+&rdquo;</code> wouldn&rsquo;t be what most users would consider user-friendly. We can however provide a resource bundle to improve the error messages and that&rsquo;s what we&rsquo;ll look at now.</p>
+
+<h3>Improving validation error messages using ValidatorMessages.properties</h3>
+
+
+<p>With Hibernate Validator we can override the default messages associated with the various validation annotations. We can also provide highly specific error messages associated with property/constraint pairs. We do this using resource bundles. Though it&rsquo;s possible to provide Hibernate Validator with arbitrary resource bundles, the easiest approach is to create a <code>ValidatorMessages.properties</code> resource bundle on the classpath and use that. Hibernate Validator knows to look for that particular bundle (including any associated localizations) and use it as a message source. The next listing presents a simple example.</p>
+
+<pre>validator.notEmpty=may not be null or empty!
+validator.length=must be {max} or fewer characters.
+zip.length=Please enter a {max}-character ZIP code.</pre>
+
+
+<p>The first two lines of listing 3 provide alternatives for the <code>validator.notEmpty</code> and <code>validator.length</code> message keys. The key names are defined by the validation annotations themselves, so consult the Javadocs for the annotations if you need the key names (though you should be able to figure them out using the examples above).</p>
+
+<p>Notice the <code>{max}</code> that appears in the message for the <code>validator.length</code> key. You can reference annotation elements from messages using the brace syntax. Consult the Javadocs for the various annotations&mdash;or else the Hibernate Validator reference manual&mdash;for a complete list of annotations and annotation elements.</p>
+
+<p>The third line also specifies a message, but this time we&rsquo;re associating a message with the <code>zip.length</code> custom key we defined in listing 2. Note that here we don&rsquo;t use the braces for the key name. And also note that we can still reference annotation elements using the brace syntax. The custom message key approach is useful when you want to be very specific about the error message you provide to the end user.</p>
+
+<p>Here&#8217;s what it looks like when you run it:</p>
+
+
+
+
+<pre>29 [main] INFO org.hibernate.validator.Version - Hibernate Validator 3.1.0.GA
+59 [main] INFO org.hibernate.annotations.common.Version - Hibernate Commons Annotations 3.1.0.GA
+========
+username may not be null or empty!
+message=may not be null or empty!
+propertyName=username
+propertyPath=username
+value=null
+========
+firstName must be 20 or fewer characters.
+message=must be 20 or fewer characters.
+propertyName=firstName
+propertyPath=firstName
+value=123456789012345678901
+========
+lastName may not be null or empty!
+message=may not be null or empty!
+propertyName=lastName
+propertyPath=lastName
+value=null
+========
+email not a well-formed email address
+message=not a well-formed email address
+propertyName=email
+propertyPath=email
+value=aol.com
+========
+password may not be null or empty!
+message=may not be null or empty!
+propertyName=password
+propertyPath=password
+value=null
+========
+street1 may not be null or empty!
+message=may not be null or empty!
+propertyName=street1
+propertyPath=address.street1
+value=
+========
+zip Please enter a 5-character ZIP code.
+message=Please enter a 5-character ZIP code.
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY
+========
+zip must match "[0-9]+"
+message=must match "[0-9]+"
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY</pre>
+
+
+
+
+<h3>Discussion</h3>
+
+
+<p>That wraps it up for this tutorial. It&rsquo;s a good idea to get familiar with Hibernate Validator for a number of reasons:</p>
+
+<ul class="square">
+<li>Annotation-based declarative annotations are an intuitive and convenient way to specify validation constraints.</li>
+<li>Hibernate Validator isn&#8217;t tied to any particular application tier.</li>
+<li>It will support the JSR 303 standard once that finalizes.</li>
+</ul>
+
+
+<p>We haven&rsquo;t explored everything that Hibernate Validator has to offer. For instance, it&rsquo;s possible to configure it such that Hibernate ORM automatically runs Hibernate Validator when performing persistence operations.</p>
+
+<p>One slight annoyance that I&rsquo;ve found is that there doesn&rsquo;t seem to be built-in way to substitute the bad value into the message itself. Sometimes I like to have messages like</p>
+
+<p><code>willie2gmail.com is not a valid e-mail address</code></p>
+
+<p>I suppose that I could create messages like</p>
+
+<p><code>{1} is not a valid e-mail address</code></p>
+
+<p>and then perform the substitution when processing the <code>InvalidValue</code> array, but it would be nice to be able to do this out of the box. Maybe there&rsquo;s a way to do it after all, but if so, I haven&rsquo;t found it.</p>
+
+<p>Also, the documentation for Hibernate Validator is a little thin, both with respect to the reference manual and the Javadocs. Hopefully as JSR 303 matures we&rsquo;ll see improvements in this area. In the meantime, this tutorial will be my contribution to helping people understand Hibernate Validator.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/12/03/new-stuff-in-spring-30-part-2/">New Stuff in Spring 3.0, Part 2</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-12-03T07:34:41-08:00" pubdate data-updated="true">Dec 3<span>rd</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>[Here&rsquo;s <a href="http://springinpractice.wordpress.com/2008/12/02/new-stuff-in-spring-30/">part 1</a> if you missed it.]</p>
+
+<p>As promised, here&rsquo;s the rest of my notes dump on what&rsquo;s new in Spring 3.0, or really Spring 3.x since a  lot of what comes in Spring 3.x is waiting on JEE 6, which probably won&rsquo;t be finalized until after Spring 3.0 is already released.</p>
+
+<h3>More about Spring 3 and its support for JEE 6</h3>
+
+
+<p>Before I continue describing Juergen&rsquo;s first talk, I did attend another of his talks just a while ago and it seems like Spring 3/JEE 6 integration is going to be &ldquo;interesting,&rdquo; especially as concerns Spring integration with the forthcoming Java Web Beans effort (and to a lesser extent, EJB 3.1).  He didn&rsquo;t work too hard to hide his displeasure at the unattributed fashion in which many of the core ideas from Spring are making their way into the JEE specs. He described Web Beans as being a standardized DI framework with a focus on supporting scoped beans (request, conversation, session, application, etc.), and noted that many of the annotations from Web Beans and EJB 3.1 have direct counterparts in Spring. Taken together it sounds like Web Beans + EJB 3.1 will compete with Spring, with Web Beans handling the user component model and EJB 3.1 providing platform services (transaction management, container-managed security and so forth).</p>
+
+<p>Anyway regarding Spring 3 and JEE 6, it will be fun to watch as it unfolds.  :&ndash;)</p>
+
+<p>Here&rsquo;s some more information related to how Spring 3 will support JEE 6:</p>
+
+<ul>
+<li>JSF 2.0: full compatibility as managed bean facility</li>
+<li>JPA 2.0: support for lock modes and query timeouts (Hibernate supports these, but this is new for JPA)</li>
+<li>JAX-RS and Jersey reference implementation (part of Glassfish): Spring will support these though they see JAX-RS as an alternative to Spring Web MVC&#8217;s REST support. Juergen said that he sees JAX-RS for more &#8220;hardcore&#8221; RESTful web service applications, and it&#8217;s a completely separate component model for building programmatic resource endpoints.</li>
+<li>JSR 236 WorkManager and TimerManager: Rich, standardized access to thread pools. This spec is behind schedule so it won&#8217;t be in Spring 3. Maybe Spring 3.1. Juergen is excited about this though it sounded like it&#8217;s more from the framework perspective than from the app developer perspective.</li>
+<li>Servlet 3.0: This won&#8217;t be supported til Spring 3.1 or Spring 3.2, but two major items here are (1) auto-deployment of framework integration classes (I didn&#8217;t fully catch what this meant&#8211;I couldn&#8217;t tell if it&#8217;s about hot-deploying JARs or what), and (2) support for Comet requests. The Comet support would include new HTTP request and response types.
+<li>EJB 3.1 and Web Beans as described above. Just depends where the specs go.</li>
+</ul>
+
+
+<p>The Spring team is tracking GlassFish 3 and Tomcat 7 as well.</p>
+
+<h3>JSR 303: Bean Validation</h3>
+
+
+<p>This one looks like it will be for Spring 3.1 rather than Spring 3.0 since the Bean Validation spec isn&rsquo;t done yet. The idea though is that JSR 303 provides a declarative, annotation-based model for defining validation constraints, and so instead of forcing developers to invoke validation manually, the framework would automatically invoke it at appropriate places.  I haven&rsquo;t played much with Hibernate Validator yet but I think you can make Hibernate automatically validate persistent objects before saving them.  So the same sort of thing would occur elsewhere.  For example Spring Web MVC will I believe automatically invoke validation after doing form binding.</p>
+
+<p>I did ask about the Bean Validation Framework (from the Spring Modules project), and whether that was dead. I think for a brief moment he didn&rsquo;t know what I was talking about when I said &ldquo;Bean Validation Framework&rdquo; (not a good sign for the BVF), and when I mentioned Spring Modules he said [paraphrasing here]: yeah, BVF is pretty much dead, use Hibernate Validator instead. My brother asked Uri Boness (BVF lead) about it several months back and he said roughly the same thing, that the best bet is for people to use Hibernate Validator and plan on JSR 303 being the future of validation.</p>
+
+<p>Spring 3.0 will support Hibernate Validator annotations but the real goal is to support JSR 303 annotations.</p>
+
+<h3>Portlet 2.0 support</h3>
+
+
+<p>Some major Portlet 2.0 capabilities include:</p>
+
+<ul>
+<li>An explicit action name concept for dispatching</li>
+<li>Two new request types: resource requests for servlet-style serving, and events for inter-portlet communication</li>
+<li>Portlet filters, which are analogous to servlet filters</li>
+</ul>
+
+
+<p>Spring 3 will have Portlet 2.0 support. In particular, Portlet MVC 3.0 will support the following mapping annotations: <code>@ActionMapping</code>, <code>@RenderMapping</code>, <code>@ResourceMapping</code>, and <code>@EventMapping</code>. Conceptually these are specializations of Spring Web MVC&rsquo;s <code>@RequestMapping</code> annotation even though there&rsquo;s no explicit subtype relationship here.</p>
+
+<p>Some other odds and ends:</p>
+
+<ul>
+<li>In the Spring EL there will be some scope-sensitive Portlet-related implicit objects such as the current <code>PortletRequest</code> and <code>PortletSession</code>.</li>
+<li>The <code>@RequestHeader</code> and <code>@CookieValue</code> annotations I mentioned yesterday will work for both Servlet MVC and Portlet MVC.</li>
+</ul>
+
+
+<p>Juergen also described some areas of research. These aren&rsquo;t necessarily going into Spring 3 anytime soon but they&rsquo;re just taking a look right now.</p>
+
+<h3>Research area #1: Conversation management</h3>
+
+
+<p>A key problem in conversation management is isolating concurrent windows in the same browser. Historically this has been the domain of Spring Web Flow, but there&rsquo;s some thought of moving some level of conversation management to Spring Core. The idea is to introduce a new scope that&rsquo;s larger than a single request but smaller than an entire session&mdash;a conversation&mdash;and be able to handle that, along the lines of the MyFaces Orchestra project.</p>
+
+<p>This is just me editorializing now, but I&rsquo;m myself a little dubious of the usefulness of a conversation scope if the goal is really just managing different browser windows. To me it seems like running a single app in multiple browser windows is a corner case. I suspect that what&rsquo;s going on is that Spring is responding to the fact that JEE 6 Web Beans will have a conversation scope.</p>
+
+<p>If the goal is to handle Spring Web Flow-type scenarios (single window) then yeah, that I can see. Anyway.</p>
+
+<h3>Research area #2: Scoped bean serializability</h3>
+
+
+<p>Sometimes you want to be able to serialize beans, but you can&rsquo;t, because they contain references (either directly or indirectly) to unserializable objects, like e.g. DataSources. They&rsquo;re looking at ways to address this.</p>
+
+<p>I&rsquo;m not sure what sorts of serialization scenarios they have in mind. Originally I was thinking Juergen was talking about saving out sessions during server shutdowns (like Tomcat does) and stuff like that, but as I write this, that doesn&rsquo;t seem right, because your domain objects wouldn&rsquo;t have DataSource references. So apparently some people want to save managed objects, which seems odd since those managed objects (controllers, service beans, DAOs, etc.) are usually stateless. Oh well. I don&rsquo;t doubt that somebody has some reasonable use case here; I just don&rsquo;t myself know exactly what people have in mind on this one.</p>
+
+<p>Hm&hellip; but scoped beans would typically be domain objects&hellip; heh, I&rsquo;m totally confused on this one.  :&ndash;)</p>
+
+<p>Anyway, the Spring team is thinking about how best to handle this. Juergen offered that one &ldquo;solution&rdquo; is just to design your apps so that they don&rsquo;t involve serializing scoped beans. Another idea might be to have serializable proxies that are able to reconstitute the scoped bean when the proxy is initialized.</p>
+
+<p>Spring 3 will also address a handful of housekeeping items.</p>
+
+<h3>Housekeeping and portfolio rearrangements</h3>
+
+
+<p>Some portfolio rearrangements include:</p>
+
+<ul>
+<li>There will be a revised OXM modules as part of the core, rather than just being part of Spring Web Services, as there are broader areas of applicability, including XML payloads in REST and XML datatypes in the database.</li>
+<li>The binding and type conversion infrastructure will be revised. It will include capabilities from Spring Web Flow&#8217;s binding, and there will be EL integration here.</li>
+<li>Spring 3.0 will include the core functionality of Spring JavaConfig, which basically allows you to configure application contexts from Java instead of using XML.</li>
+</ul>
+
+
+
+
+<h3>Deprecation and pruning</h3>
+
+
+<p>The following will be deprecated:</p>
+
+<ul>
+<li>The traditional MVC controller class hierarchy (deprecated in Spring 3.0, removed entirely in Spring 3.1).</li>
+<li>Traditional JUnit 3.8 test class hierarchy (this will be replaced with the test context framework)</li>
+<li>Various outdated helper classes</li>
+</ul>
+
+
+<p>The following will be removed in Spring 3.0:</p>
+
+<ul>
+<li>Commons Attributes support</li>
+<li>TopLink API support (replace with JPA/EclipseLink)</li>
+<li>Support for Struts 1.x subclass-style actions</li>
+</ul>
+
+
+<p><strong>Some related links:</strong></p>
+
+<ul>
+<li><a href="http://greybeardedgeek.net/?p=83">SpringOne Americas 2008 - Day 3</a></li>
+<li><a href="http://ptrthomas.wordpress.com/2008/12/04/springone-2008-day-3/">SpringOne 2008 Day 3</a></li>
+</ul>
+
+
+<p>[Update: Here&rsquo;s <a href="http://www.infoq.com/news/2008/12/springone-2008">a related InfoQ article</a>.]</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/12/02/new-stuff-in-spring-30/">New Stuff in Spring 3.0</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-12-02T11:59:26-08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This morning I attended a talk by Juergen Hoeller on what&rsquo;s coming in Spring 3.0. First, he said that we can expect the first milestone release sometime this week, and said that he expected there to be about three milestone releases I think. RC1 is supposed to be out around March 2009 and final around April 2009.</p>
+
+<p>Echoing something I&rsquo;ve heard Keith Donald say, Juergen said that Spring 3.0 is intended to complete the work that was started in Spring 2.5. Keith described the release as being &ldquo;evolutionary, not revolutionary.&rdquo; That may be, but there&rsquo;s still quite a bit to be excited about.  Here&rsquo;s what I got from the talk today. (Hold onto your hats because I took good notes.)</p>
+
+<h3>Java and JEE compatibility</h3>
+
+
+<p>Spring 3.0 will be the first release that requires Java 5+. From SpringSource&rsquo;s perspective this is nice because they can avail themselves to generics, varargs, etc. But from the app developer&rsquo;s perspective, the idea is that the platform is really pushing use of annotations as the preferred way of doing configuration. So that means Java 5+.</p>
+
+<p>Spring 3.0 will continue to be compatible with J2EE 1.4 and JEE 5. Also, as JEE 6 matures, Spring 3.0 will try to provide early support, but progress on JEE 6 has been somewhat slow and Spring 3.0 should be out before JEE 6. So Spring 3.1 and 3.2 will probably continue work in this direction. Anyway, SpringSource plans to support JSF 2.0, JPA 2.0, Servlet 3.0 when it&rsquo;s ready, etc.)</p>
+
+<h3>Spring EL (Unified EL++)</h3>
+
+
+<p>Juergen described support for expression languages as probably the most important and powerful feature in Spring 3.0. It will be a proprietary EL parser implementation&mdash;one of the few new modules that Spring 3.0 will introduce&mdash;and it sounded like it would like Unified EL but on steroids. They&rsquo;re trying to keep the EL pretty similar to how it works in JSF, and Spring&rsquo;s EL is designed to be stylistically and syntactically compatible with Unified EL. Also, even though right now Spring Web Flow 2 uses external EL implementations (JBoss EL implementation of Unified EL, I think, or else OGNL), SWF 3 will use Spring EL instead of an external implementation.</p>
+
+<p>Here&rsquo;s a code example he gave. This one is for EL in bean definitions:</p>
+
+<pre>&lt;bean class="mycompany.RewardsTestDatabase"&gt;
+    &lt;property name="databaseName" value="#{systemProperties.databaseName}"/&gt;
+    &lt;property name="keyGenerator" value="#{strategyBean.databaseKeyGenerator}"/&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>The idea is this. Just like in other ELs, you will have some implicit objects&mdash;objects that you can reference in your EL either because the objects are global in scope or else because the object lives in your current scope (e.g., request scope, session scope, etc.). So in the example above, <code>systemProperties</code> is a global implicit object, and <code>strategyBean</code> is a bean name. Bean names will be available as EL objects then.</p>
+
+<p>I&rsquo;m assuming that the <code>databaseName</code> and <code>keyGenerator</code> properties will be evaluated each time they are accessed. Otherwise it wouldn&rsquo;t be much of an expression language. I&rsquo;m kind of curious to see how they do this. My guess is that the approach will be to proxy beans with EL-based properties, with the proxies evaluating the reference upon demand.</p>
+
+<p>Juergen gave another example, this time of EL in component annotations. Here it is:</p>
+
+<pre>
+@Repository
+public class RewardsTestDatabase {
+
+    @Value("#{systemProperties.databaseName}")
+    public void setDatabaseName(String dbName) { ... }
+
+    @Value("#{strategyBean.databaseKeyGenerator}")
+    public void setKeyGenerator(KeyGenerator kg) { ... }
+}
+</pre>
+
+
+<p>I <i>believe</i> these two configuration examples are different in a subtle way. The value of the <code>@Value</code> attribute is a default value for the property if a value isn&rsquo;t explicitly defined in the app context. One practical benefit we get has to do with how component scanning currently works. When we component scan, we depend on autowiring to establish injected references. The problem is that if our dependencies are primitive types, autowiring is no longer an option and so we have to go explicit with our bean definitions. With EL-based defaults, we can keep the component scanning, and just set the primitive types using a bean, or maybe using system properties, etc.</p>
+
+<h3>REST support</h3>
+
+
+<p>Another big topic in Spring 3.0 is REST support. Spring Web MVC will provide first-class support for RESTful web services, and not necessarily just XML-based. Keith was saying that there will be a JSON view as well. So the web services would be useful not only in integration efforts but also for example when you have JavaScript widgets that want to make AJAX calls back to the server and get JSON. Anyway, Spring Web MVC&rsquo;s current design is such that it&rsquo;s really easy to tweak it a bit to support REST, and that&rsquo;s what they&rsquo;re doing. So one aspect of this would be to continue to use <code>@RequestMapping</code> to specify an HTTP method, such as <code>RequestMethod.PUT</code>.  Another piece would be to introduce a new <code>@PathVariable</code> annotation that works pretty much like <code>@RequestParam</code> currently works, but handles URL path segments instead of HTTP parameters. Here&rsquo;s a code example that shows how it will work:</p>
+
+<pre>
+@RequestMapping(value = "/show/{id}", method = GET)
+public Reward show(@PathVariable("id") long id) {
+    return this.rewardsAdminService.findReward(id);
+}
+</pre>
+
+
+<p>I like it!</p>
+
+<p>Another feature of the REST support is support for different representations, i.e. content negotiation. They want to use the HTTP <code>Accept</code> header as a new way to do view resolution. So presumably there will be a new <code>ViewResolver</code> implementation that looks at the <code>Accept</code> header and returns, say, an XML view (accepts <code>application/xml</code>), a JSON view (accepts <code>application/json</code>) or an ATOM view (accepts <code>application/atom+xml</code>) according to that header. This would be the preferred way of doing view resolution for the hardcore REST purists. But Spring Web MVC would also support extension-based resolution; e.g. <code>.json</code> maps to a <code>JsonView</code>, etc.</p>
+
+<h3>Some @MVC refinements</h3>
+
+
+<p>They&rsquo;re planning to add a couple of new @MVC annotations besides <code>@RequestParam</code> (which already exists) and the new <code>@PathVariable</code> annotation. These are:</p>
+
+<ul>
+<li><code>@RequestHeader</code>: Grab HTTP request header data.</li>
+<li><code>@CookieValue</code>: Grab cookie value. (Surprise!)</li>
+</ul>
+
+
+<p>These will allow us to get at the data without having to declare the raw <code>HttpServletRequest</code> as we currently have to do.  Here&rsquo;s a code sample:</p>
+
+<pre>
+@RequestMapping("/show")
+public Reward show(@RequestHeader("region") long regionId,
+    @CookieValue("language") String langId) {
+
+    ...
+}
+</pre>
+
+
+<p>There&rsquo;s quite a bit more, but this post is pretty long as it is and I need to hit the sack. I&rsquo;ll try to post a little more tomorrow.</p>
+
+<p>[Update: Here&rsquo;s <a href="http://springinpractice.wordpress.com/2008/12/03/new-stuff-in-spring-30-part-2/">part 2</a>.]</p>
+
+<p>[Update: Here&rsquo;s <a href="http://www.infoq.com/news/2008/12/springone-2008">a related InfoQ article</a>.]</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/6/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/4/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

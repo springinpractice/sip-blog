@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/
 layout: post
-title: Using Spring Social GitHub to access secured GitHub data
+title: "Using Spring Social GitHub to access secured GitHub data"
 date: 2012-03-06 00:40:28
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Tutorials]

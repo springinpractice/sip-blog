@@ -4,7 +4,7 @@
   <title><![CDATA[Category: News | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/news/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-16T02:13:12-07:00</updated>
+  <updated>2013-09-18T23:53:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -36,6 +36,89 @@
 <p>It&rsquo;s also the Deal of the Day today, which means half off if you buy it today (May 8, 2013) from Manning. Use code <strong>dotd0508au</strong> at <a href="http://www.manning.com/wheeler/">www.manning.com/wheeler</a>.</p>
 
 <p>Josh and I hope that everybody enjoys the book. It was a lot of work, but I&rsquo;m very happy with the end result.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Combined my two blogs]]></title>
+    <link href="http://springinpractice.com/2012/05/05/combined-my-two-blogs/"/>
+    <updated>2012-05-05T14:39:30-07:00</updated>
+    <id>http://springinpractice.com/2012/05/05/combined-my-two-blogs</id>
+    <content type="html"><![CDATA[<p>To better focus my Java/Spring blogging, I&rsquo;ve merged my former Wheeler Software blog into this one. There are a few articles that didn&rsquo;t make the cut, but the majority of them did.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Zkybase now supports authorized access to GitHub via Spring Social GitHub]]></title>
+    <link href="http://springinpractice.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/"/>
+    <updated>2012-03-05T16:04:45-08:00</updated>
+    <id>http://springinpractice.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github</id>
+    <content type="html"><![CDATA[<p>This one&rsquo;s another quick <a title="Zkybase" href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a title="Spring Social GitHub" href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the GitHubTemplate. But if we want to access private information, or write capabilities, we need to use the <a title="Spring Social" href="http://www.springsource.org/spring-social">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a title="Spring Security" href="http://static.springsource.org/spring-security/site/">Spring Security</a>), and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
+
+<h3>Screenshots</h3>
+
+
+<p>Here&rsquo;s what the GitHub section of the account page looks like before you connect to GitHub:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/disconnected.png"><img class="alignnone  wp-image-681" style="border: 1px solid #EEE;" title="disconnected" src="http://springinpractice.com/wp-content/uploads/2012/03/disconnected.png" alt="" width="565" height="96" /></a></p>
+
+<p>Once you&rsquo;ve done that, the display changes to the following:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/connected.png"><img class="alignnone size-medium wp-image-682" style="border: 1px solid #EEE;" title="connected" src="http://springinpractice.com/wp-content/uploads/2012/03/connected-300x195.png" alt="" width="300" height="195" /></a></p>
+
+<p>And now we can perform various secure operations on our GitHub objects, like viewing repo hooks:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks3.png"><img class="alignnone  wp-image-683" style="border: 1px solid #eeeeee;" title="hooks" src="http://springinpractice.com/wp-content/uploads/2012/03/hooks3.png" alt="" width="619" height="229" /></a></p>
+
+<p>I plan to use this integration to support autoprovisioning continuous integration servers, among other things.</p>
+
+<p>If you&rsquo;re interested in the code itself, please see my blog post entitled <a href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/">Using Spring Social GitHub to access secured GitHub data [code]</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[More Skybase screenshots]]></title>
+    <link href="http://springinpractice.com/2012/01/17/more-skybase-screenshots/"/>
+    <updated>2012-01-17T13:30:03-08:00</updated>
+    <id>http://springinpractice.com/2012/01/17/more-skybase-screenshots</id>
+    <content type="html"><![CDATA[<p>Hey Internet people, Willie here. It&rsquo;s been a little while since I&rsquo;ve posted <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a> screenshots, so here&rsquo;s the work in progress. I explain how to implement this stuff (<a title="Spring Data Neo4j" href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a>, <a title="Spring/GitHub integration" href="https://github.com/SpringSource/spring-social">Spring/GitHub integration</a>, <a title="JavaScript InfoVis Toolkit" href="http://thejit.org/">JavaScript InfoVis Toolkit</a>, etc.) in chapter 11 of my book <a title="Spring in Practice" href="http://manning.com/wheeler/">Spring in Practice</a> (Manning).</p>
+
+<h3>App overview page</h3>
+
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/app_overview.png"><img class="alignnone size-medium wp-image-587" title="app_overview" src="http://springinpractice.com/wp-content/uploads/2012/01/app_overview-300x258.png" alt="" width="300" height="258" /></a></p>
+
+<p>Applications are a central concept in Skybase. This is how the app overview page looks so far. (It&rsquo;s just a start.) The concept behind it is that if you want a 360-degree view of an app (dev view, test view, release view and ops view), you come to the app details page and then you can start looking at different views.</p>
+
+<h3>App repository commits page</h3>
+
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/commits.png"><img class="alignnone size-medium wp-image-590" title="commits" src="http://springinpractice.com/wp-content/uploads/2012/01/commits-300x280.png" alt="" width="300" height="280" /></a></p>
+
+<p>Here&rsquo;s a repo commit history for a given app. Right now it&rsquo;s just integrated with GitHub, but the idea is to provide integrations with other providers too (e.g. BitBucket).</p>
+
+<h3>App repository watchers page</h3>
+
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/watchers.png"><img class="alignnone size-medium wp-image-591" title="watchers" src="http://springinpractice.com/wp-content/uploads/2012/01/watchers-300x226.png" alt="" width="300" height="226" /></a></p>
+
+<p>Again, an app details view. This time it&rsquo;s GitHub watchers for a given app repo.</p>
+
+<h3>Region details page</h3>
+
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/region.png"><img class="alignnone size-medium wp-image-592" title="region" src="http://springinpractice.com/wp-content/uploads/2012/01/region-300x278.png" alt="" width="300" height="278" /></a></p>
+
+<p>Visualizations are one of the more exciting features that a CMDB can offer. One of the huge advantages of putting your configuration management data in a database is that you can move away from Visio documents and Gliffy diagrams, and move instead toward data modeling and automatically generating views. Here I&rsquo;m using the <a title="JavaScript InfoVis Toolkit" href="http://thejit.org/">JavaScript InfoVis Toolkit </a>library to generate an interactive graph visualization. It is a great complement to the underlying <a title="Neo4j" href="http://neo4j.org/">Neo4j</a> graph database.</p>
+
+<h3>Automation view</h3>
+
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/xml.png"><img class="alignnone size-full wp-image-601" title="Automation view" src="http://springinpractice.com/wp-content/uploads/2012/01/xml.png" alt="" width="235" height="254" /></a></p>
+
+<p>This might strike you as a strange screenshot, but in reality it&rsquo;s an example of the most important view&mdash;the automation view. The main reason we want to manage configuration data in a database is that we can build web services (Skybase supports both JSON and XML views) that simultaneously drive automation and human-consumable views of the sort that a support team would use. And the data is accurate because it&rsquo;s what brings the environment into being&mdash;<a title="Closed loops" href="http://skydingo.com/blog/?p=311">no more chasing your environment around trying to document it.</a></p>
+
+<p>If you&rsquo;re interested in checking it out or even getting involved in development, see the <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase GitHub site</a>.</p>
 ]]></content>
   </entry>
   

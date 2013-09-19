@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/02/29/web-services-with-spring-2-5-and-apache-cxf-2-0/
 layout: post
-title: Web services with Spring 2.5 and Apache CXF 2.0
+title: "Web services with Spring 2.5 and Apache CXF 2.0"
 date: 2008-02-29 20:19:27
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Tutorials]

@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2010/07/06/annotation-based-circuit-breakers-with-spring/
 layout: post
-title: Annotation-based circuit breakers with Spring
+title: "Annotation-based circuit breakers with Spring"
 date: 2010-07-06 22:10:11
 comments: true
 categories: [Chapter 14 - Site-up, Tutorials]

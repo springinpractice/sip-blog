@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/09/05/just-got-the-book-cover/
 layout: post
-title: Just got the book cover
+title: "Just got the book cover"
 date: 2008-09-05 10:49:17
 comments: true
 categories: [News]

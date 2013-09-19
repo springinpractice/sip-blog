@@ -1,0 +1,449 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Using Spring Social GitHub to access secured GitHub data - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="At my Skydingo blog (a devops blog written in collaboration with Paul Jenson) I just wrote a quick post with some screenshots of an open source, &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Using Spring Social GitHub to Access Secured GitHub Data</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-05T16:40:28-08:00" pubdate data-updated="true">Mar 5<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>At my <a title="Skydingo blog" href="http://skydingo.com/blog/">Skydingo blog</a> (a devops blog written in collaboration with Paul Jenson) I just wrote a <a href="http://skydingo.com/blog/2012/03/skybase-now-supports-authorized-access-to-github-via-spring-social-github/" title="Skybase now supports authorized access to GitHub via Spring Social GitHub">quick post</a> with some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+
+<p>[caption id=&ldquo;attachment_672&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;529&rdquo; caption=&ldquo;Authorize access to get GitHub repo hooks and other sensitive data&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png"><img src="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png" alt="" title="hooks" width="529" height="195" class="size-full wp-image-672" /></a>[/caption]</p>
+
+<h3>Spring application configuration</h3>
+
+
+<p>This goes in the app context. I lifted it more or less as-is from the Spring Social reference documentation, except that I&rsquo;m using GitHub as the provider instead of Facebook, Twitter or LinkedIn.</p>
+
+<pre>&lt;bean id="connectionFactoryLocator" class="org.springframework.social.connect.support.ConnectionFactoryRegistry"&gt;
+    &lt;property name="connectionFactories"&gt;
+        &lt;list&gt;
+            &lt;bean class="org.springframework.social.github.connect.GitHubConnectionFactory"&gt;
+                &lt;constructor-arg value="${gitHub.clientId}" /&gt;
+                &lt;constructor-arg value="${gitHub.clientSecret}" /&gt;
+            &lt;/bean&gt;
+        &lt;/list&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;bean id="textEncryptor" class="org.springframework.security.crypto.encrypt.Encryptors" factory-method="noOpText" /&gt;
+
+&lt;bean id="usersConnectionRepository" class="org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository"&gt;
+    &lt;constructor-arg ref="dataSource" /&gt;
+    &lt;constructor-arg ref="connectionFactoryLocator" /&gt;
+    &lt;constructor-arg ref="textEncryptor" /&gt;
+&lt;/bean&gt;
+
+&lt;!-- This requires authentication via Spring Security --&gt;
+&lt;bean id="connectionRepository"
+    factory-bean="usersConnectionRepository"
+    factory-method="createConnectionRepository" 
+    scope="request"&gt;
+    
+    &lt;constructor-arg value="#{request.userPrincipal.name}" /&gt;
+    &lt;aop:scoped-proxy proxy-target-class="false" /&gt;
+&lt;/bean&gt;</pre>
+
+
+
+
+<h3>Spring web configuration</h3>
+
+
+
+
+<pre>&lt;bean class="org.springframework.social.connect.web.ConnectController" /&gt;</pre>
+
+
+
+
+<h3>Service code for the user account page</h3>
+
+
+<p>Here&rsquo;s how I&rsquo;m looking up the GitHub user profile information:</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import javax.inject.Inject;
+
+import org.skydingo.skybase.model.UserAccount;
+import org.skydingo.skybase.repository.UserAccountRepository;
+import org.skydingo.skybase.service.UserAccountService;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubUserProfile;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserAccountServiceImpl extends AbstractCIService implements UserAccountService {
+    @Inject private ConnectionRepository connectionRepo;
+    
+    public GitHubUserProfile getCurrentUserProfile() {
+        if (gitHub().isAuthorized()) {
+            return gitHub().userOperations().getUserProfile();
+        } else {
+            return null;
+        }
+    }
+    
+    private GitHub gitHub() {
+        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
+        return (conn != null ? conn.getApi() : new GitHubTemplate());
+    }
+
+    ... other methods ...
+}</pre>
+
+
+<p>In the <code>gitHub()</code> method you can see that I return an existing <code>GitHub</code> object if the connection exists; otherwise I just create a new <code>GitHub</code> (in the form of the template, which implements <code>GitHub</code>) so that the app can at least perform non-sensitive read operations.</p>
+
+<h3>Service to get the GitHub service hooks</h3>
+
+
+<p>This one&rsquo;s pretty similar to the above.</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import java.util.List;
+import javax.inject.Inject;
+import org.skydingo.skybase.model.Application;
+import org.skydingo.skybase.service.ApplicationService;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubHook;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ApplicationServiceImpl extends AbstractCIService implements ApplicationService {
+    @Inject private ConnectionRepository connectionRepo;
+    
+    public List findHooks(String user, String repo) {
+        return gitHub().repoOperations().getHooks(user, repo);
+    }
+
+    private GitHub gitHub() {
+        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
+        return (conn != null ? conn.getApi() : new GitHubTemplate());
+    }
+
+    ... various other methods ...
+}</pre>
+
+
+<p>I should probably factor out that common <code>gitHub()</code> method. :&ndash;)</p>
+
+<h3>User account JSP</h3>
+
+
+<p>Here&rsquo;s the JSP code for rendering the connect/disconnect buttons. The CSS classes come from <a title="Twitter Bootstrap" href="http://twitter.github.com/bootstrap/">Bootstrap 2.0</a>, in case you were wondering.</p>
+
+<pre>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+&lt;%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %&gt;
+&lt;%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %&gt;
+&lt;%@ taglib prefix="social" uri="http://www.springframework.org/spring-social/social/tags" %&gt;
+
+&lt;c:url var="connectUrl" value="/connect" /&gt;
+&lt;c:url var="githubUrl" value="/connect/github" /&gt;
+
+&lt;sec:authentication var="user" property="principal" /&gt;
+
+&lt;h1&gt;Account details&lt;/h1&gt;
+
+&lt;section class="first"&gt;
+    &lt;div class="well"&gt;
+        &lt;table class="grid"&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Username:&lt;/td&gt;
+                &lt;td&gt;&lt;c:out value="${user.username}" /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+    &lt;h2&gt;GitHub&lt;/h2&gt;
+
+    &lt;social:connected provider="github"&gt;
+        &lt;p&gt;Your Skybase and GitHub accounts are connected.&lt;/p&gt;
+        &lt;div class="well"&gt;
+            &lt;table class="grid"&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;Blog:&lt;/td&gt;
+                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.blog}" default="None" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;Location:&lt;/td&gt;
+                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.location}" default="None" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;form method="post" action="${githubUrl}"&gt;
+            &lt;input type="hidden" name="_method" value="delete" /&gt;
+            &lt;input class="btn btn-danger" type="submit" value="Disconnect from GitHub" /&gt;
+        &lt;/form&gt;
+    &lt;/social:connected&gt;
+
+    &lt;social:notConnected provider="github"&gt;
+        &lt;p&gt;Your Skybase and GitHub accounts are not yet connected. Connect them for additional Skybase features.&lt;/p&gt;
+        &lt;form method="post" action="${githubUrl}"&gt;
+            &lt;input type="hidden" name="scope" value="user, repo, gist" /&gt;
+            &lt;input class="btn btn-primary" type="submit" value="Connect to GitHub" /&gt;
+        &lt;/form&gt;
+    &lt;/social:notConnected&gt;
+&lt;/section&gt;</pre>
+
+
+<p>Note the use of the Spring Social <code>&lt;social:connected&gt;</code> and <code>&lt;social:notConnected&gt;</code> tags to show different content based on whether the user is or isn&rsquo;t connected to the provider in question.</p>
+
+<p>Notice also that the connect button sends a hidden <code>scope</code> parameter to the GitHub URL. This allows us to specify the kinds of operation we want the user to authorize.</p>
+
+<p>Anyway, there you have it. This post was a bit quick, so let me know if I left anything important out and I&rsquo;m happy to add it. Have fun.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-05T16:40:28-08:00" pubdate data-updated="true">Mar 5<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-11-cmdb/'>Chapter 11 - CMDB</a>, <a class='category' href='/blog/categories/chapter-13-integration/'>Chapter 13 - Integration</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code/" data-via="williewheeler" data-counturl="http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/" title="Previous Post: Zkybase now supports authorized access to GitHub via Spring Social GitHub">&laquo; Zkybase now supports authorized access to GitHub via Spring Social GitHub</a>
+      
+      
+        <a class="basic-alignment right" href="/2012/03/05/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/" title="Next Post: Neo4j 1.6.1 Cypher query examples when using Spring Data Neo4j 2.0">Neo4j 1.6.1 Cypher query examples when using Spring Data Neo4j 2.0 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

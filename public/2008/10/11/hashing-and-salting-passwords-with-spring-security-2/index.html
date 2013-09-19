@@ -1,0 +1,585 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Hashing and salting passwords with Spring Security 2 - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="This post was originally written as a recipe for our book Spring in Practice, but we just didn&#8217;t have enough room to include it. It&#8217;s &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2008/10/11/hashing-and-salting-passwords-with-spring-security-2">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Hashing and Salting Passwords With Spring Security 2</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-11T12:02:44-07:00" pubdate data-updated="true">Oct 11<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><div class="intro"><span class="icon stickyNote">This post was originally written as a recipe for our book <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, but we just didn&#8217;t have enough room to include it. It&#8217;s still (we think, anyway) a great recipe, so we&#8217;re making it available here free of charge. This will give readers of this website a chance to see the sort of recipe we&#8217;re including in the book.</span>
+
+This material is based upon another post called <a href="http://springinpractice.com/2008/08/31/storing-passwords-securely/">Storing passwords securely</a>.</div>
+
+
+
+
+<h3>Prerequisites</h3>
+
+
+<p><a href="http://www.manning.com/wheeler/">4.3 Save user registrations</a></p>
+
+<h3>Key Technologies</h3>
+
+
+<p>Spring Security, hash functions (e.g., MD5, SHA-1)</p>
+
+<h2>Background</h2>
+
+
+<p>When you&rsquo;re building an application involving user passwords, one of the challenges is to protect the passwords from prying eyes. We generally want to protect user registration data in transit from the browser to the server to prevent eavesdroppers on the network from getting at that data. But it&rsquo;s not enough to protect the data in transit. It&rsquo;s as important to store it securely.</p>
+
+<p>It may not be immediately clear why you need to store the passwords securely. If, for instance, you have a corporate firewall that prevents the bad guys on the outside from getting to your password store, then why bother?</p>
+
+<p>There are a few different answers to that. First, one basic security principle is to take a layered approach. There are no security silver bullets, and so overreliance on any particular process or technology (such as firewalls) creates unnecessary risk. Storing passwords securely gives you protection if a bad guy somehow gets in. (And it happens.)</p>
+
+<p>A second answer is that the question makes the faulty assumption that the bad guys are on the outside. In an organization of any size, you can&rsquo;t be sure that you don&rsquo;t have bad guys on the inside, and the last thing you want them to do is use user passwords to log into your websites, or even other websites. The latter is a real concern since many users tend to use the same (or similar) passwords on multiple sites.</p>
+
+<p>A third answer is that even if your organization is small (maybe it&rsquo;s just you), you&rsquo;d like to be able to tell your users in your privacy policy that their passwords are stored securely, and that no one&mdash;not even the technical folks who administer the site&mdash;has any ability to see the stored passwords. That gives your users greater confidence that their information is safe and that you&rsquo;re taking security seriously.</p>
+
+<p>So let&rsquo;s get to it!</p>
+
+<h2>Problem</h2>
+
+
+<p>You want to store passwords securely to prevent anybody&mdash;even yourself and other technical staff&mdash;from being able to view them.</p>
+
+<h2>Solution</h2>
+
+
+<p>In this recipe we&rsquo;re going to use Spring Security 2 to store passwords securely. We&rsquo;ll also show how to authenticate against secured passwords.</p>
+
+<p>Spring Security makes it fairly easy to store passwords securely. The actual storage mechanism (database, LDAP or other) doesn&rsquo;t really matter since that&rsquo;s abstracted away, which is nice.</p>
+
+<p>Before we jump into the how-to part of the recipe, let&rsquo;s briefly examine hash functions and how they work, since we&rsquo;ll need this background to understand what we&rsquo;re doing in the subsequent discussion.</p>
+
+<h3>Understanding hash functions</h3>
+
+
+<p>The idea behind this recipe is that we want to store passwords in encrypted form in the persistent store. There are in general two different approaches to encryption here: ciphers and hash functions. The two are similar in that each provides a way to encrypt data, but they differ in that only ciphers provide an easy way (assuming you know a secret key) to decrypt the data. Hash functions don&rsquo;t provide for easy decryption; hence they are sometimes referred to as one-way hash functions. All hash functions, however, are one-way.</p>
+
+<p>When storing encrypted passwords, the typical practice is to use a hash function, such as MD5 or SHA-1, to encrypt the password before saving it. The reason for preferring a hash function to a cipher is that we don&rsquo;t usually want anybody to be able to recover the password: we never (or should never) display it on the screen or in e-mails, for example. A string of plaintext encrypted by a hash function is called a <em>hash</em>.</p>
+
+<p>Here are a couple of examples of hashed text:</p>
+
+<ul>
+<li><code>4fe0e930dd0adf9daaba0b7219bbe1f1bbb7809c</code></li>
+<li><code>3af00c6cad11f7ab5db4467b66ce503e</code></li>
+</ul>
+
+
+<p>The first string is an SHA-1 hash of the string <code>dardy</code>, and the second is an MD5 hash of the string <code>friend</code>. You can easily Google for free online hash calculators, both for MD5 and for SHA-1.</p>
+
+<p>You might ask how we can use stored password hashes to authenticate users if we can&rsquo;t recover the plaintext password from the hash. The answer is that we don&rsquo;t compare plaintext passwords, but rather we compare the hashes. When the user submits a username/password pair, we hash the submitted password and compare that hash with the stored hash. If the two match, then we conclude that the submitted password was correct.</p>
+
+<p>We can draw this conclusion due to a special property of hash functions: in general, different plaintext inputs map to different hashes. That is, in general, different plaintext inputs very, very rarely &ldquo;collide.&rdquo; There are of course limits to this non-collision, but for practical purposes we can assume that different passwords will have different hashes. So if the hashes match, then the submitted password was correct.</p>
+
+<p>Sound good? Let&rsquo;s start with the authentication side of things, and then we&rsquo;ll tackle user registrations.</p>
+
+<h3>Configuring your app for authentication against secured passwords</h3>
+
+
+<p>When discussing secure storage of passwords, there are really two different sides to consider. First, during the registration process (or else during account provisioning, if that&rsquo;s how you&rsquo;re doing things), you have to obfuscate the password in some fashion before saving it to the data store. And secondly you have to be able to use those obfuscated passwords during authentication.</p>
+
+<p>We&rsquo;re going to start with the authentication part first, since that&rsquo;s pretty easy to set up. We&rsquo;re going to assume the following:</p>
+
+<ul>
+<li>Your app has an existing user account model is called <code>Account</code>, with a corresponding <code>AccountDao</code> interface and implementation to support CRUD operations.</li>
+<li>You also have a service bean, which we&#8217;ll assume is <code>AccountServiceImpl</code>, that supports user registrations. The registrations store the passwords as plaintext.</li>
+<li>Your app is configured to support Spring Security 2 username/password authentication against plaintext passwords. You&#8217;re using two separate application context files: <code>applicationContext.xml</code> and <code>applicationContext-security.xml</code>, and you&#8217;re using namespace configuration in <code>applicationContext-security.xml</code>.</li>
+</ul>
+
+
+<p>Given the assumptions above, it isn&rsquo;t hard to modify the configuration to use hashed passwords during the login process. Let&rsquo;s see how.</p>
+
+<h3>Create some user accounts in the database with hashed passwords</h3>
+
+
+<p>Create an account or two in your database with SHA-1 hashed passwords. You can use the following website to compute SHA-1 hashes of plaintext passwords:</p>
+
+<p><a href="http://sha1-hash-online.waraxe.us/"><a href="http://sha1-hash-online.waraxe.us/">http://sha1-hash-online.waraxe.us/</a></a></p>
+
+<p>For example, the SHA-1 hash of <code>flower</code> is <code>5a46b8253d07320a14cace9b4dcbf80f93dcef04</code>. When entering your hash into the hash calculator at the link above, be sure not to enter a carriage return character, as that&rsquo;s significant and will completely change the hash. Anyway, create the database records, using the SHA-1 hash as the password.</p>
+
+<h3>Update applicationContext-security.xml to authenticate against hashed passwords</h3>
+
+
+<p>We want to add something called a <code>PasswordEncoder</code> to our Spring configuration. <code>PasswordEncoder</code> is an interface defining a contract for computing hashes. There are different <code>PasswordEncoder</code> implementations according to the hash function you want to apply. Two popular options, for example, are <code>Md5PasswordEncoder</code> for MD5 hashes and <code>ShaPasswordEncoder</code> for (you guessed it) SHA. We&rsquo;ll use SHA here but either choice is legitimate. Don&rsquo;t use <code>Md4PasswordEncoder</code> unless you are working with a legacy system, as it is known to be weak.</p>
+
+<p>The namespace configuration supports <code>PasswordEncoder</code>s. Just add a single line to your <code>authentication-provider</code> element like this:</p>
+
+<pre>&lt;authentication-provider&gt;
+    &lt;password-encoder hash="sha" /&gt;
+    &lt;jdbc-user-service data-source-ref="dataSource" /&gt;
+&lt;/authentication-provider&gt;</pre>
+
+
+<p>Yep, that&rsquo;s it! This configuration sets SHA-1 as our hash algorithm.</p>
+
+<h3>Try it out</h3>
+
+
+<p>Try logging in using the account you just created. Type in the plaintext password, not the hash. The login should work. If so, congratulations, your app authenticates against secure passwords! (You&rsquo;ll need to convert whatever other passwords you have into SHA-1 hashes.)</p>
+
+<p>Now we&rsquo;re going to jump over to the other side, which is storing passwords securely during either the registration or account provisioning process. We&rsquo;ll assume a registration process but the technique is the same in either case.</p>
+
+<h3>Configuring your app to secure passwords during registration</h3>
+
+
+<p>Saving secured passwords is somewhat more involved than authenticating against them. Part of the reason is that we&rsquo;d like to use the same <code>PasswordEncoder</code> instance during registration that we used during login, partly just because it&rsquo;s &ldquo;cleaner&rdquo;, and relatedly, because it allows us to avoid having to coordinate two separate <code>PasswordEncoder</code> instances should we decide to switch from SHA-1 to MD5, or add salt, or whatever. Basically it boils down to our being good adherents to the <a href="http://en.wikipedia.org/wiki/DRY_code">DRY principle</a>.</p>
+
+<p>Unfortunately, the namespace configuration for <code>authentication-provider</code> doesn&rsquo;t accept an externally-defined <code>PasswordEncoder</code> bean; you have to use the <code>password-encoder</code> namespace element inside of <code>authentication-provider</code>. So instead of using the namespace configuration, we&rsquo;re going to drop back to good, old-fashioned bean configuration.</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans:beans xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-2.0.4.xsd"&gt;
+
+    &lt;-- 1 --&gt;
+    &lt;beans:bean id="accountDao" class="example.HbnAccountDao" /&gt;
+    
+    &lt;-- 2 --&gt;
+    &lt;beans:bean id="userDetailsService"
+        class="example.UserDetailsServiceImpl"
+        p:userDao="accountDao" /&gt;
+
+    &lt;-- 3 --&gt;
+    &lt;beans:bean id="passwordEncoder"
+        class="org.springframework.security.providers.encoding.ShaPasswordEncoder" /&gt;
+
+    &lt;-- 4 --&gt;
+    &lt;beans:bean
+        class="org.springframework.security.providers.dao.DaoAuthenticationProvider"
+        p:userDetailsService-ref="userDetailsService"
+        p:passwordEncoder-ref="passwordEncoder"&gt;
+        &lt;custom-authentication-provider /&gt;
+    &lt;/beans:bean&gt;
+&lt;/beans:beans&gt;</pre>
+
+
+<p>In the code above, we begin by creating a data access object for user accounts <span class="cueball">1</span>. Next we create an implementation of Spring&rsquo;s <code>UserDetailsService</code> interface, which we&rsquo;ve called <code>UserDetailsServiceImpl</code> <span class="cueball">2</span>. <code>UserDetailsService</code> is essentially a service provider interface for the <code>DaoAuthenticationProvider</code>; it allows the latter to obtain <code>UserDetails</code> instances for authentication purposes. Third we create the <code>PasswordEncoder</code> itself <span class="cueball">3</span>; in this case we&rsquo;re using <code>ShaPasswordEncoder</code>, which hashes passwords using SHA (the default strength is SHA-1). Finally, we&rsquo;re creating a <code>DaoAuthenticationProvider</code> <span class="cueball">4</span> and injecting it with the <code>userDetailsService</code> and <code>passwordEncoder</code> we created previously. We also include a <code>custom-authentication-provider</code> element to register our authentication provider with an <code>AuthenticationManager</code> hiding in the background.</p>
+
+<p><img src="http://wheelersoftware.s3.amazonaws.com/articles/spring-security-hash-salt-passwords/authn.jpg" alt="Authentication" /></p>
+
+<p>For the curious, the <code>AuthenticationManager</code> in question is <code>ProviderManager</code>, a provider-based implementation of the <code>AuthenticationManager</code> interface, and it is automatically created by the <code>http</code> element unless you&rsquo;ve already defined one explicitly. See the figure above for a class diagram.</p>
+
+<p>That takes care of configuration. Let&rsquo;s see what we need to do in order to save registrations with a hashed password.</p>
+
+<h3>Update AccountServiceImpl to hash the password</h3>
+
+
+<p>There are two updates you&rsquo;ll need to make to your <code>AccountServiceImpl</code> bean. The first one is that you&rsquo;ll need to provide a setter for a <code>PasswordEncoder.</code> And once you create that setter, go back to your application context configuration and make sure you&rsquo;re actually injecting a <code>PasswordEncoder</code> into the <code>AccountServiceImpl</code> bean.</p>
+
+<p>The second update is to modify your <code>registerAccount()</code> method in <code>AccountServiceImpl</code> so that it hashes passwords:</p>
+
+<pre>public void registerAccount(Account account) {
+    accountDao.save(account); // 1
+    String encPassword =
+        passwordEncoder.encodePassword(account.getPassword(), null); // 2
+    account.setPassword(encPassword); // 3
+    accountDao.save(account); // 4
+}</pre>
+
+
+<p>First we save the account with the plaintext password <span class="cueball">1</span>. There&rsquo;s a reason for saving the account before actually hashing the password, but we&rsquo;ll have to wait until later in the recipe for the reason why. Then we hash the password <span class="cueball">2</span>, update it on the account <span class="cueball">3</span>, and save the account with the new password <span class="cueball">4</span>. The account now has a hashed password in the database.</p>
+
+<p>Good job! You&rsquo;re now saving secured passwords into your database, and you&rsquo;re able to authenticate against them.</p>
+
+<p>But I&rsquo;m afraid that it&rsquo;s time for some bad news.</p>
+
+<h3>Meet the dictionary attack</h3>
+
+
+<p>Our new password storage scheme is off to a good start. It certainly prevents casual observers from accidentally seeing user passwords. But it does little to thwart the efforts of a semi-determined attacker. Let&rsquo;s talk about the dictionary attack.</p>
+
+<p>To understand how it works, recall that hashing different strings generally results in different hashes. We can use that fact to create a big lookup table for a dictionary of potential passwords. The lookup table takes a hash and then returns the string that generated it.</p>
+
+<p>As luck would have it, we don&rsquo;t even have to create our own lookup table. Helpful folks on the Internet have already done it for us. For instance, go to</p>
+
+<p><a href="http://tools.benramsey.com/md5/"><a href="http://tools.benramsey.com/md5/">http://tools.benramsey.com/md5/</a></a></p>
+
+<p>and enter the MD5 hash we presented earlier; namely,</p>
+
+<p><code>3af00c6cad11f7ab5db4467b66ce503e</code></p>
+
+<p>Voil&agrave;! You&rsquo;ve unhashed a hash. This is called a <em>dictionary attack</em>.</p>
+
+<p>If an attacker were to acquire a list of hashed passwords, he could make quick work of it using a dictionary of the sort just described. In some contexts that might be very bad.</p>
+
+<h3>Add a little salt to that hash</h3>
+
+
+<p>Ideally we&rsquo;d like to thwart even the semi-determined attacker. To improve our scheme, we now introduce the idea of salt.</p>
+
+<p>The strategy behind salt is to make it much more painful for the attacker to recover hashed passwords. Instead of allowing ourselves to be attacked by a single well-known dictionary, we are going to force the attacker to create a new and unique dictionary for every single password he wants to try to recover. Can he still do it? Sure. But it&rsquo;s just a lot more work now. We&rsquo;ve effectively eliminated merely semi-determined attackers from the pool of attackers. That&rsquo;s nothing to scoff at since their numbers are large.</p>
+
+<p>Here&rsquo;s how we do it. Instead of hashing passwords, we concatenate a string&mdash;called a salt&mdash;to the plaintext password, and then hash the concatenated string. This effectively breaks the standard dictionary attack, because now all of the hashes in your password store are &ldquo;new.&rdquo;</p>
+
+<p>What happens, though, if we use a single, common salt across all users? While this is better than using no salt at all, it&rsquo;s still not hard to overcome if the attacker knows the salt. The attacker simply has to create a single new dictionary, this time concatenating the salt to each individual dictionary word before hashing. Then it&rsquo;s the same as before.</p>
+
+<p>We want to make things harder for him. Instead of using a common salt across all users, we want the salt to be different for each user. That way, the attacker has to create a new dictionary for every single user he wants to attack. Again, he can do it, but it&rsquo;s much more time-consuming.</p>
+
+<p>One good way to create a salt is to use some property of the user. It is better to choose something that won&rsquo;t change, such as a numeric primary key, than it is to choose something that might change, such as an e-mail address. If you use (say) e-mail addresses for salt, and a user changes his e-mail address, he won&rsquo;t be able to log in anymore because the authentication system won&rsquo;t be able to create the correct hash.</p>
+
+<p>Usernames are a reasonable choice as they don&rsquo;t usually change, but a numeric primary key is even better, given the specific scheme Spring Security uses to concatenate the password with the salt. Spring Security uses braces to delimit the salt, and hence disallows braces inside the salt itself. For example, if my password/salt is <code>college/willie</code>, then Spring Security will hash the string <code>college{willie}</code>. You may well want to allow braces in the username (it&rsquo;s common for gamers to include such characters in their usernames). You can avoid the whole issue&mdash;including the added complexity of disallowing braces in usernames&mdash;by using the user&rsquo;s numeric primary key, if the user schema supports that.</p>
+
+<p>So let&rsquo;s do just that.</p>
+
+<h3>Update applicationContext-security.xml to handle salt</h3>
+
+
+<p>All we need to do to <code>applicationContext-security.xml</code> is add a <code>SaltSource</code> bean and inject it into the <code>DaoAuthenticationProvider</code>. We do this in the listing below.</p>
+
+<pre>&lt;beans:bean id="passwordEncoder"
+    class="org.springframework.security.providers.encoding.ShaPasswordEncoder" /&gt;
+&lt;beans:bean id="saltSource"
+    class="org.springframework.security.providers.dao.salt.ReflectionSaltSource"
+    p:userPropertyToUse="id" /&gt;
+&lt;beans:bean
+    class="org.springframework.security.providers.dao.DaoAuthenticationProvider"
+    p:userDetailsService-ref="userDetailsService"
+    p:passwordEncoder-ref="passwordEncoder"
+    p:saltSource-ref="saltSource"&gt;
+    &lt;custom-authentication-provider /&gt;
+&lt;/beans:bean&gt;</pre>
+
+
+<p>We mentioned above that it&rsquo;s possible to use a global salt, but that it&rsquo;s not as good as using a salt that varies from user to user. (For a more detailed explanation, please see my article <a href="http://springinpractice.com/2008/08/31/storing-passwords-securely/">Storing Passwords Securely</a>.) <code>ReflectionSaltSource</code> allows us to use a property of our user (specifically, a property of a <code>UserDetails</code> instance; we&rsquo;ll see that shortly) to provide a salt. As with the <code>PasswordEncoder</code>, we&rsquo;ve defined the <code>SaltSource</code> explicitly as a bean so we can inject it into <code>AccountServiceImpl</code>.</p>
+
+<h3>Update AccountServiceImpl to salt the password</h3>
+
+
+<p>The first step is to add a setter for a <code>SaltSource</code> instance to <code>AccountServiceImpl</code>, and wire it up in your application context file.</p>
+
+<p>Next, we&rsquo;ll once again update <code>registerAccount()</code>.</p>
+
+<pre>public void registerAccount(Account account) {
+    accountDao.save(account);
+    UserDetailsAdapter userDetails = new UserDetailsAdapter(account); // 1
+    String password = userDetails.getPassword();
+    Object salt = saltSource.getSalt(userDetails); // 2
+    account.setPassword(passwordEncoder.encodePassword(password, salt)); // 3
+    accountDao.save(account);
+}</pre>
+
+
+<p>As before, we&rsquo;re saving the account with a plaintext password first. I promised earlier to explain why I&rsquo;m doing that, so here&rsquo;s the explanation. In many cases (such as when using Hibernate), entities aren&rsquo;t assigned IDs until after they&rsquo;re persisted. Since we&rsquo;re basing our salt on the ID, we need to save the account before generating the salt and hash.</p>
+
+<p>Next we wrap the <code>account</code> with a class we wrote to adapt our <code>Account</code> class to the <code>UserDetails</code> interface; namely, <code>UserDetailsAdapter</code> <span class="cueball">1</span> (we&rsquo;ll see it momentarily).</p>
+
+<p>We&rsquo;re using the <code>SaltSource</code> to get the salt from our <code>UserDetailsAdapter</code> <span class="cueball">2</span>. As we saw in the configuration, this salt source uses reflection to grab the account ID and present it to the <code>PasswordEncoder</code> as salt <span class="cueball">3</span>.</p>
+
+<p>The next listing shows our <code>UserDetailsAdapter</code> class, which again is just an example of a <code>UserDetails</code> implementation. I&rsquo;m extending the <code>org.springframework.security.userdetails.User</code> class for convenience, but note that that&rsquo;s a <code>UserDetails</code> implementation.</p>
+
+<pre>package examples;
+
+import java.util.Set;
+
+import org.springframework.security.GrantedAuthority;
+import org.springframework.security.GrantedAuthorityImpl;
+import org.springframework.security.User;
+
+public class UserDetailsAdapter extends User { // 1
+    private final Long id;
+    
+    public UserDetailsAdapter(Account acct) {
+        super(acct.getUsername(), acct.getPassword(), acct.isEnabled(),
+                true, true, true, toAuthorities(acct.getAuthorityNames()));
+        this.id = acct.getId();
+    }
+    
+    private static GrantedAuthority[] toAuthorities(Set&lt;String&gt; authNames) {
+        GrantedAuthority[] auths = new GrantedAuthority[authNames.size()];
+        int i = 0;
+        for (String authName : authNames) {
+            auths[i++] = new GrantedAuthorityImpl(authName);
+        }
+        return auths;
+    }
+    
+    public Long getId() {
+        return id;
+    }
+}</pre>
+
+
+<p>Again, we&rsquo;re just extending <code>User</code> for convenience <span class="cueball">1</span>; the important thing is that our <code>UserDetailsAdapter</code> implements <code>UserDetails</code>, which allows <code>DaoAuthenticationProvider</code> to use it to perform authentication.</p>
+
+<p>There you have it&mdash;salted and hashed passwords. This won&rsquo;t stop the most determined attackers from unmasking your passwords, but it will stop most others.</p>
+
+<h2>Discussion</h2>
+
+
+<p>The ideas in this recipe can also be applied to storing answers to challenge questions in a secure way (for instance, &ldquo;What is your mother&rsquo;s maiden name?&rdquo;). The relevant similarities are that the information should be secured (otherwise it might be used to recover or reset passwords on other websites), and that we typically don&rsquo;t need to decrypt answers to challenge questions. It might be helpful to convert the answers to some kind of canonical form before saving them, such as converting everything to uppercase, removing punctuation and trimming extra whitespace, just to eliminate minor variations in the way that people answer the question.</p>
+
+<p>It is also useful to understand where this recipe does not apply. In most cases where you want to store data securely, you need to be able to decrypt the stored data. A good example is storing credit card numbers securely for Payment Card Industry (PCI) compliance. You need to be able to recover the credit card number so you can apply it to customer orders. One-way hashes, which support encryption but not decryption, will not help you with this.</p>
+
+<p>When you store passwords using hashes, you cannot offer password recovery functionality to end users, because the system doesn&rsquo;t have any way to actually recover the passwords. All you can offer is the ability to reset passwords. This is better from a security perspective anyway since there&rsquo;s always the chance that you might disclose a password to somebody other than the intended recipient, and that somebody might use it to access not only your site but other sites, as we discussed in the background above.</p>
+
+<h2>Resources</h2>
+
+
+<p>If you found this article helpful, you may also find the following useful:</p>
+
+<ul>
+<li><a href="http://springinpractice.com/2008/08/31/storing-passwords-securely/">Storing passwords securely</a> - Another post I wrote about storing passwords securely, but treating the subject more generally as opposed to being Spring-specific. The discussion about hashing and salting is a little more in-depth, and there&#8217;s also a section on key strengthening, which can make your passwords even more secure.</li>
+<li><a href="http://www.manning.com/wheeler/">Spring in Practice</a> - A book that my collaborators and I are writing for Manning Publications about Spring generally. We have lots of information about Spring Security, including chapters on user registrations, authentication and authorization.</li>
+<li><a href="http://springinpractice.wordpress.com/2008/09/06/login-remember-me/">Excerpt: Login and remember-me discussion</a> - An excerpt from Spring in Practice that compares normal username/password authentication with remember-me authentication.</li>
+</ul>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-11T12:02:44-07:00" pubdate data-updated="true">Oct 11<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-06-authentication/'>Chapter 06 - Authentication</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2008/10/11/hashing-and-salting-passwords-with-spring-security-2/" data-via="williewheeler" data-counturl="http://springinpractice.com/2008/10/11/hashing-and-salting-passwords-with-spring-security-2/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/10/01/some-thoughts-on-the-new-springsource-maintenance-policy/" title="Previous Post: Some thoughts on the new SpringSource maintenance policy">&laquo; Some thoughts on the new SpringSource maintenance policy</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/" title="Next Post: Concurrent programming for practicing software engineers, part 1">Concurrent programming for practicing software engineers, part 1 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

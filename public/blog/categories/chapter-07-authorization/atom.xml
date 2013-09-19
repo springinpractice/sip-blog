@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Chapter 07 - Authorization | Spring in Practice]]></title>
+  <link href="http://springinpractice.com/blog/categories/chapter-07-authorization/atom.xml" rel="self"/>
+  <link href="http://springinpractice.com/"/>
+  <updated>2013-09-18T23:53:48-07:00</updated>
+  <id>http://springinpractice.com/</id>
+  <author>
+    <name><![CDATA[Willie Wheeler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Quick tip: Spring Security role-based authorization and permissions]]></title>
+    <link href="http://springinpractice.com/2010/10/26/quick-tip-spring-security-role-based-authorization-and-permissions/"/>
+    <updated>2010-10-26T18:40:13-07:00</updated>
+    <id>http://springinpractice.com/2010/10/26/quick-tip-spring-security-role-based-authorization-and-permissions</id>
+    <content type="html"><![CDATA[<h3>The problem: hardcoded role-based authorization</h3>
+
+
+<p>One of the challenges around using Spring Security is that the examples&mdash;both in the documentation and on the web&mdash;tend to promote an overly-simple approach to role-based authorization, hardcoding roles in the source in a non-configurable fashion. For example:</p>
+
+<pre style="margin:20px 0;">
+@PreAuthorize("hasRole('facultyMember')")
+public Newsletter getFacultyNews() { ... }
+</pre>
+
+
+<p>(Assume for the sake of example that ACL-based authorization is overkill for the method in question. The user either has permission to read faculty newsletters or not.)</p>
+
+<p>The problem is that when we decide to make a change&mdash;for example, maybe teaching assistants should be allowed to read the faculty newsletters too&mdash;we have to go into the code to make a change:</p>
+
+<pre style="margin:20px 0;">
+@PreAuthorize("hasRole('facultyMember') or hasRole('teachingAssistant')")
+public Newsletter getFacultyNews() { ... }
+</pre>
+
+
+<p>For domain object security there&rsquo;s no problem because the permissions are cleanly separated from roles. We can map associate individual permissions on domain objects with users and roles as we wish. So the code contains annotations like</p>
+
+<pre style="margin:20px 0;">
+@PreAuthorize("hasPermission(#message, write)")
+public void editMessage(Message message) { ... }
+</pre>
+
+
+<p>and all is good. We probably won&rsquo;t need to change the relationship between the permission and the method itself; we&rsquo;ll only need to change who (which users/roles) actually has the write permission on the message in question, and we can do that in the database. So that is nice, and we want the same thing for role-based authorization.</p>
+
+<h3>Solution: use granted authorities to model <i>permissions</i>, not roles</h3>
+
+
+<p>Here we assume an authentication source that models the desired relationship between users, roles and permissions. The typical relationship would be a many-many relationship between users and roles, and a many-many relationship between roles and permissions. For example:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/refcard106/sample_user_schema.png" alt="Sample custom user schema" /></p>
+
+<p>It would be possible to have a direct relationship between users and permissions too (say to allow for the assignment of fine-grained permissions to specific users in addition to assigning roles), if that were desired.</p>
+
+<p>The schema can be part of some standard authentication source or it can be a custom <code>UserDetailsService</code>; it doesn&rsquo;t matter.</p>
+
+<p>At the end of the day we need to transform our user representation into a <code>UserDetails</code>, and the trick is to map <i>permissions</i>&mdash;not roles&mdash;to <code>GrantedAuthority</code> objects to support the <code>getAuthorities()</code> contract on the <code>UserDetails</code> interface. We still have roles, but they matter only insofar as they help to bundle permissions up into convenient packages. The <code>UserDetails</code> implementation will probably expose the roles, but the <code>UserDetails</code> interface simply exposes the permissions (not the roles) via the <code>getAuthorities()</code> method.</p>
+
+<p>It&rsquo;s really that simple, and the final result is that we can avoid hardcoding roles in the code:</p>
+
+<pre style="margin:20px 0;">
+@PreAuthorize("hasRole('PERM_READ_FACULTY_NEWS')")
+public Newsletter getFacultyNews() { ... }
+</pre>
+
+
+<p>As an aside, the predicate name <code>hasRole</code> rather than <code>hasAuthority</code> is a minor annoyance since permissions aren&rsquo;t roles. The backing check is against a <code>GrantedAuthority</code> and so <code>hasRole()</code> seems to reflect either the intended or the typical use of <code>GrantedAuthority</code>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Quick tip: avoid rule duplication when using security:authorize]]></title>
+    <link href="http://springinpractice.com/2010/10/10/quick-tip-avoid-rule-duplication-when-using-securityauthorize/"/>
+    <updated>2010-10-10T15:56:42-07:00</updated>
+    <id>http://springinpractice.com/2010/10/10/quick-tip-avoid-rule-duplication-when-using-securityauthorize</id>
+    <content type="html"><![CDATA[<p>Spring Security features a  tag that allows us to show or hide JSP content based on access rules we can define. Here&rsquo;s an example:</p>
+
+<pre style="margin:20px 0;">
+&lt;security:authorize access="hasRole('admin')"&gt;
+    &lt;a href="http://springinpractice.com/main/admin.html"&gt;Admin&lt;/a&gt;
+&lt;security:authorize&gt;
+</pre>
+
+
+<p>This is probably the most common way to use the tag. The problem with this approach, though, is that it leads to rule duplication, because the same <code>hasRole(&lsquo;admin&rsquo;)</code> rule is defined in the security application context.</p>
+
+<p>A better approach is to bind the display of the tag body to the user&rsquo;s actual access to the URL in question. Suppose for example that we have the following definition in the app context:</p>
+
+<pre style="margin:20px 0;">
+&lt;intercept-url pattern="/main/admin.html" method="GET"
+    access="hasRole('admin')" /&gt;
+</pre>
+
+
+<p>Then we can simply replace the old JSP tag definition with a new one like this:</p>
+
+<pre style="margin:20px 0;">
+&lt;security:authorize url="/main/admin.html" method="GET"&gt;
+    &lt;a href="http://springinpractice.com/main/admin.html"&gt;Admin&lt;/a&gt;
+&lt;security:authorize&gt;
+</pre>
+
+
+<p>Now we&rsquo;ve successfully eliminated the duplicate rule definition. If we were to decide to change the rule to <code>hasRole(&lsquo;administrator&rsquo;)</code>, or to anything else for that matter, we&rsquo;d be able to do that in a single location.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring Security 3 DZone Refcard and interview]]></title>
+    <link href="http://springinpractice.com/2010/07/11/spring-security-3-dzone-refcard-and-interview/"/>
+    <updated>2010-07-11T18:23:20-07:00</updated>
+    <id>http://springinpractice.com/2010/07/11/spring-security-3-dzone-refcard-and-interview</id>
+    <content type="html"><![CDATA[<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/refcard106/ss3_refcard.png" alt="Spring Security 3 DZone Refcard" style="float:right;margin:0 0 20px 20px;" /></p>
+
+<p>My <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization?oid=hom25493">Spring Security 3 Refcard</a> is out. It covers expression-based authorization in Spring Security 3.</p>
+
+<p>There is also a supporting <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">interview</a> about the Refcard. The interview goes into more depth about some security principles like whitelisting and data-driven security, and explains how to implement these ideas using Spring Security 3.</p>
+
+<p>Thanks to <a href="http://www.scottbattaglia.com/">Scott Battaglia</a>, David Harp, Joe Koberstein, <a href="http://www.mularien.com/blog/">Peter Mularien</a>, <a href="http://pveentjer.wordpress.com/">Peter Veentjer</a> and John Wheeler for their helpful suggestions and also for catching typos.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring Security 3 database schemas for MySQL]]></title>
+    <link href="http://springinpractice.com/2010/07/05/spring-security-database-schemas-for-mysql/"/>
+    <updated>2010-07-05T17:36:28-07:00</updated>
+    <id>http://springinpractice.com/2010/07/05/spring-security-database-schemas-for-mysql</id>
+    <content type="html"><![CDATA[<p>In preparation for a <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization?oid=hom25493">DZone Refcard on Spring Security 3</a> I&rsquo;m doing, here are the Spring Security database schemas for MySQL.</p>
+
+<p>This isn&rsquo;t intended to be an exhaustive treatment. Rather it&rsquo;s more a reference for the MySQL dialect version of the database schemas, though I included a few brief notes just to help people get a high-level understanding of the schemas. For more detailed information, please consult the <a href="http://static.springsource.org/spring-security/site/reference.html">Spring Security 3 Reference Documentation</a>.</p>
+
+<h3>User schema</h3>
+
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/users_erd.png" alt="User schema ERD" /></p>
+
+<p>Each user can have zero or more &ldquo;authorities&rdquo;, or roles. I think Spring Security expects there to be at least one role, though, because login involving roleless users fail.</p>
+
+<pre>create table users (
+    username varchar(50) not null primary key,
+    password varchar(50) not null,
+    enabled boolean not null
+) engine = InnoDb;
+
+create table authorities (
+    username varchar(50) not null,
+    authority varchar(50) not null,
+    foreign key (username) references users (username),
+    unique index authorities_idx_1 (username, authority)
+) engine = InnoDb;
+</pre>
+
+
+
+
+<h3 style="margin-top:20px;">Group schema</h3>
+
+
+<p>The group schema provides a way to organize users into groups and then assign roles to those groups. Each user inherits the roles from his associated groups.</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/groups_erd.png" alt="Group schema ERD" /></p>
+
+<pre>create table groups (
+    id bigint unsigned not null auto_increment primary key,
+    group_name varchar(50) not null
+) engine = InnoDb;
+
+create table group_authorities (
+    group_id bigint unsigned not null,
+    authority varchar(50) not null,
+    foreign key (group_id) references groups (id)
+) engine = InnoDb;
+
+create table group_members (
+    id bigint unsigned not null auto_increment primary key,
+    username varchar(50) not null,
+    group_id bigint unsigned not null,
+    foreign key (group_id) references groups (id)
+) engine = InnoDb;
+
+</pre>
+
+
+
+
+<h3 style="margin-top:20px;">Remember-me schema</h3>
+
+
+<p>Haven&rsquo;t actually used this one, but from what I understand, this schema supports a hardened, persistent remember-me authentication scheme. Spring Security&rsquo;s default remember-me scheme doesn&rsquo;t use the database at all (just a cookie).</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/remember_erd.png" alt="Remember-me schema ERD" /></p>
+
+<pre>create table persistent_logins (
+    username varchar(64) not null,
+    series varchar(64) primary key,
+    token varchar(64) not null,
+    last_used timestamp not null
+) engine = InnoDb;
+
+</pre>
+
+
+
+
+<h3 style="margin-top:20px;">ACL schema</h3>
+
+
+<p>Access control lists (ACLs) might be the most challenging aspect of Spring Security, but the underlying schema is actually pretty straightforward. The concept is that each secure domain object has an associated ACL that defines who can do what with that domain object. Exactly the same idea as permissions on an OS folder, for example.</p>
+
+<p>The SID (&ldquo;security identity&rdquo;) represents the &ldquo;who&rdquo;, and comes in both principal and role flavors; that is, the SID can be either an individual user or else it can be a role. The class and object identity, taken together, represent the domain object. Finally, the <code>acl_entry</code> table contains all the ACLs; each access control entry (ACE) specifies an ordered triple &lt;domain object, SID, permission&gt; and indicates whether the permission in question is granted or denied for the SID and domain object. To take an example, SID Ben might have the write permission granted for a particular forum message.</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/acl_erd.png" alt="ACL schema ERD" /></p>
+
+<pre>create table acl_sid (
+    id bigint unsigned not null auto_increment primary key,
+    principal tinyint(1) not null,
+    sid varchar(100) not null,
+    unique index acl_sid_idx_1 (sid, principal)
+) engine = InnoDb;
+
+create table acl_class (
+    id bigint unsigned not null auto_increment primary key,
+    class varchar(100) unique not null
+) engine = InnoDb;
+
+create table acl_object_identity (
+    id bigint unsigned not null auto_increment primary key,
+    object_id_class bigint unsigned not null,
+    object_id_identity bigint unsigned not null,
+    parent_object bigint unsigned,
+    owner_sid bigint unsigned,
+    entries_inheriting tinyint(1) not null,
+    unique index acl_object_identity_idx_1
+        (object_id_class, object_id_identity),
+    foreign key (object_id_class) references acl_class (id),
+    foreign key (parent_object) references acl_object_identity (id),
+    foreign key (owner_sid) references acl_sid (id)
+) engine = InnoDb;
+
+create table acl_entry (
+    id bigint unsigned not null auto_increment primary key,
+    acl_object_identity bigint unsigned not null,
+    ace_order int unsigned not null,
+    sid bigint unsigned not null,
+    mask int not null,
+    granting tinyint(1) not null,
+    audit_success tinyint(1) not null,
+    audit_failure tinyint(1) not null,
+    unique index acl_entry_idx_1 (acl_object_identity, ace_order),
+    foreign key (acl_object_identity)
+        references acl_object_identity (id),
+    foreign key (sid) references acl_sid (id)
+) engine = InnoDb;</pre>
+
+
+
+
+<h3>Sample code</h3>
+
+
+
+
+<ul>
+<li><a href="https://github.com/springinpractice/sip06">Spring in Practice, chapter 6 [GitHub]</a> - authentication</li>
+<li><a href="https://github.com/springinpractice/sip07">Spring in Practice, chapter 7 [GitHub]</a> - authorization, including ACLs</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Acegi overview (now Spring Security)]]></title>
+    <link href="http://springinpractice.com/2008/02/26/acegi-overview/"/>
+    <updated>2008-02-26T05:24:16-08:00</updated>
+    <id>http://springinpractice.com/2008/02/26/acegi-overview</id>
+    <content type="html"><![CDATA[<div class="intro"><span class="icon stickyNote">I wrote this back when Spring Security was called Acegi. Now it's out of date, but I'm leaving it in the archive.</span></div>
+
+
+<p>Acegi has been around for a while, but I just recently tried it out and am impressed with it so far. Upon first glance Acegi is slightly intimidating because there are lots of classes involved, and it may be hard to keep them straight. Fortunately Acegi is actually straightforward, despite appearances, to anybody who already understands servlet filters and the basics of Spring bean configuration.</p>
+
+<p>The overarching idea is that Acegi provides a suite of security services (mostly if not entirely around authentication and authorization) based on <a href="http://java.sun.com/products/servlet/Filters.html">servlet filters</a>. So for example there are filters for accepting user logins, enforcing access controls, catching security-related exceptions,handling logouts, handling &ldquo;remember me&rdquo; functionality for logins, switching from HTTP to HTTPS, etc. So using Acegi mostly involves deciding which of the filters you want (e.g., maybe you want &ldquo;remember me&rdquo;, maybe you don&rsquo;t) and then configuring those into the app.</p>
+
+<h3>Acegi involves dependency injection into servlet filters (say what?)</h3>
+
+
+<p>Acegi does get a little interesting though because the various filters rely upon Spring&rsquo;s dependency injection, but the standard way of configuring servlet filters into <code>web.xml</code> does not support Spring dependency injection. (The <code>web.xml</code> schema doesn&rsquo;t have anything for dependency injection, nor should it.) Acegi uses a pretty neat trick to give us injectable servlet filters. What it does is it provides a <code>Filter</code> implementation called <code>FilterToBeanProxy</code> that you configure in like this:</p>
+
+<pre>&lt;filter&gt;
+    &lt;filter-name&gt;security&lt;/filter-name&gt;
+    &lt;filter-class&gt;org.acegisecurity.util.FilterToBeanProxy&lt;/filter-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;targetClass&lt;/param-name&gt;
+        &lt;param-value&gt;org.acegisecurity.util.FilterChainProxy&lt;/param-value&gt;
+    &lt;/init-param&gt;
+&lt;/filter&gt;
+ 
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;security&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;</pre>
+
+
+<p>Pretty standard stuff. The idea behind <code>FilterToBeanProxy</code> is that it knows about your <code>[appname]-security.xml</code> bean configuration file, and so it can load in any beans that you define there. In <code>web.xml</code> we tell <code>FilterToBeanProxy</code> to load in a <code>FilterChainProxy</code> defined in <code>[appname]-security.xml</code>. <code>FilterChainProxy</code>,as its name suggests, is a <code>FilterChain</code> implementation. In turn, inside <code>[appname]-security.xml</code> we configure the various <code>Filter</code> beans mentioned above into the <code>FilterChainProxy</code>. Here&rsquo;s how it looks:</p>
+
+<pre>&lt;bean id="filterChainProxy" class="org.acegisecurity.util.FilterChainProxy"&gt;
+    &lt;property name="filterInvocationDefinitionSource"&gt;
+        &lt;!-- IMPORTANT: DON'T LINEBREAK THE FILTER LIST, OR ELSE BEAN LOOKUP BREAKS! --&gt;
+        &lt;!-- I'M JUST DOING IT HERE FOR DISPLAY PURPOSES --&gt;
+        &lt;value&gt;
+            CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+            PATTERN_TYPE_APACHE_ANT
+            /**=httpSessionContextIntegrationFilter,logoutFilter,
+authenticationProcessingFilter,exceptionTranslationFilter,filterSecurityInterceptor
+        &lt;/value&gt;
+    &lt/property&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>The list of filter names is just a list of beans that you also configure in the same <code>[appname]-security.xml</code> config file. Here&rsquo;s an example:</p>
+
+<pre>&lt;bean id="httpSessionContextIntegrationFilter"
+    class="org.acegisecurity.context.HttpSessionContextIntegrationFilter"/&gt;</pre>
+
+
+<p>Voil&agrave;, injectable servlet filters! Very cool.</p>
+
+<h3>Be careful of the following gotchas</h3>
+
+
+<p>There are some points/gotchas worth mentioning:</p>
+
+<ol>
+<li>The servlet filters must be added in a specific order. If you get the order wrong, it won't work, since the servlet filters make assumptions about what kind of processing has already taken place. Check the <a href="http://www.acegisecurity.org/guide/springsecurity.html#filters">Acegi docs</a> for details.</li>
+<li>If you're using other servlet filters (such as Sitemesh), the Acegi filters need to come before the others.</li>
+<li>When configuring FilterChainProxy, you will need to map URL patterns to the list of filters that you want to service requests matching those patterns. For example, you might map <code>/**</code> (Ant syntax) to a list of four filters. The list is comma-delimited. It is important that you not include line breaks after the commas. I'm guessing you can't include whitespace at all, but for sure you can't include line breaks. Otherwise you will get <code>Bean not found: ''</code> exceptions, without any explanation as to what the actual problem is. I'm surprised they don't allow the line breaks since I figure many people will naturally want to break up a long list of filters with long names,but my surprise notwithstanding, the line breaks aren't allowed.</li>
+</ol>
+
+
+<p>Here&rsquo;s a <a href="http://www.javaworld.com/javaworld/jw-10-2007/jw-10-acegi2.html">JavaWorld article on getting started with Acegi</a>. Also, <a href="http://www.amazon.com/Spring-Action-Craig-Walls/dp/1933988134/ref=pd_bbs_sr_1?ie=UTF8&s=books&qid=1199391787&sr=8-1">Spring in Action</a> has some good instructions.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,387 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Send e-mail using Spring and JavaMail - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="This brief tutorial will show how to send e-mail using Spring and JavaMail. JavaMail can handle e-mail storage as well, but here we&rsquo;re just &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Send E-mail Using Spring and JavaMail</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-15T14:18:08-07:00" pubdate data-updated="true">May 15<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>This brief tutorial will show how to send e-mail using Spring and JavaMail. JavaMail can handle e-mail storage as well, but here we&rsquo;re just worrying about sending e-mail.</p>
+
+<p>I happen to be using Spring 2.5 but this ought to work for earlier versions of Spring as well (at least Spring 2.0 I think).</p>
+
+<p>Let&rsquo;s jump right in. You can configure your JavaMail session either in Spring itself or with JNDI. We&rsquo;ll look at both alternatives.</p>
+
+<h3>Alternative 1: Configuring JavaMail with Spring</h3>
+
+
+<p>You may be operating in an environment where you don&rsquo;t have a JNDI enterprise naming context (ENC) available. No problem; you can just configure JavaMail in the Spring application context configuration as shown below.</p>
+
+<pre>&lt;!-- Mail service --&gt;
+&lt;bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl"&gt;
+    &lt;property name="host" value="your.smtphost.com"/&gt;
+    &lt;property name="port" value="25"/&gt;
+    &lt;property name="username" value="yourusername"/&gt;
+    &lt;property name="password" value="yourpassword"/&gt;
+    &lt;property name="javaMailProperties"&gt;
+        &lt;props&gt;
+            &lt;!-- Use SMTP-AUTH to authenticate to SMTP server --&gt;
+            &lt;prop key="mail.smtp.auth"&gt;true&lt;/prop&gt;
+            &lt;!-- Use TLS to encrypt communication with SMTP server --&gt;
+            &lt;prop key="mail.smtp.starttls.enable"&gt;true&lt;/prop&gt;
+        &lt;/props&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>This bean is, as its name suggests, a mail sender. It is basically a wrapper around JavaMail SMTP, and the configuration reflects that. In the example I&rsquo;m showing how you would enable SMTP-AUTH (supports authentication to the SMTP server) and TLS (supports message encryption), assuming your SMTP server has those capabilities. For more information see my article <a href="http://springinpractice.com/2008/05/05/smtp-and-smtp-auth/">SMTP and SMTP-AUTH</a>.</p>
+
+<p><strong>IMPORTANT:</strong> You will need to inject <code>mailSender</code> into your mail-sending service bean.</p>
+
+<p>So that&rsquo;s how to configure JavaMail from Spring. Now here&rsquo;s how to do the same thing with JNDI, which you may want to do if you&rsquo;re running in an environment with a JNDI ENC (like an app server or a servlet container).</p>
+
+<h3>Alternative 2: Configuring JavaMail with JNDI</h3>
+
+
+
+
+<h4>Server JNDI configuration (using Tomcat 6 as an example)</h4>
+
+
+<p>(For a Jetty configuration using Gmail, see <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">Configuring Jetty to use Gmail as an SMTP provider</a>.)</p>
+
+<p>First you will need to expose a JavaMail session factory through JNDI in your server environment. This is environment-dependent, but let&rsquo;s look at an example.</p>
+
+<p>Say you&rsquo;re using Tomcat 6. There are a couple things you must do. First, move <code>mail.jar</code> and <code>activation.jar</code> to your <code>tomcat/lib</code> directory. I say &ldquo;move&rdquo; rather than &ldquo;copy&rdquo; because you will get an odd error if you leave the two JARs in your application classpath. The error is</p>
+
+<pre>java.lang.IllegalArgumentException: 
+    Cannot convert value of type [javax.mail.Session] to required type
+    [javax.mail.Session] for property 'session': no matching editors
+    or conversion strategy found</pre>
+
+
+<p>Second, define your Tomcat JNDI configuration, which might look like this (e.g. in your <code>context.xml</code> file):</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;Context path="/myapp" docBase="myapp" debug="5" crossContext="false"&gt;
+
+    &lt;!-- JavaMail session factory --&gt;
+    &lt;Resource name="mail/Session"
+              auth="Container"
+              type="javax.mail.Session"
+              username="yourusername"
+              password="yourpassword"
+              mail.debug="true"
+              mail.user="yourusername"
+              mail.password="yourpassword"
+              mail.transport.protocol="smtp"
+              mail.smtp.host="your.smtphost.com"
+              mail.smtp.auth="true"
+              mail.smtp.port="25"
+              mail.smtp.starttls.enable="true"/&gt;
+&lt;/Context&gt;</pre>
+
+
+<p>As with the non-JNDI example, I&rsquo;m configuring for SMTP-AUTH and TLS. If you are using SMTP-AUTH (authenticated SMTP sessions, which you activate using <code>mail.smtp.auth=&ldquo;true&rdquo;</code>), then you will need to specify the username and password twice, as shown above. Also, if your SMTP server supports it, you can tell JavaMail to encrypt sessions using TLS by setting <code>mail.smtp.starttls.enable=true</code>.</p>
+
+<p>The above discussion applies only to Tomcat 6 (see <a href="http://tomcat.apache.org/tomcat-6.0-doc/jndi-resources-howto.html">Apache Tomcat 6.0 JNDI Resources HOWTO</a> for detailed instructions); you&rsquo;ll need to consult your server docs to expose a JavaMail session factory through JNDI in your environment.</p>
+
+<h4>Spring configuration</h4>
+
+
+<p>We still need to create a mail sender, but the configuration is simpler since we did all the heavy lifting in <code>context.xml</code> (or whatever, depending on your server environment). So for the Spring application context, all we need is:</p>
+
+<pre>&lt;bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl"&gt;
+    &lt;property name="session" ref="mailSession"/&gt;
+&lt;/bean&gt;</pre>
+
+
+<p><strong>IMPORTANT:</strong> As before, you will need to inject <code>mailSender</code> into your mail-sending service bean.</p>
+
+<p>So that takes care of configuring the mail sender, and also the JavaMail session factory if you are using JNDI. Let&rsquo;s visit one more topic before we dive into the code itself.</p>
+
+<h3>Creating an e-mail template (optional)</h3>
+
+
+<p>Sometimes the e-mail you want to send fits inside a standard template (e.g., maybe it always has the same sender, or maybe the same recipient, or whatever). You can define a template using Spring. Here&rsquo;s an example:</p>
+
+<pre>&lt;!-- Mail message --&gt;
+&lt;bean id="mailMessage" class="org.springframework.mail.SimpleMailMessage"&gt;
+    &lt;property name="from"&gt;
+        &lt;value&gt;&lt;![CDATA[Simple Application Monitor &lt;noreply@somehost.com&gt;]]&gt;&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property name="to"&gt;
+        &lt;value&gt;&lt;![CDATA[System Administrator &lt;sysadmin@somehost.com&gt;]]&gt;&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property name="subject" value="SAM Alert"/&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>You can include as many e-mail templates in a Spring app context configuration, including none if you don&rsquo;t need a template. Here I&rsquo;ve defined a template that specifies a &ldquo;from&rdquo; field, a &ldquo;to&rdquo; field and a &ldquo;subject&rdquo; field. It doesn&rsquo;t specify the date or the body. That template works say for an application monitoring system but it wouldn&rsquo;t work for an e-commerce site&rsquo;s order confirmation e-mail,which would need to have a variable &ldquo;to&rdquo; field.</p>
+
+<p><strong>IMPORTANT:</strong> I didn&rsquo;t show it above, but you will need to inject any e-mail templates (i.e. mail messages) you create into your mail-sending service bean. Otherwise the service bean has no way to use the template.</p>
+
+<p>So that&rsquo;s that. Time for the Java code that actually sends the e-mail.</p>
+
+<h3>How to send the e-mail from your service bean</h3>
+
+
+<p>It turns out that the coding part is much simpler than the configuration (not that the config was too bad). Let&rsquo;s suppose for the sake of example that we want to send an e-mail based on the template that we defined above, and that you&rsquo;ve injected that template into your service bean as <code>mailMessage</code>. Then here&rsquo;s the service bean code that allows you to use the template to send an e-mail:</p>
+
+<pre>SimpleMailMessage message = new SimpleMailMessage(mailMessage);
+message.setSentDate(new Date());
+message.setText("Blah blah blah...");
+mailSender.send(message);</pre>
+
+
+<p>You can see we&rsquo;re creating a new message based on the <code>mailMessage</code> e-mail template and <code>mailSender</code> that we injected into said service bean.</p>
+
+<p>And that&rsquo;s it!</p>
+
+<p><span class="icon stickyNote">Post migrated from my Wheeler Software site.</span></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-15T14:18:08-07:00" pubdate data-updated="true">May 15<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-08-communicating/'>Chapter 08 - Communicating</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/" data-via="williewheeler" data-counturl="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/05/07/session-scoped-beans-in-spring/" title="Previous Post: Session-scoped beans in Spring">&laquo; Session-scoped beans in Spring</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/" title="Next Post: Annotation-based validation with the Spring Bean Validation Framework">Annotation-based validation with the Spring Bean Validation Framework &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

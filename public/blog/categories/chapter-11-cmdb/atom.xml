@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 11 - CMDB | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-11-cmdb/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-16T02:13:12-07:00</updated>
+  <updated>2013-09-18T23:53:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -99,6 +99,416 @@ neo4j-sh (Spring in Practice Blog,49)$
 </code></pre>
 
 <p>That&rsquo;s it. This was the result of about 15 minutes of investigation, so there&rsquo;s a good chance there&rsquo;s more going on than what I&rsquo;ve described. Let me know and I&rsquo;ll update the post accordingly.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Sending cookies with RestTemplate]]></title>
+    <link href="http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate/"/>
+    <updated>2012-04-08T14:06:18-07:00</updated>
+    <id>http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate</id>
+    <content type="html"><![CDATA[<p>Sometimes it is necessary to send cookies along with requests to a RESTful API. One such example is the JIRA 4.3 API, which requires sending the <code>JSESSIONID</code> to JIRA for session management and authentication purposes. REST purists point out that such usages are not properly RESTful (see <a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/" target="_blank"><a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/">http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/</a></a> for a good discussion), and indeed the <code>RestTemplate</code> doesn&rsquo;t directly support sending cookies.</p>
+
+<p>But in the real world, we need to make things work, and so in this quick post I&rsquo;ll show how to send cookies with <code>RestTemplate</code>.</p>
+
+<p>The first thing to bear in mind is that we implement cookies as HTTP headers: the service uses a <code>Set-Cookie</code> response header to tell the client to set a cookie, and the client uses the <code>Cookie</code> request header for subsequent requests. And <code>RestTemplate</code> certainly supports setting request headers.</p>
+
+<p>Here&rsquo;s how I&rsquo;m pulling down an access-controlled RSS feed from JIRA 4.3:</p>
+
+<pre>HttpHeaders requestHeaders = new HttpHeaders();
+requestHeaders.add("Cookie", "JSESSIONID=" + session.getValue());
+HttpEntity requestEntity = new HttpEntity(null, requestHeaders);
+ResponseEntity rssResponse = restTemplate.exchange(
+    "https://jira.example.com/sr/jira.issueviews:searchrequest-xml/18107/SearchRequest-18107.xml?tempMax=1000",
+    HttpMethod.GET,
+    requestEntity,
+    Rss.class);
+Rss rss = rssResponse.getBody();</pre>
+
+
+<p>The trick here is to use the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> method, as this gives us more control over the request, including request headers. We just encode the cookie as a <code>JSESSIONID=[session ID]</code> request header and send it along.</p>
+
+<p>Have fun!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Neo4j 1.6.1 Cypher query examples when using Spring Data Neo4j 2.0]]></title>
+    <link href="http://springinpractice.com/2012/03/05/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/"/>
+    <updated>2012-03-05T17:36:56-08:00</updated>
+    <id>http://springinpractice.com/2012/03/05/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0</id>
+    <content type="html"><![CDATA[<p>This post shows how to perform various sample Cypher queries when using Neo4j 1.6.1 and Spring Data Neo4j (SDN) 2.0.</p>
+
+<p>SDN 2.0 assumes Neo4j 1.6, and it imposes specific structures on databases that it creates. For example, SDN uses the <code><strong>type</strong></code> property on nodes to store the associated Java class, and it names its indexes using the Java class' simple name.</p>
+
+<p>In the examples below, I&rsquo;m using the Neo4j shell, though you can of course run Cypher queries outside of the shell (e.g., from within the app itself). See <a href="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/" title="Working with the Neo4j shell">my earlier blog post</a> if you&rsquo;re interested in learning how to use the shell.</p>
+
+<p>I&rsquo;ll probably add more examples to this post from time to time.</p>
+
+<h4>Return a single node with a given ID</h4>
+
+
+
+
+<pre>neo4j-sh (Skybase,1)$ start n=node(1) return n
++------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                |
++------------------------------------------------------------------------------------------------------------------+
+| Node[1]{__type__-&gt;"org.skydingo.skybase.model.Application",name-&gt;"Skybase",shortDescription-&gt;"Cloud-based CMDB"} |
++------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h4>Return multiple nodes, looked up by ID</h4>
+
+
+
+
+<pre>neo4j-sh (Skybase,1)$ start n=node(1,4,5) return n
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                                                                                  |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[1]{__type__-&gt;"org.skydingo.skybase.model.Application",name-&gt;"Skybase",shortDescription-&gt;"Cloud-based CMDB"}                                                                   |
+| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
+| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h4>Find all nodes of a given type</h4>
+
+
+
+
+<pre>neo4j-sh[readonly] (Maven,3)$ start n=node:__types__(className="org.skydingo.skybase.model.Module") return n
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                                                                                  |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
+| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
+| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
+| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h4>Find all instances of a class having a certain property</h4>
+
+
+<p>Say we have a <code>org.skydingo.skybase.model.Module</code> class with a <code>groupId</code> property and a <code>moduleId</code> property, both annotated with SDN&rsquo;s <code>@Indexed</code> annotation. Then SDN will create an index for this class called <code>Module</code>. Here&rsquo;s how to find modules in a given group:</p>
+
+<pre>neo4j-sh (Skybase,1)$ start n=node:Module("groupId:org.skydingo.skybase") return n
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                                                                                  |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
+| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
+| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
+| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+<p>Here&rsquo;s an alternative syntax for doing exactly the same thing:</p>
+
+<pre>neo4j-sh (Skybase,1)$ start n=node:Module(groupId = 'org.skydingo.skybase') return n
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                                                                                  |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
+| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
+| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
+| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h4>Find all nodes having a certain set of property values</h4>
+
+
+
+
+<pre>neo4j-sh[readonly] (Maven,3)$ start n=node:Module("groupId:org.skydingo.skybase, moduleId:skybase-maven-plugin") return n  
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| n                                                                                                                                                                       |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"} |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h4>Find all nodes in a specified relationship to a given node</h4>
+
+
+
+
+<pre>neo4j-sh (Skybase,1)$ start app=node(1) match app-[:APPLICATION_MODULE]-&gt;module return module
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| module                                                                                                                                                                             |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
+| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
+| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
+| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
+
+
+
+
+<h3>Reader-contributed</h3>
+
+
+<p>I&rsquo;ll just add queries here if people send them. It&rsquo;s useful to have examples of queries around.</p>
+
+<h4>Return a user's events (of specific types), ordered by date</h4>
+
+
+<p><a href="https://twitter.com/#!/bytor99999">Mark Spritzler</a> sent me the following query, which he noted that <a href="https://twitter.com/#!/mesirii">Michael Hunger</a> mostly wrote:</p>
+
+<pre>START user=node({0})
+MATCH user-[r]-event
+WHERE type(r) = "ATTENDING"
+OR type(r) = "INVITED"
+OR type(r) = "HOSTING"
+RETURN ID(event) as eventId, event.eventDate as eventDate, event.title as eventName, type(r) as eventUserType
+ORDER BY event.eventDate desc</pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Using Spring Social GitHub to access secured GitHub data]]></title>
+    <link href="http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code/"/>
+    <updated>2012-03-05T16:40:28-08:00</updated>
+    <id>http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code</id>
+    <content type="html"><![CDATA[<p>At my <a title="Skydingo blog" href="http://skydingo.com/blog/">Skydingo blog</a> (a devops blog written in collaboration with Paul Jenson) I just wrote a <a href="http://skydingo.com/blog/2012/03/skybase-now-supports-authorized-access-to-github-via-spring-social-github/" title="Skybase now supports authorized access to GitHub via Spring Social GitHub">quick post</a> with some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+
+<p>[caption id=&ldquo;attachment_672&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;529&rdquo; caption=&ldquo;Authorize access to get GitHub repo hooks and other sensitive data&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png"><img src="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png" alt="" title="hooks" width="529" height="195" class="size-full wp-image-672" /></a>[/caption]</p>
+
+<h3>Spring application configuration</h3>
+
+
+<p>This goes in the app context. I lifted it more or less as-is from the Spring Social reference documentation, except that I&rsquo;m using GitHub as the provider instead of Facebook, Twitter or LinkedIn.</p>
+
+<pre>&lt;bean id="connectionFactoryLocator" class="org.springframework.social.connect.support.ConnectionFactoryRegistry"&gt;
+    &lt;property name="connectionFactories"&gt;
+        &lt;list&gt;
+            &lt;bean class="org.springframework.social.github.connect.GitHubConnectionFactory"&gt;
+                &lt;constructor-arg value="${gitHub.clientId}" /&gt;
+                &lt;constructor-arg value="${gitHub.clientSecret}" /&gt;
+            &lt;/bean&gt;
+        &lt;/list&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;bean id="textEncryptor" class="org.springframework.security.crypto.encrypt.Encryptors" factory-method="noOpText" /&gt;
+
+&lt;bean id="usersConnectionRepository" class="org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository"&gt;
+    &lt;constructor-arg ref="dataSource" /&gt;
+    &lt;constructor-arg ref="connectionFactoryLocator" /&gt;
+    &lt;constructor-arg ref="textEncryptor" /&gt;
+&lt;/bean&gt;
+
+&lt;!-- This requires authentication via Spring Security --&gt;
+&lt;bean id="connectionRepository"
+    factory-bean="usersConnectionRepository"
+    factory-method="createConnectionRepository" 
+    scope="request"&gt;
+    
+    &lt;constructor-arg value="#{request.userPrincipal.name}" /&gt;
+    &lt;aop:scoped-proxy proxy-target-class="false" /&gt;
+&lt;/bean&gt;</pre>
+
+
+
+
+<h3>Spring web configuration</h3>
+
+
+
+
+<pre>&lt;bean class="org.springframework.social.connect.web.ConnectController" /&gt;</pre>
+
+
+
+
+<h3>Service code for the user account page</h3>
+
+
+<p>Here&rsquo;s how I&rsquo;m looking up the GitHub user profile information:</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import javax.inject.Inject;
+
+import org.skydingo.skybase.model.UserAccount;
+import org.skydingo.skybase.repository.UserAccountRepository;
+import org.skydingo.skybase.service.UserAccountService;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubUserProfile;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserAccountServiceImpl extends AbstractCIService implements UserAccountService {
+    @Inject private ConnectionRepository connectionRepo;
+    
+    public GitHubUserProfile getCurrentUserProfile() {
+        if (gitHub().isAuthorized()) {
+            return gitHub().userOperations().getUserProfile();
+        } else {
+            return null;
+        }
+    }
+    
+    private GitHub gitHub() {
+        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
+        return (conn != null ? conn.getApi() : new GitHubTemplate());
+    }
+
+    ... other methods ...
+}</pre>
+
+
+<p>In the <code>gitHub()</code> method you can see that I return an existing <code>GitHub</code> object if the connection exists; otherwise I just create a new <code>GitHub</code> (in the form of the template, which implements <code>GitHub</code>) so that the app can at least perform non-sensitive read operations.</p>
+
+<h3>Service to get the GitHub service hooks</h3>
+
+
+<p>This one&rsquo;s pretty similar to the above.</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import java.util.List;
+import javax.inject.Inject;
+import org.skydingo.skybase.model.Application;
+import org.skydingo.skybase.service.ApplicationService;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubHook;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ApplicationServiceImpl extends AbstractCIService implements ApplicationService {
+    @Inject private ConnectionRepository connectionRepo;
+    
+    public List findHooks(String user, String repo) {
+        return gitHub().repoOperations().getHooks(user, repo);
+    }
+
+    private GitHub gitHub() {
+        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
+        return (conn != null ? conn.getApi() : new GitHubTemplate());
+    }
+
+    ... various other methods ...
+}</pre>
+
+
+<p>I should probably factor out that common <code>gitHub()</code> method. :&ndash;)</p>
+
+<h3>User account JSP</h3>
+
+
+<p>Here&rsquo;s the JSP code for rendering the connect/disconnect buttons. The CSS classes come from <a title="Twitter Bootstrap" href="http://twitter.github.com/bootstrap/">Bootstrap 2.0</a>, in case you were wondering.</p>
+
+<pre>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+&lt;%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %&gt;
+&lt;%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %&gt;
+&lt;%@ taglib prefix="social" uri="http://www.springframework.org/spring-social/social/tags" %&gt;
+
+&lt;c:url var="connectUrl" value="/connect" /&gt;
+&lt;c:url var="githubUrl" value="/connect/github" /&gt;
+
+&lt;sec:authentication var="user" property="principal" /&gt;
+
+&lt;h1&gt;Account details&lt;/h1&gt;
+
+&lt;section class="first"&gt;
+    &lt;div class="well"&gt;
+        &lt;table class="grid"&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Username:&lt;/td&gt;
+                &lt;td&gt;&lt;c:out value="${user.username}" /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+    &lt;h2&gt;GitHub&lt;/h2&gt;
+
+    &lt;social:connected provider="github"&gt;
+        &lt;p&gt;Your Skybase and GitHub accounts are connected.&lt;/p&gt;
+        &lt;div class="well"&gt;
+            &lt;table class="grid"&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;Blog:&lt;/td&gt;
+                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.blog}" default="None" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;Location:&lt;/td&gt;
+                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.location}" default="None" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;form method="post" action="${githubUrl}"&gt;
+            &lt;input type="hidden" name="_method" value="delete" /&gt;
+            &lt;input class="btn btn-danger" type="submit" value="Disconnect from GitHub" /&gt;
+        &lt;/form&gt;
+    &lt;/social:connected&gt;
+
+    &lt;social:notConnected provider="github"&gt;
+        &lt;p&gt;Your Skybase and GitHub accounts are not yet connected. Connect them for additional Skybase features.&lt;/p&gt;
+        &lt;form method="post" action="${githubUrl}"&gt;
+            &lt;input type="hidden" name="scope" value="user, repo, gist" /&gt;
+            &lt;input class="btn btn-primary" type="submit" value="Connect to GitHub" /&gt;
+        &lt;/form&gt;
+    &lt;/social:notConnected&gt;
+&lt;/section&gt;</pre>
+
+
+<p>Note the use of the Spring Social <code>&lt;social:connected&gt;</code> and <code>&lt;social:notConnected&gt;</code> tags to show different content based on whether the user is or isn&rsquo;t connected to the provider in question.</p>
+
+<p>Notice also that the connect button sends a hidden <code>scope</code> parameter to the GitHub URL. This allows us to specify the kinds of operation we want the user to authorize.</p>
+
+<p>Anyway, there you have it. This post was a bit quick, so let me know if I left anything important out and I&rsquo;m happy to add it. Have fun.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Zkybase now supports authorized access to GitHub via Spring Social GitHub]]></title>
+    <link href="http://springinpractice.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/"/>
+    <updated>2012-03-05T16:04:45-08:00</updated>
+    <id>http://springinpractice.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github</id>
+    <content type="html"><![CDATA[<p>This one&rsquo;s another quick <a title="Zkybase" href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a title="Spring Social GitHub" href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the GitHubTemplate. But if we want to access private information, or write capabilities, we need to use the <a title="Spring Social" href="http://www.springsource.org/spring-social">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a title="Spring Security" href="http://static.springsource.org/spring-security/site/">Spring Security</a>), and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
+
+<h3>Screenshots</h3>
+
+
+<p>Here&rsquo;s what the GitHub section of the account page looks like before you connect to GitHub:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/disconnected.png"><img class="alignnone  wp-image-681" style="border: 1px solid #EEE;" title="disconnected" src="http://springinpractice.com/wp-content/uploads/2012/03/disconnected.png" alt="" width="565" height="96" /></a></p>
+
+<p>Once you&rsquo;ve done that, the display changes to the following:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/connected.png"><img class="alignnone size-medium wp-image-682" style="border: 1px solid #EEE;" title="connected" src="http://springinpractice.com/wp-content/uploads/2012/03/connected-300x195.png" alt="" width="300" height="195" /></a></p>
+
+<p>And now we can perform various secure operations on our GitHub objects, like viewing repo hooks:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks3.png"><img class="alignnone  wp-image-683" style="border: 1px solid #eeeeee;" title="hooks" src="http://springinpractice.com/wp-content/uploads/2012/03/hooks3.png" alt="" width="619" height="229" /></a></p>
+
+<p>I plan to use this integration to support autoprovisioning continuous integration servers, among other things.</p>
+
+<p>If you&rsquo;re interested in the code itself, please see my blog post entitled <a href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/">Using Spring Social GitHub to access secured GitHub data [code]</a>.</p>
 ]]></content>
   </entry>
   

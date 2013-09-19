@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2011/12/17/domain-modeling-with-spring-data-neo4j-code/
 layout: post
-title: Domain modeling with Spring Data Neo4j
+title: "Domain modeling with Spring Data Neo4j"
 date: 2011-12-17 23:26:41
 comments: true
 categories: [Chapter 02 - Data, Chapter 11 - CMDB, Tutorials]

@@ -1,0 +1,382 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Apache/Tomcat integration - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="Here&rsquo;s a step-by-step tutorial that shows how to integrate Tomcat 5.5.x with Apache 2.0.x under Windows XP using the AJP 1.3 connector. The &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2008/03/19/apachetomcat-integration">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Apache/Tomcat Integration</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-19T06:51:54-07:00" pubdate data-updated="true">Mar 19<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Here&rsquo;s a step-by-step tutorial that shows how to integrate Tomcat 5.5.x with Apache 2.0.x under Windows XP using the AJP 1.3 connector. The exact versions I used for this tutorial were Tomcat 5.5.9 and Apache 2.0.54, but the instructions ought to work for Tomcat 5.5.x and Apache 2.0.x generally.</p>
+
+<h3>Preliminaries</h3>
+
+
+
+
+<h4>Step 1</h4>
+
+
+<p>Decide which directory you want to use to deploy your web app. In a bit we will be pointing both Tomcat and Apache at this directory.</p>
+
+<h3>Configure Tomcat</h3>
+
+
+
+
+<h4>Step 2</h4>
+
+
+<p>In your Tomcat <code>server.xml</code> file, make sure that your AJP 1.3 connector config is not commented out. Mine looks like this:</p>
+
+<pre>&lt;Connector port="8009" 
+    enableLookups="false"
+    redirectPort="8443"
+    protocol="AJP/1.3"/&gt;</pre>
+
+
+<p>and it immediately follows the config for the HTTP connector running on port 8080 (Tomcat default). The AJP connector listens on port 8009 for requests that Apache forwards to Tomcat. The idea is that Apache services the requests for static content itself, and forwards requests requiring servlet/JSP processing. Incidentally, if you don&rsquo;t intend to use Tomcat as a standalone server, you should comment out the Coyote standalone connector that listens on port 8080.</p>
+
+<h4>Step 3</h4>
+
+
+<p>Also in <code>server.xml</code>, point the Catalina engine at the directory you just chose. In my own case, the config looks like this:</p>
+
+<pre>&lt;Engine name="Catalina" defaultHost="localhost"&gt;
+    &lt;Host name="localhost" appBase="C:/cygwin/home/web/deploy"
+          unpackWARs="true" autoDeploy="true"
+          xmlValidation="false" xmlNamespaceAware="false"&gt;
+         &lt;Valve className="org.apache.catalina.valves.AccessLogValve"
+                directory="C:/cygwin/home/web/logs" prefix="localhost_access_log."
+                suffix=".txt" pattern="common" resolveHosts="false"/&gt;
+    &lt;/Host&gt;
+&lt;/Engine&gt;</pre>
+
+
+
+
+<h3>Configure Apache</h3>
+
+
+
+
+<h4>Step 4</h4>
+
+
+<p>Download the <code>mod_jk</code> binary from the URL given in the References section below. The specific version I am using is a Windows binary, <code>mod_jk-1.2.14-apache-2.0.54.so</code>. <code>mod_jk</code> is the Apache module that allows Apache to talk to Tomcat.</p>
+
+<h4>Step 5</h4>
+
+
+<p>Copy the file you just downloaded into the Apache modules directory, but note that you need to rename it to <code>mod_jk.so</code>.</p>
+
+<h4>Step 6</h4>
+
+
+<p>Put a <code>workers.properties</code> file in the Apache configuration directory, right next to <code>httpd.conf</code>. Here is a sample <code>workers.properties</code> file; obviously you&rsquo;ll need to modify it to match your own local environment.</p>
+
+<h4>Step 7</h4>
+
+
+<p>Now modify <code>httpd.conf</code> to tell Apache about <code>mod_jk</code> and about our <code>workers.properties</code> file. Note that the worker name you choose here needs to match the worker name that you defined in <code>workers.properties</code>. Also, you will have to decide which requests get forwarded to Tomcat, and specify that here as JK mountpoints. Here&rsquo;s the configuration I&rsquo;m using; modify as necessary:</p>
+
+<pre># Load mod_jk module
+# Update this path to match your modules location
+LoadModule jk_module C:/apache-2.0.54/Apache2/modules/mod_jk.so
+
+# Where to find workers.properties
+# Update this path to match your conf directory location
+# (put workers.properties next to httpd.conf)
+JkWorkersFile C:/apache-2.0.54/Apache2/conf/workers.properties
+
+# Where to put jk logs
+# Update this path to match your logs directory location
+# (put mod_jk.log next to access_log)
+JkLogFile C:/cygwin/home/web/logs/mod_jk.log
+
+# Set the jk log level [debug/error/info]
+JkLogLevel info
+
+# Select the log format
+JkLogStampFormat "[%a %b %d %H:%M:%S %Y] "
+
+# JkOptions indicate to send SSL KEY SIZE, 
+JkOptions +ForwardKeySize +ForwardURICompat -ForwardDirectories
+
+# JkRequestLogFormat set the request format 
+JkRequestLogFormat "%w %V %T"
+
+# Specify which requests get forwarded to Tomcat.  (My web app is called
+# "mywebapp"; change as necessary.  Note that I'm forwarding Struts *.do
+# requests to Tomcat, along with the top-level home page request, which in my
+# case happens to be a Struts request.)
+JkMount /mywebapp/ ajp13w
+JkMount /mywebapp/*.do ajp13w
+JkMount /mywebapp/*.jsp ajp13w</pre>
+
+
+
+
+<h4>Step 8</h4>
+
+
+<p>Modify <code>httpd.conf</code> so that it obtains documents from the same directory you chose in step 1 above.</p>
+
+<p>That should do it. If you access your web app on port 80, things should hopefully work the way you want them to. Important: do not try to access your web app on port 8080, especially if you commented out the Coyote connector in <code>server.xml</code>. The whole point of the above was to put Tomcat behind Apache, and now we have that. Client requests come in on port 80, and if there are requests whose URIs match the JkMount URIs specified in <code>httpd.conf</code>, then Apache forwards those to Tomcat on port 8009 via an AJP 1.3 request.</p>
+
+<h3>References</h3>
+
+
+<ul>
+<li><a href="http://tomcat.apache.org/tomcat-5.5-doc/config/ajp.html">The AJP Connector</a>: Explains what you need to do in <code>server.xml</code> if you want to get fancy with your AJP config.</li>
+</ul>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-19T06:51:54-07:00" pubdate data-updated="true">Mar 19<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2008/03/19/apachetomcat-integration/" data-via="williewheeler" data-counturl="http://springinpractice.com/2008/03/19/apachetomcat-integration/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/03/18/annotation-based-transactions-in-spring/" title="Previous Post: Annotation-based transactions in Spring">&laquo; Annotation-based transactions in Spring</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/03/19/setting-up-public-key-authentication-pka-over-ssh/" title="Next Post: Setting up public key authentication (PKA) over SSH">Setting up public key authentication (PKA) over SSH &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

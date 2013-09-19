@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/02/26/annotation-based-mvc-in-spring-2-5/
 layout: post
-title: Annotation-based MVC in Spring 2.5
+title: "Annotation-based MVC in Spring 2.5"
 date: 2008-02-26 22:36:14
 comments: true
 categories: [Chapter 03 - Web MVC, Tutorials]

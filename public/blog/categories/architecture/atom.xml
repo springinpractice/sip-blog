@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Architecture | Spring in Practice]]></title>
+  <link href="http://springinpractice.com/blog/categories/architecture/atom.xml" rel="self"/>
+  <link href="http://springinpractice.com/"/>
+  <updated>2013-09-18T23:53:48-07:00</updated>
+  <id>http://springinpractice.com/</id>
+  <author>
+    <name><![CDATA[Willie Wheeler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Closed loops: the secret to collecting configuration management data]]></title>
+    <link href="http://springinpractice.com/2012/01/02/closed-loops-the-secret-to-collecting-configuration-management-data/"/>
+    <updated>2012-01-02T18:45:19-08:00</updated>
+    <id>http://springinpractice.com/2012/01/02/closed-loops-the-secret-to-collecting-configuration-management-data</id>
+    <content type="html"><![CDATA[<p>Hi all, Willie here. Happy New Year!</p>
+
+<p>In my last post, <a title="Devops: How NOT to collect configuration management data" href="http://skydingo.com/blog/?p=229">How NOT to collect configuration management data</a>, I gave a quick rundown of some losing CM data approaches that I and others have attempted in the past. Most of these approaches were variants of asking people for information, putting their answers in documents somewhere and never looking at the documents again.</p>
+
+<p>This time around I&rsquo;m going to describe a key breakthough that our team finally made&mdash;one that made it a lot easier to collect and update the data in question.</p>
+
+<p>That breakthrough was the concept of a <em>closed loop</em> and how it relates to configuration management.</p>
+
+<p>[As it happens, the concept is well-known in configuration management circles, but at the time it wasn&rsquo;t well-known to us. So we discovered something that other people already knew. It&rsquo;s in that limited sense I say we made a breakthrough.]</p>
+
+<p>We&rsquo;re going to have to build up to the closed loop concept. Let&rsquo;s start by looking at who has the best CM data in the org.</p>
+
+<h3>Who has the best CM data?</h3>
+
+
+<p>Different orgs are different, so it&rsquo;s tough to make blanket statements about who has the best CM data. But what I can do is give the answer for my workplace, and hopefully the principles will make sense even if the reality is different where you work. But I&rsquo;ll bet for a lot of orgs it&rsquo;s quite similar.</p>
+
+<p>To avoid keeping you in suspense, the answer is&hellip;</p>
+
+<p><strong>Winner: the release team.</strong> Where I work, the release team has the best CM data, where &ldquo;best&rdquo; means something like comprehensive, accurate and actively managed. The release team knows which apps go on which servers, which service accounts to launch Tomcat or JBoss under, which alerts to suppress during a deployment, and so on. They know these things across the entire range of apps they support. It&rsquo;s all documented (in YAML files, databases, scripts, etc.) and it&rsquo;s all maintained in real time.</p>
+
+<p>Let&rsquo;s look at some other teams though.</p>
+
+<ul class="square">
+    <li><strong>App teams have nonsystematic data.</strong> The app teams typically know the URLs for their apps, which servers their apps are on (or at least the VIPs), the interdependencies between their apps and other adjacent systems (web services, databases). But the knowledge is less systematic. It's more like browser bookmarks, tribal knowledge and not-quite-up-to-date wiki pages. And any given developer knows his own app and maybe the last app or two he worked on, but not all apps.<strong></strong></li>
+    <li><strong>Ops teams have to depend on busy developers for info.</strong> The ops teams have better or worse information depending on how close to the app teams they are. The team in the NOC is almost entirely at the mercy of the app teams to write and update knowledge base articles. As you might imagine, it can be a challenge to ensure that developers up against a deadline are writing solid KB articles and maintaining older ones. For the NOC it's very important to know who the app SMEs are, given such challenges. Even this is not always readily clear as org changes occur, new apps appear, old apps get new names and so on.</li>
+    <li><strong>App support teams are more expertise-driven than data-driven.</strong> The app support teams (they handle escalations out of the NOC) are generally more familiar with the apps themselves and so build up stronger knowledge about the apps, but this knowledge tends to be stronger with "problem child" apps. Also, different people tend to develop expertise with specific apps.</li>
+</ul>
+
+
+
+
+<h3>Why does the release team have the best CM data?</h3>
+
+
+<p>The release team has the best CM data because properly maintained CM data is fundamental to their job in a way that it&rsquo;s not for other teams.</p>
+
+<blockquote>First, a quick aside. If your company isn't regulated by <a title="SOX" href="http://en.wikipedia.org/wiki/Sarbanes%E2%80%93Oxley_Act">SOX</a>, you may be wondering about what a release team is and why we have one. Among many other things, SOX requires a separation of duties between people who write software and people who deploy/support it in the production environment. The release team's primary responsibility is to release software into production. We actually have a couple of release teams, and each of them services many apps. It would not be feasible from a cost and utilization perspective for each app team to have its own dedicated release engineer. The release teams release software at low-volume times, generally during the wee hours.</blockquote>
+
+
+<p>Back to this idea that the release team needs proper CM data more than the other teams do. Why am I saying that?</p>
+
+<p><a href="http://www.flickr.com/photos/ajabogado/4409800577/"><img class="alignright size-full wp-image-349" title="scrum" src="http://springinpractice.com/wp-content/uploads/2012/01/scrum.jpg" alt="" width="240" height="180" /></a><strong>Here&rsquo;s why.</strong> The software development team is highly motivated to release software at a regular cadence. A fairly limited number of release engineers must service hundreds of applications (generally not all at once, though), so &ldquo;tribal knowledge&rdquo; isn&rsquo;t a viable strategy when it comes to knowing what to deploy where. It must be thoroughly and accurately documented. Releases happen every week, and late at night, so it&rsquo;s not reasonable for the release team to call up his buddy on the app team and ask for the list of app servers. The release team needs this information at their fingertips. If they don&rsquo;t have it, the software organization fails to realize the value of its development investment.</p>
+
+<p>Indeed, &ldquo;documented&rdquo; is the wrong word here, because deployment automation drives the deployments. The CM data must be properly &ldquo;operationalized&rdquo;, meaning that it must be consumable by automation. No Word docs, no Excel spreadsheets, no wiki pages. More like YAML files, XML files, web service calls against a CMDB, etc.</p>
+
+<p>Importantly, when the data is wrong, the deployment fails. People really care about deployments not failing, so if there are data problems, people will definitely discover and fix them.</p>
+
+<p>Let&rsquo;s look at the app and ops teams again.</p>
+
+<ul class="square">
+    <li><strong>App teams can make do without great CM data.</strong> The dependency of app developers on their CM data is softer. Yes, a developer needs to know which web services his app calls, but someone just explains that when he joins the project, and that's really all there is to it. If he has a question about a transitive dependency, he might ask a teammate. If he needs to get to the app in the test environment, he probably has the URL bookmarked and the credentials recorded somewhere, but if not, he can easily ask somebody. 99% of the time, the developer can do what he needs to do without reference to specific CM data points. The developer may or may not automate against the CM data.<strong></strong></li>
+    <li><strong>Ops/support teams need good CM data, but expertise is cheaper in the short- to medium-term.</strong> Except in cases involving very aggressive SLAs, even ops often has a softer dependency on CM data than the release team does. Since (hopefully) app outages occur much less frequently than app deployments, the return on knowledge base investments is more sporadic than that on deployment automation. If the app in question isn't particularly important, investments in KB articles may be very limited indeed. In most cases, investing in serious support firepower (when something breaks, bring significant subject matter expertise to bear on the problem) yields a better short- to medium-term return. (Of course, in the longer term this strategy fails, because eventually there will be the very costly outage that takes the business out for several days. That's a subject for a different day.)</li>
+</ul>
+
+
+<p>Now we&rsquo;re in a good place to understand closed loops and why they&rsquo;re so important for configuration management data.</p>
+
+<h3>Closed loops and why they matter</h3>
+
+
+<p>I think of closed loops like this. There&rsquo;s a &ldquo;steady state&rdquo; that we want to establish and maintain with respect to our CM data. We want it to be comprehensive, accurate and relevant. When the state of our CM data diverges from that desired steady state, we want feedback loops to alert us to the situation so we can address it. That&rsquo;s a closed loop.</p>
+
+<p><strong>Example 1: deployment automation.</strong> The best example is the one that we already described: deployment data. Deployment data drives the deployment process, and when the data is wrong, the deployment process fails. Because the deployment process is extremely important to the organization, some level of urgency attaches to fixing wrong data. But it&rsquo;s not just wrong data. If we need to deploy an app and there&rsquo;s missing data in the CMDB, then sorry, there&rsquo;s no deployment! Rest assured that if the deployment matters, the missing data is only a temporary issue.</p>
+
+<p><strong>Example 2: fine-grained access controls.</strong> Here&rsquo;s another example: team membership data. We&rsquo;ve already noted that for operational reasons it&rsquo;s very important to know who is on which development team. This isn&rsquo;t something that&rsquo;s going to be in the HR system, and people have better things to do than to update team membership data. But what happens when that team membership data drives ACLs for something you care about being able to do, like deploying your app to your dev environment? Now you&rsquo;re going to see better team membership data.</p>
+
+<p>The basic concept is to find something that people really, really care about, and then make it strongly dependent on having good CM data:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/closed_loop.png"><img class="alignnone size-full wp-image-344" title="Closed loop" src="http://springinpractice.com/wp-content/uploads/2012/01/closed_loop.png" alt="" width="365" height="124" /></a></p>
+
+<p>Ideally it&rsquo;s best if the CM data drives an automated process that people care about, but that&rsquo;s not strictly necessary. In my org, for instance, there&rsquo;s a fairly robust but manual goal planning and goal tracking process. Every quarter the whole department goes through a goal planning process (my goals roll up into my boss' goals and so on), and then we track progress against those goals every couple of weeks. The goal planning and tracking app requires correct information about who&rsquo;s on which team, and so this serves to establish yet another closed loop on the team membership data. It also illustrates the point that you can hit the same type of data with multiple loops.</p>
+
+<h3>Design your CM strategy holistically</h3>
+
+
+<p>There are several areas in technology where it pays to take a holistic view of design: security, user experience and system testing come immediately to mind. In each case you consider a given technical system in its wider organizational context. (Super-duper-strong password requirements don&rsquo;t help if people have to write them down on Post-Its.)</p>
+
+<p>Configuration management is another place where it makes lots of sense to take a holistic approach to design. For any given type of data (there&rsquo;s no one-size-fits-all answer here), try to figure out something important that depends on it, and then figure out how to tie that something to your data so that wheels just start falling off if the data is wrong, incomplete and so on. Again, data-driven automated processes are superior here, but any important process (automated or not) will help.</p>
+
+<h3>Fewer meetings?</h3>
+
+
+<p>Almost forgot. In the last post, I mentioned that I&rsquo;ll equip you to get out of some pointless meetings. The meetings in question are the ones where somebody wants to get together with you to collect CM data from you so they can post it to their Sharepoint site. Decline those&mdash;they&rsquo;re just a waste of time. Insist that people be able to articulate the closed loops that they will be creating to make sure that someone discovers gaps and errors in the data. I&rsquo;ve been in plenty of such meetings, and in some cases they&rsquo;re set up as half- or full-day meetings. I don&rsquo;t do those anymore.</p>
+
+<p><em>I&rsquo;m working on an open source CMDB, called Zkybase, that can help you establish closed loop configuration management. See the <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase GitHub site</a>.</em></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Devops: How NOT to collect configuration management data]]></title>
+    <link href="http://springinpractice.com/2011/12/26/devops-how-not-to-collect-configuration-management-data/"/>
+    <updated>2011-12-26T14:31:55-08:00</updated>
+    <id>http://springinpractice.com/2011/12/26/devops-how-not-to-collect-configuration-management-data</id>
+    <content type="html"><![CDATA[<p>Hi all, Willie here. This time we&rsquo;re going to step away from the keyboard and get architectural. But no ivory towers here. In my next two blog posts, I&rsquo;m going to give you something that will get you out of lots of pointless meetings.</p>
+
+<p>Got your attention yet? Good!</p>
+
+<p>If you&rsquo;re in devops, one of the things that you have to figure out is how to collect up all the information that will allow you to manage your configuration and also keep your apps up and running. This isn&rsquo;t too hard when you have two apps sitting on a single server. It&rsquo;s much harder when you have 400 apps deployed to thousands of servers across multiple environments and data centers.</p>
+
+<p>So how do you do that? Let&rsquo;s start off by looking at some things that just don&rsquo;t work. In my next post I&rsquo;ll share with you an approach that <em>does</em> work.</p>
+
+<h3>Some quick background</h3>
+
+
+<p>Probably owing to some psychological glitch, I&rsquo;ve always been an information curator. Especially when I was in management, it was always important to me to understand exactly where my apps were deployed, which servers they were on, which services and databases they depended on, which servers <em>those</em> services and databases lived on, who are the SMEs for a given app, and so on.</p>
+
+<p>If you work in a small environment, you&rsquo;re probably thinking, &ldquo;what&rsquo;s the big deal?&rdquo;</p>
+
+<p>Well, I don&rsquo;t work in a small environment, but the first time I undertook this task, I probably would have said something like, &ldquo;no sweat.&rdquo; (That&rsquo;s the developer in me.) Anyway, for whatever reason, I decided that it was high time that somebody around the department could answer seemingly basic questions about our systems.</p>
+
+<h3>Attempt #1: Wiki Wheeler</h3>
+
+
+<p><a href="http://www.flickr.com/photos/72213316@N00/5533149173/sizes/s/in/photostream/"><img class="alignright size-full wp-image-244" title="bullwhip" src="http://springinpractice.com/wp-content/uploads/2011/12/bullwhip1.jpg" alt="Wiki Wheeler" width="280" height="351" /></a></strong></p>
+
+<p>The first time I made the attempt (several years ago), I was a director over a dozen or so app teams. So I created a wiki template with all the information that I wanted, and I chased after my teams to fill it out. My zeal was such that, unbeknownst to me, I acquired the nickname &ldquo;Wiki Wheeler&rdquo;. (One of my managers shared this heartwarming bit of information with me a couple years later.) I guess other managers liked the approach, though, because they chased after their teams too.</p>
+
+<p>This approach started out decently well, since the teams involved could manage their own information, and since I was, well, Wiki Wheeler. But it didn&rsquo;t last. Through different system redesigns and department reorgs, wiki spaces came and went, some spaces atrophied from neglect, and there was redundant but contradictory information everywhere. The QA team had its own list, the release guys had their list, the app teams had their list. The UX guys might have even gotten in on the act. Anyway, after a year or so it was a big mess and to this day our wiki remains a big mess.</p>
+
+<h3>Attempt #2: My huge Visio</h3>
+
+
+<p><strong></strong>The second time, my approach was to collect the information from all the app development teams. We had hundreds of developers, so to make things efficient, I sent out a department-wide e-mail telling everybody that I was putting together a huge Visio document with all of our systems, and I&rsquo;d appreciate it if they could reply back with the requested information. And while I had to send out more nag e-mails than I would have liked, the end result was in fact a huge Visio diagram that had hundreds of boxes and lines going everywhere. I was very proud of this thing, and I printed out five or six copies on the department plotter and hung them on the walls.</p>
+
+<p>How long do you think it was before it was out of date?</p>
+
+<p>I have no idea. I seriously doubt that it was ever correct in the first place. Nobody (myself included) ever used the diagram to do actual work, and its chief utility was in making our workplace look somewhat more hardcore since there were huge color engineering plots on the walls.</p>
+
+<p>There was one additional effect of this diagram, though I hesitate to call it utility. I acquired the wholly undeserved reputation for knowing what all these apps were and how they related to one another. This went on for years through no fault of my own. I mention it because it&rsquo;s relevant for the next attempt.</p>
+
+<h3>Attempt #3: Disaster recovery</h3>
+
+
+<p><a href="http://www.flickr.com/photos/55123857@N00/250743228/"><img class="alignright size-full wp-image-253" title="asteroid" src="http://springinpractice.com/wp-content/uploads/2011/12/asteroid.jpg" alt="When asteroids strike..." width="240" height="164" /></a>This one wasn&rsquo;t my attempt, but it&rsquo;s still worth describing since I have to imagine that we aren&rsquo;t the only ones who ever tried it.</p>
+
+<p>As a rapidly growing company, disaster recovery became an increasingly big deal for us several years back, and there was a mandate from up high to put a plan in place. This involved collecting up all the information that would allow us to keep the business running if our primary data center ever got cratered. The person in charge of the effort spent about two years meeting with app teams or else &ldquo;experts&rdquo; (me, along with others who, like me, had only the highest-level understanding of how things were connected up) and documenting it on a Sharepoint site where nobody could see it.</p>
+
+<p>This didn&rsquo;t work at all. Most people were too busy to meet with her, so the quality of the information was poor. Apps were misnamed, app suites were mistaken for apps, and to make a long story short, the result was not correct or maintainable.</p>
+
+<h3>Attempt #4: Our external consultants' even bigger Visio</h3>
+
+
+<p>Following a major reorg, we brought in some external consultants and they came up with their own Visio. By this time I had already figured out that interviewing teams and putting together huge Visios is a losing approach, so I was surprised that a bunch of highly-paid consultants would use it. Well, they did, and their diagram was, well, &ldquo;impressive&rdquo;. It was also (to put it gently) neither as helpful nor as maintainable as we would have liked.</p>
+
+<h3>Attempt #5: HP uCMDB autodiscovery</h3>
+
+
+<p>We have the HP uCMDB tool, and so our IT Services group ran some automated discovery agents to populate it with data. It loaded the uCMDB up with tons of fine-grained detail that nobody cared about, and we couldn&rsquo;t see the stuff that we actually did care about (like apps, web services, databases, etc.).</p>
+
+<h3>Attempt #6: Service catalog</h3>
+
+
+<p>Our IT Services group was pretty big on ITIL, so they went about putting together a service catalog. The person doing it collected service and app information into an Excel spreadsheet and posted it to a Sharepoint site. But this didn&rsquo;t really get into the details of configuration management. It was mostly around figuring out which business services we offered and which systems support which services.</p>
+
+<p>They ended up printing out a glossy, full-color service catalog for the business, but nobody was really asking for it, so it was more of a curiosity than anything else.</p>
+
+<p>There were other attempts too (Paul led a couple that I haven&rsquo;t even mentioned), but by now you get the picture.</p>
+
+<h3>So why did these attempts fail?</h3>
+
+
+<p>To understand why these attempts failed, it helps to look at what they had in common:</p>
+
+<ul>
+    <li>First, they generally involved trying to collect up information from SMEs and then putting it in some kind of document. This could be wiki pages, Visio diagrams, Word docs on Sharepoint or an Excel spreadsheet.</li>
+    <li>Once the information went there, nobody used it. So the information, if it was ever correct and/or complete in the first place, was before long outdated, and there wasn't any mechanism in place to bring it up to date.</li>
+</ul>
+
+
+<p>In general, people saw the problem as a data <em>collection</em> problem rather than a data <em>management</em> problem. There needs to be a systematic, ongoing mechanism to discover and fix errors. None of the approaches took the management problem seriously at all&mdash;they all simply assumed that the organization would care about the data enough to keep it up to date.</p>
+
+<p>In the next installment, I&rsquo;ll tell you about the approach we eventually figured out. And as promised, that&rsquo;s also where I&rsquo;ll explain how to get rid of some of your meetings.</p>
+
+<p><span class="icon stickyNote"><em>Interested in configuration management? I&rsquo;m working on an open source CMDB called <a href="http://zkybase.org/">Zkybase</a>.</em></span></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Why I'm pretty excited about using Neo4j for a CMDB backend]]></title>
+    <link href="http://springinpractice.com/2011/12/05/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/"/>
+    <updated>2011-12-05T19:14:44-08:00</updated>
+    <id>http://springinpractice.com/2011/12/05/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend</id>
+    <content type="html"><![CDATA[<p><a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase"><img class="size-medium wp-image-46 alignright" style="margin-left: 10px; margin-right: 10px;" title="deathburro" src="http://springinpractice.com/wp-content/uploads/2011/12/deathburro-200x300.jpg" alt="" width="200" height="300" />Skybase</a> is my first <em>open source</em> configuration management database (CMDB) effort, but it&rsquo;s not the first time I&rsquo;ve built a CMDB. At work a bunch of us built&mdash;and continue to build&mdash;a proprietary, internal system CMDB called deathBURRITO as part of our deployment automation effort. We built deathBURRITO using Java, Spring, Hibernate and MySQL. deathBURRITO even has a <a href="http://theksmith.com/tagged/deathburro/">robotic donkey</a> (really) whose purpose we haven&rsquo;t quite yet identified.</p>
+
+<p>So far deathBURRITO has worked out well for us. Some of its features&mdash;namely, those that directly support deployment automation&mdash;have proven more useful than others. But the general consensus seems to be that deathBURRITO addresses an important configuration management (CM) gap, where previously we were &ldquo;managing&rdquo; CM data on a department wiki, in spreadsheets, in XML files and in Visio diagrams. While there&rsquo;s more work to do, what we&rsquo;ve done so far has been reasonably right-headed, and we&rsquo;ve been able to evolve it as our needs have evolved.</p>
+
+<p>That&rsquo;s not to say that there&rsquo;s nothing I would change. I think there&rsquo;s an opportunity to do something better on the backend. That was indeed the impetus for Skybase.</p>
+
+<h3>Revisiting the backend with Spring Data</h3>
+
+
+<p>Because CM involves a lot of different kinds of entities (e.g., regions, data centers, environments, farms, instance types, machine images, instances, applications, middleware, packages, deployments, EC2 security groups, key pairs&mdash;the list goes on and on), it was helpful to build out a bit of framework to handle various cross-cutting concerns more or less automatically, such as standard views (list view, details view, form views), web controllers (CRUD ops, standard queries), DAOs (again, CRUD ops and queries), generic domain object capabilities, security and more. And I think it&rsquo;s fair to say that this helped, though perhaps not quite as much as I would have liked (at least not yet). The fact remains that anytime we want to add a new entity to the system, we still have to do a fair amount of work making each layer of the framework do what it&rsquo;s supposed to do.</p>
+
+<p>My experience has been that the data persistence layer is the one that&rsquo;s most challenging to change. Besides the actual schema changes, we have to write data migration scripts, we have to make corresponding changes to our integration test data scripts, we have to make sure Hibernate&rsquo;s eager- and lazy-loading are doing the right things, sometimes we have to change the domain object APIs and associated Hibernate queries, etc. Certainly doable, but there&rsquo;s generally a good deal of planning, discussion and testing involved.</p>
+
+<p>So I started looking for some ways to simplify the backend.</p>
+
+<p>Recently I started goofing around with <a href="http://www.springsource.org/spring-data">Spring Data</a>, and in particular, <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. For those who haven&rsquo;t used Spring Data, it offers some nice features that I wanted to try out:</p>
+
+<ul class="square">
+    <li>One of the features is that it's able to generate DAO implementations automagically using Java's dynamic proxy mechanism. Spring Data calls these DAOs "repositories", which is fine with me. Basically what you do as a developer is you write an interface that extends a type-specific Repository interface, such as a JpaRepository or a MongoRepository. You don't have to declare CRUD operations because the Repository interface already declares the ones you'd typically want (e.g., save(), findAll(), findById(), delete(), deleteAll(), exists(), count(), etc.).</li>
+    <li>And if you have custom queries, just declare them on the interface using some method naming conventions and Spring Data can figure out how to generate an implementation for you.</li>
+    <li>In some cases, Spring Data handles mapping for you. In the case of Spring Data JPA you still have to make sure you have the right JPA annotations in place, and that's not too terribly bad. But for MongoDB, since the MongoDB backend is just BSON (binary JSON), the mapping from objects to MongoDB is straightforward and so Spring Data handles that very well, without requiring a bunch of annotations.</li>
+</ul>
+
+
+<p>&ldquo;Game changer&rdquo; might be too strong for the features I&rsquo;ve just described, but man, are they useful. Besides making it easier and faster to implement repos, Spring Data allows me to get rid of a lot of boilerplate code (lots of DAO implementations) and even some Spring Data-like DAO framework code that I usually write. (You know, define a generic DAO interface, a generic abstract DAO class, etc.) My days of building DAOs directly against Hibernate are probably over.</p>
+
+<p>But that&rsquo;s not the only backend change I&rsquo;m looking at.</p>
+
+<h3>Revisiting the backend, part 2: Neo4j + Spring Data Neo4j</h3>
+
+
+<p>[caption id=&ldquo;attachment_38&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;300&rdquo; caption=&ldquo;Example of a graph in Neo4j&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2011/12/neo4j-graph.png"><img class="size-medium wp-image-38  " title="neo4j-graph" src="http://springinpractice.com/wp-content/uploads/2011/12/neo4j-graph-300x257.png" alt="" width="300" height="257" /></a>[/caption]</p>
+
+<p>Since Spring Data tends to gravitate toward the NoSQL stores, I finally got around to reading up on Neo4j and some other stuff that I probably ought to have read up on a long time ago. Better late than never I guess. It struck me that Neo4j could be a very interesting way to implement a CM backend, and that Spring Data Neo4j could help me keep the DAO layer thin. Here&rsquo;s the thinking:</p>
+
+<ul class="square">
+    <li><strong>There are many entities and relationships.</strong> There are lots and lots of entities and relationships in a CMDB. There are different ways of grouping things, like grouping which assets form a stack, which stacks to deploy to which instances, which instances are in which farms, how to define shards and how to define failover farms, grouping features into apps, endpoints into services, etc. We have to associate SLAs and OLAs with app features and service endpoints, we have to define dependencies between components, and so on. There's a ton of stuff. It would eliminate a major chunk of work if we could get away with defining the schema one time (say, in the app itself) instead of in both the app and the database.</li>
+    <li><strong>We need schema agility to experiment with different CMDB approaches.</strong> Along similar lines, there are some strong forces that push for schema agility. Most fundamentally, the right approach to designing and implementing a CMDB isn't necessarily a solved problem. Some tools involve running network discovery agents that collect up millions of configuration items (CIs) from the environment. Other tools focus more on collecting the <em>right</em> data rather than collecting everything. Some tools have more of a traditional enterprise data center customer in mind, where you're capturing everything from bare metal to the apps to the ITIL services based on the apps. Other tools are more aligned with cloud infrastructures, starting from virtualized infrastructure and working up, leaving everything under that virtualization layer for the cloud provider to worry about. Some tools treat CIs as supporting configuration management but not application performance management (APM); other tools try to single-source their CM and APM data. Some organizations want to centralize CIs in a single database and other organizations pursue a more federated model. With such a panoply of approaches, it's no surprise that schema changes occur.</li>
+    <li><strong>We need schema agility to accommodate continuing innovations in infrastructure.</strong> Another schema agility driver is the fact that the way we do infrastructure is rapidly evolving. Infrastructure is steadily moving to the cloud, virtualization is commonplace and new automation and monitoring tools are appearing all the time. The constant stream of innovation demands the ability to adjust quickly, and schema flexibility is a big part of that.</li>
+    <li><strong>We need schema flexibility to accommodate the needs of different organizations.</strong> Besides schema agility, a CMDB needs to offer a certain level of flexibility to support the needs of different customers. One org may have everything in the cloud, where another one is just getting its feet wet. One org may have two environments whereas another has seven. Different orgs have different roles, test processes, deployment pipelines and so forth. Any CMDB that hopes to support more than just a single customer needs to support some level of flexibility.</li>
+    <li><strong>But we still need structure.</strong> One of the more powerful benefits of driving deployment automation from a CMDB is that you can control drift in the target environments by controlling the data in your CMDB. And defining a schema around that is a great way to do so. If, for example, you expect every instance in a given farm to have the same OS, then your schema should attach the OS to the farm itself, not to the instance. (The instances inherit the OS from the farm.) Or maybe it's not just the OS--you want a certain instance type (in terms of virtual hardware profile), certain machine image, certain middleware stack, certain security configuration, etc. Great: bundle those together in a single server build object and then associate that with the farm. This constrains the instances in the farm to have the same server build. (See <a title="Flexibility" href="http://skydingo.com/blog/?p=56">this post</a> for a more detailed discussion.) While Neo4j is schema-free, Spring Data Neo4j gives us a way to impose schema from the app layer.</li>
+    <li><strong>A schemaless backend makes zero-downtime deployments easier.</strong> If you have any apps with hardcore availability requirements, then it goes without saying that you have to have significant automation in place to support that, both on the deployment side and on the incident response side. Since the CMDB is the single source of truth driving that automation, it follows that the CMDB itself must have hardcore availability requirements. Having a schemaless database ought to make it easier to perform zero-downtime deployments of the CMDB itself.</li>
+    <li><strong>We want to support intuitive querying.</strong> Once you bring a bunch of CIs together in a CMDB, there are all kinds of queries that pop up. This could be anything from using the dependency structure to diagnose an incident, assess the impact of a change, or sequence project deliverables (e.g. make system components highly available depending on where they sit in the system dependency graph); using org structures to determine support escalation paths and horizontal communications channels; SLA reporting by group, manager, application category; and so forth. Intuitive query languages for graph databases--and in particular, the Cypher query language for Neo4j--appear to be especially well-suited for the broad diversity of queries we expect to see.</li>
+</ul>
+
+
+<p>Remember how I mentioned that Spring Data generates repository implementations automatically based on interfaces? Here&rsquo;s what that looks like with Spring Data Neo4j:</p>
+
+<pre>package org.skydingo.skybase.repository;
+
+import org.skydingo.skybase.model.Person;
+import org.skydingo.skybase.model.Project;
+import org.springframework.data.neo4j.annotation.Query;
+import org.springframework.data.neo4j.repository.GraphRepository;
+
+public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
+    Project findProjectByKey(String key);
+    Project findProjectByName(String name);
+
+    @Query("start person=node({0}) match person--&gt;project return project")
+    Iterable&lt;Project&gt; findProjectsByPerson(Person person);
+}</pre>
+
+
+<p>Let me repeat that I <em>don&rsquo;t</em> have to write the repository implementation myself. <code>GraphRepository</code> comes with various CRUD operations. Methods like <code>findProjectByKey()</code> and <code>findProjectByName()</code> obey a naming convention that allows Spring Data to produce the backing query automatically. And in the <code>findProjectsByPerson()</code> case, I provided a query using Neo4j&rsquo;s Cypher query language (it uses ASCII art to define queries&mdash;how ridiculously cool is that?).</p>
+
+<h3>Exploring the ideas above with Skybase</h3>
+
+
+<p>[caption id=&ldquo;attachment_19&rdquo; align=&ldquo;alignright&rdquo; width=&ldquo;300&rdquo; caption=&ldquo;Skybase dashboard&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2011/12/dashboard1.png"><img class="size-medium wp-image-19" title="Dashboard" src="http://springinpractice.com/wp-content/uploads/2011/12/dashboard1-300x261.png" alt="" width="300" height="261" /></a>[/caption]</p>
+
+<p>The point of Skybase is to see whether we can build a better mousetrap based on the ideas above. I&rsquo;m using Neo4j and Spring Data Neo4j to build it out. I haven&rsquo;t decided yet whether Skybase will focus on the CMDB piece or whether it&rsquo;s a frontend to configuration management more generally (delegating on the backend to something like <a href="http://www.opscode.com/chef/">Chef</a> or <a href="http://puppetlabs.com/">Puppet</a>, say), but the CMDB will certainly be in there. That will include a representation of the as-is (current) configuration as well as representations for desired configurations as might be defined during a deployment planning activity.</p>
+
+<p>So far I&rsquo;m finding it a lot easier to work with the graph database than with a relational database, and I&rsquo;m finding Spring Data Neo4j to be a big help in terms of repository building and defining app-level schemas. The code is a lot smaller than it was when I did this with a relational database. But it&rsquo;s still early days, so the jury is out.</p>
+
+<p>Watch this space for further developments.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Top ten [and counting] operational excellence design principles]]></title>
+    <link href="http://springinpractice.com/2010/07/26/top-ten-operational-excellence-design-principles/"/>
+    <updated>2010-07-26T18:05:26-07:00</updated>
+    <id>http://springinpractice.com/2010/07/26/top-ten-operational-excellence-design-principles</id>
+    <content type="html"><![CDATA[<p><a href="http://www.flickr.com/photos/kim_scarborough/147973192/"><img src="http://springinpractice.s3.amazonaws.com/blog/images/noc.jpg" alt="Operational excellence" align="right" /></a></p>
+
+<p>Here are some key operational excellence design principles. These are intended for system architects (both on the software and infrastructure side) and operational staff.</p>
+
+<p>This started out as a top ten list, but it&rsquo;s been growing.</p>
+
+<p><strong>1. Organizational focus.</strong> OK, this one isn&rsquo;t a design principle, but it&rsquo;s too important to neglect. Having an organizational focus on operational excellence really matters. Everything from isolating core development from production support (that is, create a group within development whose daily responsibility is to insulate core development from production), creating a top-ten hit list and just working that weekly, setting explicit availability and performance goals and then tracking to them&mdash;speaking from personal experience, those are things that can create dramatic and almost immediate results.</p>
+
+<p><strong>2. Aggressively automate processes and controls.</strong> Automate ticket workflow, local builds, integration builds, tests, provisioning, OS installs, patching, deployments, rollbacks, monitoring, alerting, diagnostics, escalation, backups, log rotation, reporting, auditing&mdash;everything you can! Automation increases speed and limits variance, which is an operations-killer.</p>
+
+<p>On the control side, in cases where it&rsquo;s possible to use a technical means to enforce policy (automation, tightly constrained configuration schemas, access controls, etc.), use it. The ideal control makes the undesirable action or state technically impossible.</p>
+
+<p><strong>3. Design for supportability.</strong> The NOC should have the tools and information necessary to resolve at least 80% of production issues without directly involving the development team. Put the right monitoring, diagnostic and management (e.g., SNMP, JMX) capability in place.</p>
+
+<p><strong>4. High availability is all about redundancy.</strong> In general high availability involves redundancy at all levels: power sources, network interfaces, switches, RAIDs, RAC nodes, Internet pipes and even data centers if you want to withstand site failures. Redundancy means that you&rsquo;ve deployed independent, readily-available (perhaps active) capacity beyond what&rsquo;s normally needed to hit performance SLAs. Without this extra capacity, component failures often create complete system unavailability through a chain reaction mechanism that looks like this: (1) one component fails; (2) other components take on the excess demand, creating performance issues; (3) other components fail under load; and (4) system is unavailable.</p>
+
+<p>Don’t confuse high availability with load balancing. If all <em>n</em> instances in a load-balanced pool are required to meet a given performance SLA, then there is no redundancy, because there&rsquo;s no spare capacity to take up the slack in the event of a node failure. Indeed exposure is substantially <em>increased</em>, because all it takes is any one node to fail, and your pool is at best missing performance SLAs, and at worst rendered completely unavailable as described above.</p>
+
+<p><strong>5. Control failure modes.</strong> Components will fail. Failure modes should be designed, not emergent or accidental. Design failures to be transparent and limited in impact, using techniques such as <a href="http://springinpractice.com/2010/07/06/annotation-based-circuit-breakers-with-spring/">circuit breakers</a>. Test the design to ensure that it behaves as expected. Create automation and knowledge base articles to target specific failure modes for fast remediation.</p>
+
+<p><strong>6. Prefer horizontal approaches to scalability.</strong> You will sometimes need to add capacity, either to accommodate business growth or else to handle production issues. Prefer horizontal scalability to vertical scalability, since vertical scalability is more tightly coupled to technology. The database is often the constraint here, so consider approaches that support horizontal scalability, such as data sharding, separating reads from writes and farming out reads, and non-relational data stores.</p>
+
+<p><strong>7. Virtualize aggressively.</strong> Virtualization makes it easier to enforce standards, control drift, add capacity, increase utilization and in general create configuration options.</p>
+
+<p><strong>8. Capacity management = capacity planning + JIT capacity.</strong> Capacity planning is an art, not a science, and it&rsquo;s not always possible to anticipate exactly how much capacity you will need. There&rsquo;s a balance to strike between ensuring sufficient capacity and using resources efficiently, and sometimes the drive to be efficient will result in underestimates. In such situations, a JIT capability is key.</p>
+
+<p>For rollouts (e.g., new apps, new features, betas, promotions, or anything that might reasonably impact demand in a material way), it&rsquo;s better to overallocate and then scale back than it is to underallocate and scale up. Both approaches use resources efficiently, but only the former will allow you to meet aggressive SLAs. Virtualization helps tremendously here, partly because it pools excess physical capacity for shared use (thus limiting cost), and partly because it makes reaping excess capacity during scale-backs much easier.</p>
+
+<p><strong>9. Account for operational excellence overhead costs.</strong> Treat overheads such as monitoring and virtualization as costs that the design needs to account for, not as an excuse to neglect key operational requirements. Deal with instrumentation overhead, for example, by being selective about what you instrument. If your instrumentation adds 1 ms to a 200 ms call, that may not be a big deal. If it adds 1 ms to a 5 ms call inside a tight loop, that may be a bigger problem.</p>
+
+<p><strong>10. Focus monitoring efforts on ensuring that the business is running.</strong> It doesn’t matter whether a particular CPU is running at 90% utilization if you can’t connect that to a business or customer impact. Start by identifying the metrics that the business or customer cares about, and monitor those to ensure that the numbers are within expected bounds. Work backwards to correlated technical metrics.</p>
+
+<h3>Bonus principles</h3>
+
+
+<p><strong>11. Defense in depth applies to operational excellence too.</strong> A well-known security principle, defense in depth applies to operational excellence too. Automation controls configuration drift, but so does keeping people off the servers, being able to refresh the environment on demand, and using a configuration schema that makes certain types of drift impossible. Layer your defenses.</p>
+
+<p><strong>12. Treat support processes and staff as part of the system.</strong> All the monitoring, diagnostics and knowledge base articles in the world won’t help if the support staff doesn’t know how to use them. Test the human component of the system (training, communication, etc.) on a regular basis to ensure that when problems arise, the human response will be the one that was designed.</p>
+
+<p>The next three principles are courtesy of Satish Menon. Thanks Satish.</p>
+
+<p><strong>13. Design for graceful degradation:</strong> One example, if load increases, serve out of stale cache (where it is appropriate) rather than go to the origin server (database or whatever). We added a mechanism to Squid at Yahoo to give hints on what can be served stale.</p>
+
+<p><strong>14. Design for independent scalability (this conflicts your horizontal vs. vertical scalability).</strong> I am saying you need both. If there is a heavy hit on one of the services (e.g. Gradebook) over other, isolating the pathway to that in the design would allow you to scale that one service without scaling all of the rest of the infrastructure.</p>
+
+<p><strong>15. Put data in front of engineers.</strong> Define and measure SLAs for each of the major server interactions and put dashboards in place so people can see how their subsystems are doing.</p>
+
+<p>Here&rsquo;s another one that I find myself repeating often. Don&rsquo;t know how I missed it the first time around.</p>
+
+<p><strong>16. Minimize the number of moving parts.</strong> More moving parts mean that more things can break. Better for example to templatize your middleware into a VM template and instantiate than to instantiate a bunch of bare-bones VMs and then follow up with a a lot of middleware installations. You can even get aggressive and take the same approach to app deployments (i.e., templatize a build that includes the app to be released). All things being equal, designs should try to minimize the number of things that can go wrong.</p>
+
+<h3>References</h3>
+
+
+
+
+<ul>
+    <li><a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a>, by Michael Nygard (Pragmatic)</li>
+    <li><a href="http://www.amazon.com/Scalable-Internet-Architectures-Theo-Schlossnagle/dp/067232699X">Scalable Internet Architectures</a>, by Theo Schlossnagle</li>
+    <li><a href="http://jprall.vox.com/library/post/85-operations-rules-to-live-by.html">(85) Operations Rules to Live By</a>, by Jon Prall</li>
+</ul>
+
+
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Balancing frontend and backend server capacity]]></title>
+    <link href="http://springinpractice.com/2009/05/15/balancing-frontend-and-backend-server-capacity/"/>
+    <updated>2009-05-15T07:03:54-07:00</updated>
+    <id>http://springinpractice.com/2009/05/15/balancing-frontend-and-backend-server-capacity</id>
+    <content type="html"><![CDATA[<p>In <a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a>, Michael Nygard explains that a key approach to managing capacity is to balance the capacity of your front-end servers (e.g.,web servers or app servers) with that of your back-end servers. In this brief article we&rsquo;re going to look at what that means and why it&rsquo;s such a good idea to pay attention to this aspect of capacity management.</p>
+
+<h3>A simple example of wasted capacity</h3>
+
+
+<p>For the sake of example, let&rsquo;s say that we need to design an application that can support up to 100,000 concurrent user sessions within some given response time SLA. The app domain is such that we can partition the user population and employ a horizontally-scalable, sharded design. When there are problems, we want to try to limit the impact to at most 10% of the users. So we decide to go with ten pools that can handle 10,000 concurrent user sessions each. Each pool will have some number of application servers and some number of database servers.</p>
+
+<p>We don&rsquo;t know the number of app and database servers required, but we guess that we&rsquo;re going to need twice as many app servers as database servers. So we try stress testing various pools with that server ratio. Our stress testing reveals that a 6:3 pool can&rsquo;t handle the necessary load but an 8:4 pool can. It&rsquo;s important to us to have fault tolerance, so we decide to add one app node and one database node to the pool. That gives us a 9:5 pool ratio, for a total of 90 app servers and 50 database servers, or 140 servers in all as seen in figure 1:</p>
+
+<p><img src="http://wheelersoftware.s3.amazonaws.com/articles/balancing-server-capacity/pools.jpg" alt="Figure 1. Server pools" /></p>
+
+<p>So what do you think?</p>
+
+<h3>Improving the utilization of server capacity</h3>
+
+
+<p>It may seem like we did a good job with this. After all, we defined our load requirements, defined a goal around limiting the impact of outages, created a horizontally scalable design to support the requirements, and then performed stress testing to ensure that our individual pools can handle the required load. So our system ought to be able to meet the stated requirements. But could we have done better?</p>
+
+<p>You may have noticed that in our stress testing of individual pools, we began with an assumption that we&rsquo;d need twice as many app servers as database servers, but we never actually tested that assumption. Let&rsquo;s say that we repeat our stress testing and discover that even though a 8:4 ratio handles the load, stress-induced failure lies squarely with the database side of the pool. When the pool &ldquo;fails&rdquo; (e.g., stops meeting whatever response time SLA we defined),database server CPU is at 90-95% and app server CPU is humming along at 45%. Through further stress testing we discover that we can reduce the ratio to 5:4 while still meeting the overall requirement to service 10,000 concurrent user sessions within the SLA. We still want to be fault-tolerant, so we revise our pool ratio to 6:5, giving us 60 app servers and 50 database servers, or 110 servers total. That&rsquo;s a savings of 30 servers over our previous configuration,or 21.4%, and we get it without having to give anything up. Not bad, except for our hardware vendor!</p>
+
+<p>Here&rsquo;s what&rsquo;s going on. In the first configuration, each pool had three app servers too many. This represents excess capacity in the system. But&mdash;and this is an important point that&rsquo;s easy to miss&mdash; it isn&rsquo;t excess capacity that would allow us to service additional user load. It&rsquo;s inherently unusable capacity. This is because the database tier breaks well before we use that extra app server capacity. So that extra capacity is pure waste. It incurs extra cost (initial purchase price along with operational costs like support, maintenance, rackspace, power,cooling, etc.) and it increases the overall complexity of the system simply by representing additional moving parts that can break or cause (sometimes hard-to-diagnose) problems.</p>
+
+<p>The point bears repeating that the excess capacity is not usable, so it isn&rsquo;t correct to argue that it helps us if our user base grows. We can&rsquo;t tap into it, so it doesn&rsquo;t help. Anyway, the point of the horizontally scalable design here is to support adding capacity by adding pools rather than by growing individual pools.</p>
+
+<h3>Summary</h3>
+
+
+<p>The bottom line is that proper capacity management involves balancing the capacity of front-end servers with that of the back-end servers. This doesn&rsquo;t mean that the number of app servers needs to be the same as the number of database servers; rather it means that we want the set of app servers and the set of database servers to converge toward failure roughly together. Any systematic delta between the two represents unusable excess capacity and hence undue waste and moving parts.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+
+
+]]></content>
+  </entry>
+  
+</feed>

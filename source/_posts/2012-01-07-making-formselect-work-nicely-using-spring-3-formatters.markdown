@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/01/07/making-formselect-work-nicely-using-spring-3-formatters/
 layout: post
-title: Making form:select work nicely using Spring 3 Formatters
+title: "Making form:select work nicely using Spring 3 Formatters"
 date: 2012-01-07 02:51:10
 comments: true
 categories: [Chapter 04 - Web forms, Quick Tips]

@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/
 layout: post
-title: Zkybase now supports authorized access to GitHub via Spring Social GitHub
+title: "Zkybase now supports authorized access to GitHub via Spring Social GitHub"
 date: 2012-03-06 00:04:45
 comments: true
 categories: [Chapter 11 - CMDB, News]

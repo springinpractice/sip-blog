@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2011/12/06/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/
 layout: post
-title: Why I'm pretty excited about using Neo4j for a CMDB backend
+title: "Why I'm pretty excited about using Neo4j for a CMDB backend"
 date: 2011-12-06 03:14:44
 comments: true
 categories: [Architecture, Chapter 11 - CMDB]

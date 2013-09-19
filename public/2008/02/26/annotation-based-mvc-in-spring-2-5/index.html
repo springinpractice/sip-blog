@@ -1,0 +1,308 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Annotation-based MVC in Spring 2.5 - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="Spring 2.5 introduces annotation-based configuration for MVC controllers. In this short article I&rsquo;ll describe at a high level what you need to &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2008/02/26/annotation-based-mvc-in-spring-2-5">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Annotation-based MVC in Spring 2.5</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-26T14:36:14-08:00" pubdate data-updated="true">Feb 26<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Spring 2.5 introduces annotation-based configuration for MVC controllers. In this short article I&rsquo;ll describe at a high level what you need to do to migrate your Spring 2.0 app over to Spring 2.5, at least as far as MVC is concerned.  For information on migrating the other tiers, please see my article <a href="http://springinpractice.com/2008/02/26/annotation-based-autowiring-in-spring-2-5/">Annotation-based autowiring in Spring 2.5</a>.</p>
+
+<p>First make sure you drop <code>spring-webmvc.jar</code> onto your classpath.  The <code>DispatcherServlet</code> is no longer part of <code>spring.jar</code>; it&rsquo;s in a separate module now.</p>
+
+<p>Any given controller class can be set up in one of two ways. (And you can use both approaches in a single app.) Either the controller can handle a single action or else it can handle multiple actions. Usually a form &ldquo;action&rdquo;, which really includes initially serving up the form and then accepting submissions of that form, would be handled with the first sort of controller, and non-form actions can be combined into a single controller, with actions being represented by methods.</p>
+
+<p>Here&rsquo;s an extremely basic multi-action controller that handles three separate actions (mapped to methods). The actions don&rsquo;t do anything at all other than serve up the requested page.</p>
+
+<pre>package demo;
+    
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+    
+@Controller
+public class SimpleController {
+    
+    @RequestMapping("/index.html")
+    public void indexHandler() { }
+    
+    @RequestMapping("/about.html")
+    public void aboutHandler() { }
+    
+    @RequestMapping("/admin.html")
+    public void adminHandler() { }
+}</pre>
+
+
+<p>Even though this is just about the simplest possible controller, there are still a few important points to highlight, especially if you&rsquo;re coming from earlier versions of Spring. First you will note that the controller is a POJO. It does not extend <code>AbstractController</code> or any of the other controller classes that you would have extended with Spring 2.0 or earlier. Second, notice the annotations. I&rsquo;ve marked the controller itself with a <code>@Controller</code> annotation and the individual methods with <code>@RequestMapping</code> annotations. (I mentioned above that you can also map a controller to a single action; in that case you would attach the <code>@RequestMapping</code> annotation to the controller class itself. I&rsquo;m not doing that here though.) Note also that I&rsquo;m doing the URL mapping with the annotation. Pretty cool to have this option. Finally, though you can&rsquo;t tell from the controller, I&rsquo;m using the request URL to specify the logical view name. Unless you specify otherwise, the <code>DispatcherServlet</code> will automatically assume that <code>/index.html</code> maps to the logical name &ldquo;index&rdquo;, that <code>/admin.html</code> maps to the logical name &ldquo;admin&rdquo;, etc. (Internally, it creates an instance of <code>DefaultRequestToViewNameTranslator</code>, though you don&rsquo;t see this unless you want to.) This is an example of Spring&rsquo;s movement toward the convention-over-configuration philosophy.</p>
+
+<p>Now you need to make sure your application context config file is set up. Here&rsquo;s what I have:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"&gt;
+    
+    &lt;context:component-scan base-package="demo"/&gt;
+    
+    &lt;bean id="viewResolver"
+        class="org.springframework.web.servlet.view.InternalResourceViewResolver"&gt;
+        &lt;property name="prefix" value="/WEB-INF/jsp/"/&gt;
+        &lt;property name="suffix" value=".jsp"/&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;</pre>
+
+
+<p>The <code>&lt;component-scan&gt;</code> thing runs through your classes to find controllers and their annotation-based configuration. It knows which classes are controllers, as you may have guessed, because you used the <code>@Controller</code> annotation to label the controllers.  Spring also supports <code>@Repository</code> for DAO layers, <code>@Service</code> for service layers, and <code>@Component</code> as a general stereotype over <code>@Controller</code>, <code>@Repository</code> and <code>@Service</code>.) The view resolver is just like it was with Spring 2.0.</p>
+
+<p>Those are the basics. Of course there&rsquo;s a lot more you&rsquo;re going to want to do; for example, you&rsquo;ll want to pass in request parameters, process requests, return model objects, etc.  But hopefully you&rsquo;ll find it useful to have a minimalistic example that gets you off the ground. Good luck!</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-26T14:36:14-08:00" pubdate data-updated="true">Feb 26<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-03-web-mvc/'>Chapter 03 - Web MVC</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2008/02/26/annotation-based-mvc-in-spring-2-5/" data-via="williewheeler" data-counturl="http://springinpractice.com/2008/02/26/annotation-based-mvc-in-spring-2-5/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/02/26/annotation-based-autowiring-in-spring-2-5/" title="Previous Post: Annotation-based autowiring in Spring 2.5">&laquo; Annotation-based autowiring in Spring 2.5</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/02/29/web-services-with-spring-2-5-and-apache-cxf-2-0/" title="Next Post: Web services with Spring 2.5 and Apache CXF 2.0">Web services with Spring 2.5 and Apache CXF 2.0 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

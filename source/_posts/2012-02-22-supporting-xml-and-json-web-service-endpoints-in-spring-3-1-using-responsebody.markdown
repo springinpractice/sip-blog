@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/
 layout: post
-title: Supporting XML and JSON web service endpoints in Spring 3.1 using @ResponseBody
+title: "Supporting XML and JSON web service endpoints in Spring 3.1 using @ResponseBody"
 date: 2012-02-22 02:21:32
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Quick Tips]

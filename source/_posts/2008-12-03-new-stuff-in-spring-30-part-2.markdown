@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/12/03/new-stuff-in-spring-30-part-2/
 layout: post
-title: New stuff in Spring 3.0, part 2
+title: "New stuff in Spring 3.0, part 2"
 date: 2008-12-03 15:34:41
 comments: true
 categories: [News]

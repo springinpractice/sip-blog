@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>The Spring constructor namespace - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="You know the p namespace? It&rsquo;s the one that cleans up your Spring configuration files by providing a shorthand for injecting beans and values &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2012/04/25/the-spring-constructor-namespace-and-some-deep-thoughts">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">The Spring Constructor Namespace</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-25T19:14:51-07:00" pubdate data-updated="true">Apr 25<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>You know the <code>p</code> namespace? It&rsquo;s the one that cleans up your Spring configuration files by providing a shorthand for injecting beans and values:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation=
+       "http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"&gt;
+    
+    &lt;bean id="sessionFactory"
+        class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"
+        p:dataSource-ref="dataSource"
+        p:packagesToScan="com.springinpractice.ch10.model" /&gt;
+
+    ... other beans ...
+
+&lt;/beans&gt;</pre>
+
+
+<p>Did you know that Spring 3.1 introduces an analogous namespace for constructor injection? Yup&mdash;it&rsquo;s the <code>c</code> namespace:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation=
+       "http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd"&gt;
+        
+    &lt;bean id="connectionFactoryLocator"
+        class="org.springframework.social.connect.support.ConnectionFactoryRegistry"&gt;
+        &lt;property name="connectionFactories"&gt;
+            &lt;list&gt;
+                &lt;bean class="org.springframework.social.github.connect.GitHubConnectionFactory"
+                    c:clientId="${gitHub.clientId}"
+                    c:clientSecret="${gitHub.clientSecret}" /&gt;
+            &lt;/list&gt;
+        &lt;/property&gt;
+    &lt;/bean&gt;
+    
+    &lt;bean id="usersConnectionRepository"
+        class="org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository"
+        c:dataSource-ref="dataSource"
+        c:connectionFactoryLocator-ref="connectionFactoryLocator"
+        c:textEncryptor-ref="textEncryptor" /&gt;
+    
+    ... other beans ...
+
+&lt;/beans&gt;</pre>
+
+
+<p>It works pretty much the same way, but for constructors. You can inject values, or else you can inject references using the <code>-ref</code> suffix.</p>
+
+<p>With <code>p</code>, the XML element name comes from the bean property name, but with constructors that&rsquo;s not available. Instead, for <code>c</code> we use the name of the constructor parameter itself. So for <code>JdbcUsersConnectionRepository</code> we&rsquo;re calling a constructor that looks like this:</p>
+
+<p><code>public JdbcUsersConnectionRepository(DataSource dataSource, ConnectionFactoryLocator connectionFactoryLocator, TextEncryptor textEncryptor)</code></p>
+
+<p>where it&rsquo;s the parameter names themselves (rather than the parameter types) driving the XML element names.</p>
+
+<h3>But keep this in mind&#8230;</h3>
+
+
+<p>The <code>c</code> namespace is great, but there&rsquo;s something you may not have considered. Because the XML element names come from the constructor parameter names, we have to compile the app in debug mode if we want to use this feature (otherwise the local variable names aren&rsquo;t in the class files), and we want to pay attention to the parameter names we choose. So, for instance, <code>ds</code>, <code>cfl</code> and <code>te</code> wouldn&rsquo;t be very good constructor parameter names.</p>
+
+<p>Note that Spring (especially Spring Web MVC) has been using parameter names in this fashion for a long time, so that&rsquo;s nothing new. The <code>@PathVariable</code> and <code>@RequestParam</code> annotations, for example, default to using parameter names when explicit names aren&rsquo;t specified. But in the case of the <code>c</code> namespace, a bean that supports <code>c</code>-based injection ought to publish the constructor parameter names, and they become in effect part of the API.</p>
+
+<h3>Update</h3>
+
+
+<p>I&rsquo;ve had a bit of a change of heart regarding the constructor namespace. Here&rsquo;s why I think <a href="http://springinpractice.com/2012/05/07/springs-constructor-namespace-is-a-bad-idea/">the Spring constructor namespace is a bad idea</a>.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-25T19:14:51-07:00" pubdate data-updated="true">Apr 25<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-01-di/'>Chapter 01 - DI</a>, <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2012/04/25/the-spring-constructor-namespace-and-some-deep-thoughts/" data-via="williewheeler" data-counturl="http://springinpractice.com/2012/04/25/the-spring-constructor-namespace-and-some-deep-thoughts/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/" title="Previous Post: Dynamic DAOs and queries using Spring Data JPA">&laquo; Dynamic DAOs and queries using Spring Data JPA</a>
+      
+      
+        <a class="basic-alignment right" href="/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/" title="Next Post: Fixing PKIX path building issues when using JavaMail and SMTP">Fixing PKIX path building issues when using JavaMail and SMTP &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

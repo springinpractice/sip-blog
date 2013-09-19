@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Spring paranoia with InitializingBean and Assert - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="In this quick post, I&rsquo;m going to show you how to use the InitializingBean interface and the Assert utility class, both part of the Spring &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2008/10/27/spring-paranoia-with-initializingbean-and-assert">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Spring Paranoia With InitializingBean and Assert</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-27T07:51:40-07:00" pubdate data-updated="true">Oct 27<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>In this quick post, I&rsquo;m going to show you how to use the <code>InitializingBean</code> interface and the <code>Assert</code> utility class, both part of the Spring Framework, to express any deep-seated feelings of initialization paranoia you may have.</p>
+
+<p>Let&rsquo;s just jump right in with a code example.</p>
+
+<pre>package com.example.user.service;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.util.Assert;
+
+import com.example.user.dao.UserDao;
+
+public class UserServiceImpl implements UserService, InitializingBean {
+    private UserDao userDao;
+    private JavaMailSender mailSender;
+
+    public void setUserDao(UserDao userDao) {
+        Assert.notNull(userDao, "userDao can't be null"); // 1
+        this.userDao = userDao;
+    }
+
+    public void setMailSender(JavaMailSender mailSender) {
+        Assert.notNull(mailSender, "mailSender can't be null"); // 2
+        this.mailSender = mailSender;
+    }
+
+    public void afterPropertiesSet() {
+        Assert.notNull(userDao, "userDao required"); // 3
+        Assert.notNull(mailSender, "mailSender required");
+    }
+
+    ...service methods...
+}</pre>
+
+
+<p>In the example above, we have a hypothetical user service with two dependencies: a DAO and a mail sender. The idea here is that we want to do some sanity checks as we initialize our service bean. First, when setting the user DAO, we want to make sure that we don&rsquo;t set it to a null value <span class="cueball">1</span>. We conduct the same test for the mail sender <span class="cueball">2</span>. In each case we use the Spring <code>Assert</code> utility class to perform the test. (Be sure not to confuse this with the <code>assert</code> keyword from the Java language, or the JUnit class of the same name.)</p>
+
+<p>Finally, we implement the single method required by the <code>InitializingBean</code> interface, <code>afterPropertiesSet</code>. Here we check to see that all required properties have actually been set <span class="cueball">3</span>. If they haven&rsquo;t, then Spring complains. Compliant <code>BeanFactory</code> implementations call the <code>afterPropertiesSet</code> method as part of the standard bean lifecycle; see the <a href="http://static.springframework.org/spring/docs/2.5.5/api/org/springframework/beans/factory/BeanFactory.html">BeanFactory Javadocs</a> for more information.</p>
+
+<p>This technique is handy for being sure that your dependency injections actually happen. This is especially useful when using autowiring, where it&rsquo;s easy to miss the fact that some required injection didn&rsquo;t actually occur.</p>
+
+<p>You can use <code>InitializingBean</code> and <code>Assert</code> for any Spring-managed bean, not just service beans. I&rsquo;ve just used a service bean here as an example.</p>
+
+<p>Obviously, if you use the <code>InitializingBean</code> interface then you tie your bean APIs to the Spring Framework. You&rsquo;ll have to decide whether that&rsquo;s something you can live with. With <code>Assert</code>, on the other hand, you&rsquo;re only building in an implementation dependency on Spring, which is less objectionable. (It may still be a minor nuisance if you were to decide to move away from Spring, but nothing you couldn&rsquo;t easily handle. I&rsquo;d probably say the same thing of using <code>InitializingBean</code> in this case, incidentally.)</p>
+
+<p>Anyway, now you know the pros and cons of the approach. Have fun!</p>
+
+<p><span class="icon stickyNote">Post migrated from my Wheeler Software site.</span></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-27T07:51:40-07:00" pubdate data-updated="true">Oct 27<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-01-di/'>Chapter 01 - DI</a>, <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2008/10/27/spring-paranoia-with-initializingbean-and-assert/" data-via="williewheeler" data-counturl="http://springinpractice.com/2008/10/27/spring-paranoia-with-initializingbean-and-assert/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/" title="Previous Post: Concurrent programming for practicing software engineers, part 3">&laquo; Concurrent programming for practicing software engineers, part 3</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/11/15/aop-101-speeding-up-springs-javamailsenderimpl-with-aop/" title="Next Post: AOP 101: Speeding up Spring's JavaMailSenderImpl with AOP">AOP 101: Speeding up Spring's JavaMailSenderImpl with AOP &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

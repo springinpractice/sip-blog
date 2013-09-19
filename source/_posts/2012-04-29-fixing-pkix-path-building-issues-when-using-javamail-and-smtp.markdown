@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/
 layout: post
-title: Fixing PKIX path building issues when using JavaMail and SMTP
+title: "Fixing PKIX path building issues when using JavaMail and SMTP"
 date: 2012-04-29 13:08:01
 comments: true
 categories: [Chapter 08 - Communicating, Troubleshooting]

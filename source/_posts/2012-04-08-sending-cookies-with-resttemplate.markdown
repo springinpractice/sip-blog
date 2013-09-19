@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate/
 layout: post
-title: Sending cookies with RestTemplate
+title: "Sending cookies with RestTemplate"
 date: 2012-04-08 21:06:18
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Quick Tips]

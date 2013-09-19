@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/
 layout: post
-title: The Spring constructor namespace
+title: "The Spring constructor namespace"
 date: 2012-04-26 02:14:51
 comments: true
 categories: [Chapter 01 - DI, Quick Tips]

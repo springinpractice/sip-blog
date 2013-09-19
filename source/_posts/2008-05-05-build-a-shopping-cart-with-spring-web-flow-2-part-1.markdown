@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/
 layout: post
-title: Build a shopping cart with Spring Web Flow 2, part 1
+title: "Build a shopping cart with Spring Web Flow 2, part 1"
 date: 2008-05-05 17:11:08
 comments: true
 categories: [Chapter 05 - Web Flow, Tutorials]

@@ -1,0 +1,582 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="Spring 2.5 introduces annotation-based configuration for MVC controllers. In this short article I&rsquo;ll describe at a high level what you need to &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/blog/page/9">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/02/26/annotation-based-mvc-in-spring-2-5/">Annotation-based MVC in Spring 2.5</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-26T14:36:14-08:00" pubdate data-updated="true">Feb 26<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Spring 2.5 introduces annotation-based configuration for MVC controllers. In this short article I&rsquo;ll describe at a high level what you need to do to migrate your Spring 2.0 app over to Spring 2.5, at least as far as MVC is concerned.  For information on migrating the other tiers, please see my article <a href="http://springinpractice.com/2008/02/26/annotation-based-autowiring-in-spring-2-5/">Annotation-based autowiring in Spring 2.5</a>.</p>
+
+<p>First make sure you drop <code>spring-webmvc.jar</code> onto your classpath.  The <code>DispatcherServlet</code> is no longer part of <code>spring.jar</code>; it&rsquo;s in a separate module now.</p>
+
+<p>Any given controller class can be set up in one of two ways. (And you can use both approaches in a single app.) Either the controller can handle a single action or else it can handle multiple actions. Usually a form &ldquo;action&rdquo;, which really includes initially serving up the form and then accepting submissions of that form, would be handled with the first sort of controller, and non-form actions can be combined into a single controller, with actions being represented by methods.</p>
+
+<p>Here&rsquo;s an extremely basic multi-action controller that handles three separate actions (mapped to methods). The actions don&rsquo;t do anything at all other than serve up the requested page.</p>
+
+<pre>package demo;
+    
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+    
+@Controller
+public class SimpleController {
+    
+    @RequestMapping("/index.html")
+    public void indexHandler() { }
+    
+    @RequestMapping("/about.html")
+    public void aboutHandler() { }
+    
+    @RequestMapping("/admin.html")
+    public void adminHandler() { }
+}</pre>
+
+
+<p>Even though this is just about the simplest possible controller, there are still a few important points to highlight, especially if you&rsquo;re coming from earlier versions of Spring. First you will note that the controller is a POJO. It does not extend <code>AbstractController</code> or any of the other controller classes that you would have extended with Spring 2.0 or earlier. Second, notice the annotations. I&rsquo;ve marked the controller itself with a <code>@Controller</code> annotation and the individual methods with <code>@RequestMapping</code> annotations. (I mentioned above that you can also map a controller to a single action; in that case you would attach the <code>@RequestMapping</code> annotation to the controller class itself. I&rsquo;m not doing that here though.) Note also that I&rsquo;m doing the URL mapping with the annotation. Pretty cool to have this option. Finally, though you can&rsquo;t tell from the controller, I&rsquo;m using the request URL to specify the logical view name. Unless you specify otherwise, the <code>DispatcherServlet</code> will automatically assume that <code>/index.html</code> maps to the logical name &ldquo;index&rdquo;, that <code>/admin.html</code> maps to the logical name &ldquo;admin&rdquo;, etc. (Internally, it creates an instance of <code>DefaultRequestToViewNameTranslator</code>, though you don&rsquo;t see this unless you want to.) This is an example of Spring&rsquo;s movement toward the convention-over-configuration philosophy.</p>
+
+<p>Now you need to make sure your application context config file is set up. Here&rsquo;s what I have:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"&gt;
+    
+    &lt;context:component-scan base-package="demo"/&gt;
+    
+    &lt;bean id="viewResolver"
+        class="org.springframework.web.servlet.view.InternalResourceViewResolver"&gt;
+        &lt;property name="prefix" value="/WEB-INF/jsp/"/&gt;
+        &lt;property name="suffix" value=".jsp"/&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;</pre>
+
+
+<p>The <code>&lt;component-scan&gt;</code> thing runs through your classes to find controllers and their annotation-based configuration. It knows which classes are controllers, as you may have guessed, because you used the <code>@Controller</code> annotation to label the controllers.  Spring also supports <code>@Repository</code> for DAO layers, <code>@Service</code> for service layers, and <code>@Component</code> as a general stereotype over <code>@Controller</code>, <code>@Repository</code> and <code>@Service</code>.) The view resolver is just like it was with Spring 2.0.</p>
+
+<p>Those are the basics. Of course there&rsquo;s a lot more you&rsquo;re going to want to do; for example, you&rsquo;ll want to pass in request parameters, process requests, return model objects, etc.  But hopefully you&rsquo;ll find it useful to have a minimalistic example that gets you off the ground. Good luck!</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/02/26/annotation-based-autowiring-in-spring-2-5/">Annotation-based Autowiring in Spring 2.5</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-26T14:23:15-08:00" pubdate data-updated="true">Feb 26<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This article gives a quick summary of how to do autowiring with Spring 2.5 using annotations. We cover the data and services tiers here, but not the web tier. For information on web-tier configuration, please see my article <a href="http://springinpractice.com/2008/02/26/annotation-based-mvc-in-spring-2-5/">Annotation-based MVC in Spring 2.5</a>.</p>
+
+<p>To set the proper context, our goal is to get rid of manual namings and wirings in the configuration files, and the basic strategy is convention-over-configuration: name the various dependencies according to the property names so that Spring can figure out how to autowire your app.</p>
+
+<p><code>&lt;aside&gt;</code>Incidentally, it is a separate and interesting discussion as to whether autowiring is something that <em>should</em> be done in the first place.  One might argue that wiring is a configuration issue, and that adding annotations everywhere amounts to distributing the configuration across the various classes, thereby violating the principle of separation of concerns. Not to mention the fact that we don&rsquo;t normally want to have to rebuild the app to make a config change.  I can see that in some cases it makes sense to separate concerns (for example, I think modeling and persistence should generally be kept separate) and in other cases it doesn&rsquo;t (for example, code documentation should not be separated out).  Anyway I won&rsquo;t argue here whether autowiring is good; I&rsquo;ll just explain how to do it.<code>&lt;/aside&gt;</code></p>
+
+<p>Here I assume that you&rsquo;re using Spring MVC and Hibernate.  I&rsquo;m also assuming that you already have separate beans configuration files for the web, service, and data access tiers, that they&rsquo;re currently not autowired (i.e. you want to migrate from a manual wiring to an autowired configuration).  Nothing essential hinges upon these assumptions&mdash;they just reflect my own configuration&mdash;and the instructions should be useful even if your configuration is somewhat different.</p>
+
+<p>Here we go.</p>
+
+<h3>Add annotations to name your DAO, service and controller classes</h3>
+
+
+<p>Chances are good that your DAO and service classes don&rsquo;t have the names that name-based autowiring would require.  For example, you might define interfaces that have the &ldquo;right&rdquo; names, such as a <code>CategoryDao</code> interface, or a <code>ProductService</code> interface, and then your concrete implementation classes would be <code>HibernateCategoryDao</code> or <code>ProductServiceImpl</code> (or whatever), which won&rsquo;t autowire to the desired properties unless you have some strange and ill-advised property names.  So our first order of business is to provide the requisite names. With manual wiring, you provide this on the <code>&lt;bean&gt;</code> element using the <code>id</code> or <code>name</code> attributes.  But we&rsquo;re trying to eliminate said elements from our config, so that option is unavailable.  We use annotations instead.</p>
+
+<h4>For each DAO, add a class-level @Repository annotation.</h4>
+
+
+<p>These annotations go on the implementation class, not on the interface.</p>
+
+<pre>import org.springframework.stereotype.Repository;
+ 
+@Repository("productDao")
+public final class ProductDaoImpl extends AbstractHibernateDao<Product>
+  implements ProductDao {
+
+    ...
+}</pre>
+
+
+<p>The <code>@Repository</code> annotation works in Spring 2.0 as well.</p>
+
+<h4>For each service component, add a class-level @Service annotation.</h4>
+
+
+<p>As before, these go on the implementation class, not on the interface.</p>
+
+<pre>import org.springframework.stereotype.Service;
+ 
+@Service("productService")
+public final class ProductServiceImpl implements ProductService {
+    ...
+}</pre>
+
+
+<p>Note that <code>@Service</code> is new with Spring 2.5.  So it won&rsquo;t work if you&rsquo;re using Spring 2.0 or earlier.</p>
+
+<h4>For each Spring MVC controller, add a class-level @Controller annotation.</h4>
+
+
+<p>Don&rsquo;t worry about providing a name; we won&rsquo;t need it.  (So this step is a little out of place in these instructions, but go ahead and do it anyway as you will need the <code>@Controller</code> annotation if you want to fully autowire the web tier.) Just do this for each controller:</p>
+
+<pre>import org.springframework.stereotype.Controller;
+ 
+@Controller
+public final class ProductController {
+    ...
+}</pre>
+
+
+<p>Like the <code>@Service</code> annotation, <code>@Controller</code> is new with Spring 2.5.</p>
+
+<p>At this point we&rsquo;ve haven&rsquo;t really changed anything; you still have names defined in the manual configurations in addition to the annotation-based names you&rsquo;ve just added. Test out your app to make sure we haven&rsquo;t broken anything, and then move on to the next step.</p>
+
+<h3>Tell Spring about your annotation-based names and autowiring strategy</h3>
+
+
+<p>We have to tell Spring two things: where to find the names, and what strategy to use (viz., autowiring by name) for autowiring.</p>
+
+<h4>Tell Spring where to find the annotation-based names</h4>
+
+
+<p>You will need to use the <code>&lt;context:component-scan&gt;</code> element to do this. Since it&rsquo;s in the context namespace, you must declare that namespace and schema location in your Spring config files. Here are examples from the data access, service, and web configurations:</p>
+
+<pre>&lt;!-- Spring configuration for data access tier --&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"
+    default-autowire="byName"&gt;
+    
+    &lt;context:component-scan base-package="x.y.dao"&gt;
+        &lt;context:include-filter type="annotation"
+            expression="org.springframework.stereotype.Repository"/&gt;
+    &lt;/context:component-scan&gt;
+    
+    ...
+&lt;/beans&gt;
+    
+&lt;!-- Spring configuration for service tier --&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"
+    default-autowire="byName"&gt;
+    
+    &lt;context:component-scan base-package="x.y.service"&gt;
+        &lt;context:include-filter type="annotation"
+            expression="org.springframework.stereotype.Service"/&gt;
+    &lt;/context:component-scan&gt;
+
+    ...
+&lt;/beans&gt;
+    
+&lt;!-- Spring configuration for web tier --&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"
+    default-autowire="byName"&gt;
+    
+    &lt;context:component-scan base-package="x.y.web"&gt;
+        &lt;context:include-filter type="annotation"
+            expression="org.springframework.stereotype.Controller"/&gt;
+    &lt;/context:component-scan&gt;
+
+    ...
+&lt;/beans&gt;</pre>
+
+
+<p>(You&rsquo;ll of course need to provide the proper value for the base package.)</p>
+
+<p>In the above, the pieces relevant to component names are the <code>xmlns:context</code> declaration, the <code>xsi:schemaLocation</code> declaration, and the <code>&lt;context:component-scan&gt;</code> configuration.  I&rsquo;m telling Spring to scan the <code>x.y.dao</code> package for components that have the <code>@Repository</code> annotation, to scan the <code>x.y.service</code> package for components that have the <code>@Service</code> annotation, and to scan <code>x.y.web</code> for components that have the <code>@Controller</code> annotation.  Spring will do that, and in the case of the data access and service components, it will use the value we provided to the annotations in step 1 above as a basis for name-based autowiring.  (We didn&rsquo;t provide any names with the <code>@Controller</code> annotation though I would assume you can do that.  It happens that in our case we won&rsquo;t need it.)</p>
+
+<p>You&rsquo;ll notice however that I&rsquo;ve snuck in some <code>default-autowire=&ldquo;byName&rdquo;</code> attributes in there. As you can guess, that&rsquo;s for autowiring, and we&rsquo;ll look at that in just a second.</p>
+
+<h4>Make sure you have public setters for each bean that you want autowired</h4>
+
+
+<p>It appears that <code>default-autowire=&ldquo;byName&rdquo;</code> autowiring is based on public setters. (With the <code>@Autowired</code> attribute applied to fields you can avoid the setters, but if you have unit tests, you&rsquo;ll need setters to inject mocks, and so you may as well just keep the setters and make them public.  Weaker visibility doesn&rsquo;t appear to work.)</p>
+
+<h4>Tell Spring that you want to use name-based autowiring</h4>
+
+
+<p>The <code>default-autowire=&ldquo;byName&rdquo;</code> attribute tells Spring that you want to use component names to automatically wire up the app.  In step 1 above we went through the process of providing correct names (&ldquo;correct&rdquo; here means names that match the injection property names) for DAO and service classes.  That will allow us to remove the DAO and service components from our Spring config.  In all likelihood there will be other components that you can&rsquo;t remove from the config, such as a Hibernate <code>SessionFactory</code> in your data access configuration or a <code>TransactionManager</code> in your services configuration. In cases like that, just make sure that the names (or IDs) that you give to the components are the ones that would be expected when doing name-based injection.  Here are some examples:</p>
+
+<pre>&lt;!-- Hibernate session factory --&gt;
+&lt;bean id="sessionFactory"
+    class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"&gt;
+    ...
+&lt;/bean&gt;
+ 
+&lt;!-- Hibernate transaction manager --&gt;
+&lt;bean id="transactionManager"
+    class="org.springframework.orm.hibernate3.HibernateTransactionManager"&gt;
+    &lt;property name="sessionFactory" ref="sessionFactory"/&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>Note that using <code>default-autowire=&ldquo;byName&rdquo;</code> allows you to avoid having to use the <code>@Autowired</code> attribute on your various dependency injection fields or setters.  You shouldn&rsquo;t have to use that at all if you follow these instructions.</p>
+
+<p>At this point you should be able to remove the following configurations:</p>
+
+<ul>
+<li>The DAO component definitions from your Spring data access configuration file (but don&#8217;t remove the <code>SessionFactory</code>).</li>
+<li>The service component definitions from your Spring service configuration file (but don&#8217;t remove the <code>TransactionManager</code>).</li>
+<li>The service injections from your MVC controllers in your web configuration file. Don&#8217;t remove the controllers themselves for now; you still need those for defining URL mappings.  Just remove the service injections since those will now be autowired. (Note that there&#8217;s a way to eliminate the MVC controller configurations as well; see <a href="http://springinpractice.com/2008/02/26/annotation-based-mvc-in-spring-2-5/">Annotation-based MVC in Spring 2.5</a> for details.)</li>
+<li>The <code>sessionFactory</code> injection from your <code>TransactionManager</code> definition since that will be autowired, the <code>dataSource</code> injection from your <code>SessionFactory</code> (assuming you have an appropriate ID on the <code>DataSource</code> config), etc. In general just look through your configs for elements that will now be autowired and either comment them out or remove them.</li>
+</ul>
+
+
+<p>I would recommend commenting things out first and then testing the app to make sure it still works.</p>
+
+<h3>Congratulations!</h3>
+
+
+<p>Your app should now be autowired.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/02/26/acegi-overview/">Acegi Overview (Now Spring Security)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-26T05:24:16-08:00" pubdate data-updated="true">Feb 26<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><div class="intro"><span class="icon stickyNote">I wrote this back when Spring Security was called Acegi. Now it&#8217;s out of date, but I&#8217;m leaving it in the archive.</span></div>
+
+
+<p>Acegi has been around for a while, but I just recently tried it out and am impressed with it so far. Upon first glance Acegi is slightly intimidating because there are lots of classes involved, and it may be hard to keep them straight. Fortunately Acegi is actually straightforward, despite appearances, to anybody who already understands servlet filters and the basics of Spring bean configuration.</p>
+
+<p>The overarching idea is that Acegi provides a suite of security services (mostly if not entirely around authentication and authorization) based on <a href="http://java.sun.com/products/servlet/Filters.html">servlet filters</a>. So for example there are filters for accepting user logins, enforcing access controls, catching security-related exceptions,handling logouts, handling &ldquo;remember me&rdquo; functionality for logins, switching from HTTP to HTTPS, etc. So using Acegi mostly involves deciding which of the filters you want (e.g., maybe you want &ldquo;remember me&rdquo;, maybe you don&rsquo;t) and then configuring those into the app.</p>
+
+<h3>Acegi involves dependency injection into servlet filters (say what?)</h3>
+
+
+<p>Acegi does get a little interesting though because the various filters rely upon Spring&rsquo;s dependency injection, but the standard way of configuring servlet filters into <code>web.xml</code> does not support Spring dependency injection. (The <code>web.xml</code> schema doesn&rsquo;t have anything for dependency injection, nor should it.) Acegi uses a pretty neat trick to give us injectable servlet filters. What it does is it provides a <code>Filter</code> implementation called <code>FilterToBeanProxy</code> that you configure in like this:</p>
+
+<pre>&lt;filter&gt;
+    &lt;filter-name&gt;security&lt;/filter-name&gt;
+    &lt;filter-class&gt;org.acegisecurity.util.FilterToBeanProxy&lt;/filter-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;targetClass&lt;/param-name&gt;
+        &lt;param-value&gt;org.acegisecurity.util.FilterChainProxy&lt;/param-value&gt;
+    &lt;/init-param&gt;
+&lt;/filter&gt;
+ 
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;security&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;</pre>
+
+
+<p>Pretty standard stuff. The idea behind <code>FilterToBeanProxy</code> is that it knows about your <code>[appname]-security.xml</code> bean configuration file, and so it can load in any beans that you define there. In <code>web.xml</code> we tell <code>FilterToBeanProxy</code> to load in a <code>FilterChainProxy</code> defined in <code>[appname]-security.xml</code>. <code>FilterChainProxy</code>,as its name suggests, is a <code>FilterChain</code> implementation. In turn, inside <code>[appname]-security.xml</code> we configure the various <code>Filter</code> beans mentioned above into the <code>FilterChainProxy</code>. Here&rsquo;s how it looks:</p>
+
+<pre>&lt;bean id="filterChainProxy" class="org.acegisecurity.util.FilterChainProxy"&gt;
+    &lt;property name="filterInvocationDefinitionSource"&gt;
+        &lt;!-- IMPORTANT: DON'T LINEBREAK THE FILTER LIST, OR ELSE BEAN LOOKUP BREAKS! --&gt;
+        &lt;!-- I'M JUST DOING IT HERE FOR DISPLAY PURPOSES --&gt;
+        &lt;value&gt;
+            CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+            PATTERN_TYPE_APACHE_ANT
+            /**=httpSessionContextIntegrationFilter,logoutFilter,
+authenticationProcessingFilter,exceptionTranslationFilter,filterSecurityInterceptor
+        &lt;/value&gt;
+    &lt/property&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>The list of filter names is just a list of beans that you also configure in the same <code>[appname]-security.xml</code> config file. Here&rsquo;s an example:</p>
+
+<pre>&lt;bean id="httpSessionContextIntegrationFilter"
+    class="org.acegisecurity.context.HttpSessionContextIntegrationFilter"/&gt;</pre>
+
+
+<p>Voil&agrave;, injectable servlet filters! Very cool.</p>
+
+<h3>Be careful of the following gotchas</h3>
+
+
+<p>There are some points/gotchas worth mentioning:</p>
+
+<ol>
+<li>The servlet filters must be added in a specific order. If you get the order wrong, it won&#8217;t work, since the servlet filters make assumptions about what kind of processing has already taken place. Check the <a href="http://www.acegisecurity.org/guide/springsecurity.html#filters">Acegi docs</a> for details.</li>
+<li>If you&#8217;re using other servlet filters (such as Sitemesh), the Acegi filters need to come before the others.</li>
+<li>When configuring FilterChainProxy, you will need to map URL patterns to the list of filters that you want to service requests matching those patterns. For example, you might map <code>/**</code> (Ant syntax) to a list of four filters. The list is comma-delimited. It is important that you not include line breaks after the commas. I&#8217;m guessing you can&#8217;t include whitespace at all, but for sure you can&#8217;t include line breaks. Otherwise you will get <code>Bean not found: ''</code> exceptions, without any explanation as to what the actual problem is. I&#8217;m surprised they don&#8217;t allow the line breaks since I figure many people will naturally want to break up a long list of filters with long names,but my surprise notwithstanding, the line breaks aren&#8217;t allowed.</li>
+</ol>
+
+
+<p>Here&rsquo;s a <a href="http://www.javaworld.com/javaworld/jw-10-2007/jw-10-acegi2.html">JavaWorld article on getting started with Acegi</a>. Also, <a href="http://www.amazon.com/Spring-Action-Craig-Walls/dp/1933988134/ref=pd_bbs_sr_1?ie=UTF8&s=books&qid=1199391787&sr=8-1">Spring in Action</a> has some good instructions.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/8/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

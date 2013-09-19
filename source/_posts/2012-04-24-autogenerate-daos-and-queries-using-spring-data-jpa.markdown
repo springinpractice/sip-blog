@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/
 layout: post
-title: Dynamic DAOs and queries using Spring Data JPA
+title: "Dynamic DAOs and queries using Spring Data JPA"
 date: 2012-04-24 23:18:27
 comments: true
 categories: [Chapter 02 - Data, Tutorials]

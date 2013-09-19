@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/02/26/annotation-based-autowiring-in-spring-2-5/
 layout: post
-title: Annotation-based autowiring in Spring 2.5
+title: "Annotation-based autowiring in Spring 2.5"
 date: 2008-02-26 22:23:15
 comments: true
 categories: [Chapter 01 - DI, Tutorials]

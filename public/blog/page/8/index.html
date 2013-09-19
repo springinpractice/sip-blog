@@ -1,0 +1,2410 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="This post is part of a three part series: Part 1 | Part 2 | Part 3 Creating a simple flow: Spring application context configuration Now we have &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/blog/page/8">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Build a Shopping Cart With Spring Web Flow 2, Part 2</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-06T10:50:53-07:00" pubdate data-updated="true">May 6<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><div class="intro">
+<span class="icon stickyNote">This post is part of a three part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
+</div>
+
+
+
+
+<h3>Creating a simple flow: Spring application context configuration</h3>
+
+
+<p>Now we have Spring MVC working, so it&rsquo;s time to expand on that and get Spring Web Flow working too.  We&rsquo;ll start by creating a very simple flow&mdash;one that has only a single view state.  First we&rsquo;ll look at the updated Spring application context configuration.  After that we&rsquo;ll look at the flow definition itself.</p>
+
+<p>To make it easier for you to follow along, here&rsquo;s the updated,one-state version of our shopping cart:</p>
+
+<center><span class="icon archive"><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/mycart2.zip">mycart2.zip</a></span></center>
+
+
+
+
+<h4>Dependencies for mycart2.zip</h4>
+
+
+<p>Because we&rsquo;re now using SWF, we have additional dependencies. Here&rsquo;s the full set so far:</p>
+
+<p>These come from the Spring 2.5.4 distribution. <a href="http://www.springframework.org/download">[download]</a></p>
+
+<ul class="square">
+<li><code>spring.jar</code> (located in <code>/spring-framework-2.5.4/dist</code>)</li>
+<li><code>spring-webmvc.jar</code> (located in <code>/spring-framework-2.5.4/dist/modules</code>)</li>
+<li><code>commons-logging.jar</code> (located in <code>/spring-framework-2.5.4/jakarta-commons</code>)</li>
+</ul>
+
+
+<p>You will need the following JARs from the Spring Web Flow 2.0 distribution. <a href="http://www.springframework.org/download">[download]</a></p>
+
+<ul class="square">
+<li><code>spring-webflow-2.0.0.jar</code></li>
+<li><code>spring-binding-2.0.0.jar</code></li>
+<li><code>spring-js-2.0.0.jar</code></li>
+</ul>
+
+
+<p>You will need the following JAR from the <a href="http://www.ognl.org/">OGNL web site</a>:</p>
+
+<ul class="square">
+<li><code>ognl-2.6.9.jar</code></li>
+</ul>
+
+
+<p>Spring Web Flow uses either OGNL or Unified EL for parsing expressions.  For this article I arbitrarily picked OGNL though you can use <code>jboss-el.jar</code> (currently the only Unified EL implementation that will work with SWF) too.</p>
+
+<h4>web.xml and mycart.CartController</h4>
+
+
+<p>For now we aren&rsquo;t making any changes to either of these at all.</p>
+
+<div style="margin:10px 0 20px 20px;float:right">
+<div><img src="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/swf-config.gif" alt="Figure 2. Overview of SWF components." /></div>
+<div class="caption">Figure 2. Overview of SWF components.</div>
+</div>
+
+
+
+
+<h4>Spring application context overview</h4>
+
+
+<p>Before jumping into the code, let&rsquo;s do a quick overview of the various components involved.  Please see Figure 2.</p>
+
+<p>We already saw <code>DispatcherServlet</code> in <code>web.xml</code>.  (So it&rsquo;s not part of <code>mycart-servlet.xml</code>; we&rsquo;re discussing it here just to show the relationship between the servlet and the <code>FlowController</code>.)  <code>DispatcherServlet</code> is the Spring MVC front controller and it receives any Spring MVC requests&mdash;including SWF requests, as SWF is based on Spring MVC&mdash;according to your <code>web.xml</code> configuration.</p>
+
+<p>We&rsquo;re using <code>SimpleUrlHandlerMapping</code> to map flow requests from <code>DispatcherServlet</code> to <code>FlowController</code>.</p>
+
+<p>So now <code>FlowController</code> has the request. <code>FlowController</code> is just a Spring MVC controller that receives flow requests and passes them to <code>FlowExecutor</code> for actual processing.</p>
+
+<p><code>FlowExecutor</code> contains the actual logic for processing Spring Web Flow requests.  Among other things it determines for any given request which flow is involved and figures out what state transition to enact, based on the request.</p>
+
+<p>When <code>FlowExecutor</code> needs a flow, it grabs the flow from the <code>FlowRegistry</code>, which is responsible for loading the flow from a flow configuration file and maintaining it on behalf of the <code>FlowExecutor</code>.</p>
+
+<p><code>FlowBuilderServices</code> is just a container for various services that <code>FlowRegistry</code> needs when constructing flows. This includes, for example, a service to provide for the creation of view factories.  In our example, we will see that we&rsquo;re specifically using a <code>MvcViewFactoryCreator</code>, which creates view factories for Spring MVC views.</p>
+
+<p>Finally, we define a <code>ViewResolver</code>, which is a Spring MVC interface that carries logical view names to physical resources (such as JSPs).  For example, a <code>ViewResolver</code> might carry the logical name <code>checkout/viewcart</code> to the physical resource <code>/WEB-INF/jsp/checkout/viewcart.jsp</code>.</p>
+
+<div style="clear:both"></div>
+
+
+
+
+<h4>Spring application context configuration file</h4>
+
+
+<p>And finally here&rsquo;s the configuration file itself:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/mycart-servlet.xml</code>
+<pre name="code" class="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:flow="http://www.springframework.org/schema/webflow-config"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-2.5.xsd
+    http://www.springframework.org/schema/webflow-config
+    http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.0.xsd"&gt;
+
+
+    &lt;!-- SPRING MVC STUFF --&gt;
+
+    &lt;!-- This activates post-processors for annotation-based config --&gt;
+    &lt;!-- http://www.infoq.com/articles/spring-2.5-part-1 --&gt;
+    &lt;context:annotation-config/&gt;
+
+    &lt;context:component-scan base-package="mycart"/&gt;
+
+    &lt;!-- Enables POJO @Controllers (like CartController) --&gt;
+    &lt;bean class=
+"org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/&gt;
+    
+    &lt;!-- Maps flow requests from DispatcherServlet to flowController --&gt;
+    &lt;bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping"&gt;
+        &lt;property name="mappings"&gt;
+            &lt;value&gt;
+                /account/register.do=flowController
+            &lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property name="alwaysUseFullPath" value="true"/&gt;
+    &lt;/bean&gt;
+    
+    &lt;!-- Enables annotated methods on POJO @Controllers (like CartController) --&gt;
+    &lt;bean class=
+"org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/&gt;
+    
+    &lt;!-- Enables plain Controllers (e.g. FlowController) --&gt;
+    &lt;bean class=
+"org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/&gt;
+    
+    &lt;!-- Maps a logical view name to a physical resource --&gt;
+    &lt;bean id="viewResolver" class=
+"org.springframework.web.servlet.view.InternalResourceViewResolver"&gt;
+        &lt;property name="prefix" value="/WEB-INF/jsp/"/&gt;
+        &lt;property name="suffix" value=".jsp"/&gt;
+    &lt;/bean&gt;
+    
+    
+    &lt;!-- SPRING WEB FLOW STUFF --&gt;
+    
+    &lt;bean id="flowController" class=
+"org.springframework.webflow.mvc.servlet.FlowController"&gt;
+        &lt;property name="flowExecutor" ref="flowExecutor"/&gt;
+    &lt;/bean&gt;
+    
+    &lt;flow:flow-executor id="flowExecutor" flow-registry="flowRegistry"/&gt;
+    
+    &lt;!-- This creates an XmlFlowRegistryFactory bean --&gt;
+    &lt;flow:flow-registry id="flowRegistry"
+            flow-builder-services="flowBuilderServices"&gt;
+        &lt;flow:flow-location path="/WEB-INF/flows/register.xml"/&gt;
+    &lt;/flow:flow-registry&gt;
+    
+    &lt;flow:flow-builder-services id="flowBuilderServices"
+            view-factory-creator="viewFactoryCreator"/&gt;
+    
+    &lt;bean id="viewFactoryCreator" class=
+"org.springframework.webflow.mvc.builder.MvcViewFactoryCreator"&gt;
+        &lt;property name="viewResolvers"&gt;
+            &lt;list&gt;
+                &lt;ref bean="viewResolver"/&gt;
+            &lt;/list&gt;
+        &lt;/property&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;</pre>
+</div>
+
+
+<p>Now let&rsquo;s look at our basic flow definition, which will initially at least be much simpler than the application context file.</p>
+
+<p><h3>Creating a Simple Flow: Flow Definition File and JSPs</h4></p>
+
+<p>We&rsquo;ll now add a SWF flow definition file, update our original home page JSP, and add a new JSP for registering as a new customer.</p>
+
+<p><h4>The flow definition file</h4></p>
+
+<p>Here&rsquo;s a definition for our first flow, which will be a bare-bones registration process.  We&rsquo;ll add more flows to the application but this is our starting point just to get SWF working.  You&rsquo;ll need to create a directory <code>/WEB-INF/flows</code>, and then add the following flow definition file to that directory, naming the file <code>register.xml</code>.</p>
+
+<p><div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/flows/register.xml</code>
+<pre name="code" class="xml">&lt;?xml version=&ldquo;1.0&rdquo; encoding=&ldquo;UTF-8&rdquo;?&gt;
+&lt;flow xmlns=&ldquo;<a href="http://www.springframework.org/schema/webflow">http://www.springframework.org/schema/webflow</a>&rdquo;
+  xmlns:xsi=&ldquo;<a href="http://www.w3.org/2001/XMLSchema-instance">http://www.w3.org/2001/XMLSchema-instance</a>&rdquo;
+  xsi:schemaLocation=&ldquo;<a href="http://www.springframework.org/schema/webflow">http://www.springframework.org/schema/webflow</a></p>
+
+<pre><code>http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd"&amp;gt;
+
+&amp;lt;!-- By default, the first state is the start state. --&amp;gt;
+&amp;lt;view-state id="register" view="account/registerForm"&amp;gt;
+    &amp;lt;transition on="submitRegistration" to="accountAdded"/&amp;gt;
+    &amp;lt;transition on="cancelRegistration" to="cancelRegistration"/&amp;gt;
+&amp;lt;/view-state&amp;gt;
+
+&amp;lt;end-state id="accountAdded"
+    view="externalRedirect:contextRelative:/home.do"/&amp;gt;
+&amp;lt;end-state id="cancelRegistration"
+    view="externalRedirect:contextRelative:/home.do"/&amp;gt;
+</code></pre>
+
+<p>&lt;/flow&gt;</pre>
+</div></p>
+
+<p>Here we have a single state, called a <em>view state</em>, and all it does is show us the hardcoded JSP that we created earlier.  We&rsquo;re identifying the state itself as <code>register</code>, and the logical view name associated with this view state is <code>account/registerForm</code>.  This is the name that the view resolver we defined in the Spring app context file will map to a physical location; in this case the physical location will be <code>/WEB-INF/jsp/account/registerForm.jsp</code>.</p>
+
+<p>By default, SWF interprets the first state in the file as being the <em>start state</em>, or entry point into the flow.  There must be exactly one start state.  The flow itself is called <code>register</code> (this is because we&rsquo;ve named the flow definition file <code>register.xml</code>).  As it happens we&rsquo;ve also named the first state <code>register</code> though there&rsquo;s no requirement for the start state to have the same name as the flow.</p>
+
+<p>I&rsquo;ve defined a couple of transitions out of the <code>register</code> state.  One transition, <code>submitRegistration</code>, responds to registration submission events on the user interface, such as the user clicking a submit button on a registration form.  The other transition, <code>cancelRegistration</code>, responds to cancelation events on the UI, such as the user clicking a cancel link.  Each of these transitions leads to another state in the flow.  In this case, both of the transitions lead to <em>end states</em>, which are exits out of the flow, but transitions can lead to other view states (or even other sorts of state) as well.  As shown there can be multiple end states for a flow.  Here my end states happen to be doing the same thing; they&rsquo;re redirecting the user to a context-relative (as in relative to the servlet context) path <code>/home.do</code>, which you will recall is just the home page.  There are some other relativizations you can do as well:</p>
+
+<p><div class="table-with-caption">
+<div class="table">
+<table>
+<tr>
+<th>Relativization</th>
+<th>Example</th>
+</tr>
+<tr>
+<td>Servlet mapping-relative</td>
+<td><code>externalRedirect:/hotels/index</code></td>
+</tr>
+<tr>
+<td>Servlet-relative path</td>
+<td><code>externalRedirect:servletRelative:/hotels/index</code></td>
+</tr>
+<tr>
+<td>Context-relative path</td>
+<td><code>externalRedirect:contextRelative:/dispatcher/hotels/index</code></td>
+</tr>
+<tr>
+<td>Server-relative path</td>
+<td><code>externalRedirect:serverRelative:/springtravel/dispatcher/hotels/index</code></td>
+</tr>
+<tr>
+<td>Absolute URL</td>
+<td><code>externalRedirect:<a href="http://www.paypal.com/">http://www.paypal.com/</a></code></td>
+</tr>
+</table>
+</div>
+<div class="caption">Table 1. Relativizations for externalRedirect.</div>
+</div></p>
+
+<p>Anyway we&rsquo;re doing the context-relative redirection in this case. This is how we jump out of SWF and return control to the application. (Or how we return control to a calling flow, but we&rsquo;ll get to that.)</p>
+
+<p><h4>The JSPs</h4></p>
+
+<p>Now let&rsquo;s revisit our home page JSP.  It&rsquo;s still pretty similar but I&rsquo;m adding a registration link.</p>
+
+<p><div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/jsp/home.jsp</code>
+<pre name="code" class="html">&lt;!DOCTYPE html PUBLIC &ldquo;&ndash;//W3C//DTD XHTML 1.0 Strict//EN&rdquo;</p>
+
+<pre><code>"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&amp;gt; 
+</code></pre>
+
+<p>&lt;html&gt;</p>
+
+<pre><code>&amp;lt;head&amp;gt;
+    &amp;lt;title&amp;gt;Products for Geeks - GeekWarez&amp;lt;/title&amp;gt;
+&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+    &amp;lt;h1&amp;gt;Welcome to GeekWarez&amp;lt;/h1&amp;gt;
+
+    &amp;lt;div&amp;gt;&amp;lt;a href="account/register.do"&amp;gt;Register&amp;lt;/a&amp;gt;&amp;lt;/div&amp;gt;
+&amp;lt;/body&amp;gt;
+</code></pre>
+
+<p>&lt;/html&gt;</pre>
+</div></p>
+
+<p>The registration link takes us into the <code>register</code> flow,since the last path segment is <code>register.do</code>.  In our Spring app context we told the flow registry about <code>register.xml</code>, so SWF will know to map requests for <code>/account/register.do</code> to the <code>register</code> flow.</p>
+
+<p>Now we need a registration form.  The following page is our current version of a registration &ldquo;form&rdquo;, but as you can see it isn&rsquo;t really a form at all (yet).  It is just a couple of links:</p>
+
+<p><div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/jsp/account/registerForm.jsp</code>
+<pre name="code" class="html">&lt;!DOCTYPE html PUBLIC &ldquo;&ndash;//W3C//DTD XHTML 1.0 Strict//EN&rdquo;</p>
+
+<pre><code>"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&amp;gt; 
+</code></pre>
+
+<p>&lt;html&gt;</p>
+
+<pre><code>&amp;lt;head&amp;gt;
+    &amp;lt;title&amp;gt;Register - GeekWarez&amp;lt;/title&amp;gt;
+&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+    &amp;lt;h1&amp;gt;Register&amp;lt;/h1&amp;gt;
+
+    &amp;lt;div&amp;gt;
+        &amp;lt;a href="${flowExecutionUrl}&amp;amp;_eventId=submitRegistration"&amp;gt;Submit&amp;lt;/a&amp;gt; |
+        &amp;lt;a href="${flowExecutionUrl}&amp;amp;_eventId=cancelRegistration"&amp;gt;Cancel&amp;lt;/a&amp;gt;
+    &amp;lt;/div&amp;gt;
+&amp;lt;/body&amp;gt;
+</code></pre>
+
+<p>&lt;/html&gt;</pre>
+</div></p>
+
+<p>The point of the two links is to give the user a way to generate <code>submitRegistration</code> and <code>cancelRegistration</code> events.  We saw in the flow definition that these two events trigger state transitions.  Of special importance is the URL for each of these links.  Notice that by using <code>${flowExecutionUrl}</code>, we&rsquo;re still pointing the user at the same <code>/account/register.do</code> servlet path. That&rsquo;s because we&rsquo;re still working within the <code>register</code> flow.  The <code>${flowExecutionUrl}</code> URL includes an <code>execution</code> HTTP parameter whose value is a key that SWF uses for flow-tracking purposes.  In addition we add an <code>_eventId</code> parameter that we use to drive state transitions.  The event IDs are what we&rsquo;re referencing when we define transitions in the flow definition file.</p>
+
+<p>So really so far all we can do at this point is move back and forth between the home page and the registration page, but we&rsquo;re doing it with Spring Web Flow.</p>
+
+<p><h3>Milestone 2: Spring Web Flow is working</h3></p>
+
+<p>Point your web browser at</p>
+
+<p><center><code><a href="http://localhost:8080/mycart2/home.do">http://localhost:8080/mycart2/home.do</a></code></center></p>
+
+<p>making any adjustments you need to make for the port or application context.  Also note that the context is now <code>mycart2</code> instead of <code>mycart1</code> like it was in the first version of the code.  If you&rsquo;re able to click back and forth between the home page and the registration page, then congrats, Spring Web Flow 2.0 is working!  Celebrate!</p>
+
+<p><div class="outro">
+<span class="icon stickyNote">This post is part of a three part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
+</div></p>
+
+<p><div class="endnote">Post migrated from my Wheeler Software site.</div></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Build a Shopping Cart With Spring Web Flow 2, Part 1</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-05T10:11:08-07:00" pubdate data-updated="true">May 5<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><div class="intro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
+</div>
+
+
+<p>This is the first in a three-part series of posts showing how to get started with Spring Web Flow (SWF) 2.0 by building a simple shopping cart application. We&rsquo;ll do this as a series of steps:</p>
+
+<ol>
+<li>First we&#8217;ll just get Spring MVC working.</li>
+<li>We&#8217;ll use Spring Web Flow to create a minimal flow with a single state.</li>
+<li>Finally we&#8217;ll build the app out to contain multiple flows and subflows that make calls against backend logic.</li>
+</ol>
+
+
+<p>SWF 2.0 is at the time of this writing very new, and there are several differences as compared to SWF 1.0.x. We will not however spend much time discussing those differences; instead we&rsquo;ll just focus on SWF 2.0.</p>
+
+<p>To get the most out of this post, you should already be familiar with Spring in general and Spring MVC in particular.</p>
+
+<h3>An overview of Spring Web Flow</h3>
+
+
+<p>Spring Web Flow builds upon Spring MVC to support user-level, application-directed control flows.  For example, an e-commerce application may need to guide the end user through a checkout process that spans several web pages. The flow is not simply a multipage form (Spring MVC itself already supports that); rather it is a multistep <em>process</em> involving standard control flow constructions such as decisions (&ldquo;please confirm or cancel your order&rdquo;), loops (&ldquo;we recommend products x, y, z&hellip; add as many as you like to your order&rdquo;) and subflows (&ldquo;are you a new customer? please create an account&rdquo;). In general, implementing such flows is not trivial.  SWF is an elegant solution to just this sort of problem.</p>
+
+<p>To understand better, contrast application-directed interactions with the user-directed interactions that typically constitute the main part of an application&rsquo;s functionality. In user-directed interactions, the end user picks some function from a set of available functions, provides some parameters around that function, and then asks the application to carry it out.  For instance, the end user tells Photoshop to fill a selected region with <span style="background-color:#0F0">evil green</span>.  The app dutifully does just that, and control returns to the end user.</p>
+
+<p>There are many cases, however, in which we want the application to drive a complex interaction between itself and the end user.  Perhaps the most obvious example is the one I mentioned above: the e-commerce checkout process.  See Figure 1 for one possible flow (and in fact this is the flow we&rsquo;re going to implement):</p>
+
+<div style="margin:20px 0;text-align:center">
+<div><img src="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/flow.jpg" alt="Figure 1. A sample checkout flow." /></div>
+<div class="caption">Figure 1. A sample checkout flow.</div>
+</div>
+
+
+<p>In the checkout flow above, we have a starting state, an end state, and several intermediate states.  In the first state, we show the customer the contents of a shopping cart, along with some recommended products that the customer may want to buy.  The customer can add any of those products to the shopping cart, or he might decide to move forward by indicating whether he is a new or returning customer.  If he&rsquo;s a new customer, he&rsquo;ll need to create an account; otherwise he can just log in with his existing account.  In either case, he&rsquo;ll need to select a payment method, provide shipping information, and so forth.  At any step along the way he can cancel out of the checkout process.</p>
+
+<h4>Benefits of using Spring Web Flow</h4>
+
+
+<p>While you can certainly implement that flow without SWF, there are some challenges involved if you&rsquo;re doing it from scratch.  Let&rsquo;s take a look at some of those.</p>
+
+<p><strong>Understanding flow logic.</strong> For one, because the logic behind the flow itself is reasonably complex, it would be nice to be able to isolate the flow and its logic from the various pieces (like JSP pages, business logic, etc.) that make it up.  But the most straightforward implementation of flow logic would most likely involve distributing the flow logic (such as state transitions) across lots of different files.  So one challenge is that you either have to do a lot of extra work to externalize the flow logic, or else you have to live with that logic being distributed, which makes it much harder to understand.</p>
+
+<p><strong>Reusing flow logic.</strong> Another challenge is related to the fact that a flow has a logical structure that stands on its own, and in many cases you&rsquo;d like to be able to reuse that&mdash;either across multiple apps, or else in multiple places within a single app.  This is hard to accomplish without an easy way to isolate that flow.</p>
+
+<p><strong>Getting the implementation right.</strong> A third challenge is just that it&rsquo;s easy to get the technical details wrong. For instance, what happens if the end user hits the browser&rsquo;s back button in the middle of the flow?  If the previous page had a form, we don&rsquo;t usually want the browser to confuse the user with a warning about resubmitting data or whatever.  Coding up flows from scratch means that you have to handle this sort of thing explicitly.  It would be nice not to have to mess around with this kind of thing&mdash;to have it handled automatically for you.</p>
+
+<p>That&rsquo;s enough of an overview for us to get started.  Let&rsquo;s now look at setting up our sample project.</p>
+
+<h3>Spring MVC setup</h3>
+
+
+<p>Since Spring Web Flow is build on Spring MVC, let&rsquo;s start by getting Spring MVC working.  We&rsquo;ll create a simple home page for our shopping cart, and we&rsquo;ll serve this up using a plain old Spring controller (well, it will be annotated) rather than serving it using Spring Web Flow.  That&rsquo;s because the home page itself isn&rsquo;t part of any particular flow; it simply provides entry points into various flows, such as creating an account, logging in, adding an item to a shopping cart, and checking out.  Besides allowing us to make sure we have Spring MVC working before moving forward, this approach will also allow us to see how to integrate Spring MVC and Spring Web Flow.</p>
+
+<p>For your convenience, here&rsquo;s a download of the minimalistic
+(i.e. only Spring MVC, no SWF) shopping cart we&rsquo;re about to take a look at:</p>
+
+<center><span class="icon archive"><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/mycart1.zip">mycart1.zip</a></span></center>
+
+
+<p>The download above does not include its dependencies.  You will need to grab those separately.  I&rsquo;ve provided the links below.</p>
+
+<h4>Dependencies for mycart1.zip</h4>
+
+
+<p>These are all part of the Spring 2.5.4 distribution. Spring Web Flow 2.0 requires Spring 2.5.4 or higher. <a href="http://www.springframework.org/download">[download]</a></p>
+
+<ul class="square">
+<li><code>spring.jar</code> (located in <code>/spring-framework-2.5.4/dist</code>)</li>
+<li><code>spring-webmvc.jar</code> (located in <code>/spring-framework-2.5.4/dist/modules</code>)</li>
+<li><code>commons-logging.jar</code> (located in <code>/spring-framework-2.5.4/jakarta-commons</code>)</li>
+</ul>
+
+
+<p>We will be adding dependencies as we progress; for the moment we&rsquo;re just getting Spring MVC set up.</p>
+
+<h4>Create a Spring MVC controller</h4>
+
+
+<p>Here&rsquo;s a very simple Spring MVC controller.  We&rsquo;ll be updating this over the course of the article.</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>mycart.CartController</code>
+<pre>package mycart;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+public class CartController {
+
+    @RequestMapping("/home.do")
+    public void doHome() {
+    }
+}</pre>
+</div>
+
+
+<p>This controller doesn&rsquo;t do much at all.  Basically we&rsquo;re using annotations to map <code>/home.do</code> requests to a JSP.</p>
+
+<h4>Create a JSP</h4>
+
+
+<p>Here&rsquo;s the home page JSP I just mentioned.  Like <code>CartController</code>, we&rsquo;ll be updating this.</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/jsp/home.jsp</code>
+<pre>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt; 
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Products for Geeks - GeekWarez&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Welcome to GeekWarez&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+</div>
+
+
+
+
+<h4>Create web.xml</h4>
+
+
+<p>Here&rsquo;s our <code>web.xml</code> file:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/web.xml</code>
+<pre name="code" class="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;web-app xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+        http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5"&gt;
+    
+    &lt;!-- Spring MVC front controller. Automatically loads mycart-servlet.xml
+         based on servlet name. --&gt;
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;mycart&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;
+            org.springframework.web.servlet.DispatcherServlet
+        &lt;/servlet-class&gt;
+    &lt;/servlet&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;mycart&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+&lt;/web-app&gt;</pre>
+</div>
+
+
+<p>All we&rsquo;re doing here is creating the Spring MVC <code>DispatcherServlet</code> front controller.  Because we&rsquo;ve named it <code>mycart</code>, the default behavior for <code>DispatcherServlet</code> is to look for a Spring application context configuration file at <code>/WEB-INF/mycart-servlet.xml</code>, which we are about to see.</p>
+
+<p>Eventually this front controller will handle not only our &ldquo;normal&rdquo; non-SWF requests, but also our SWF requests.  However I&rsquo;m getting ahead of myself.</p>
+
+<h4>Create the Spring application context file</h4>
+
+
+<p>Here&rsquo;s <code>mycart-servlet.xml</code>, which <code>DispatcherServlet</code> loads as just explained:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/mycart-servlet.xml</code>
+<pre name="code" class="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-2.5.xsd"&gt;
+    
+    &lt;!-- This activates post-processors for annotation-based config --&gt;
+    &lt;!-- http://www.infoq.com/articles/spring-2.5-part-1 --&gt;
+    &lt;context:annotation-config/&gt;
+    
+    &lt;context:component-scan base-package="mycart"/&gt;
+    
+    &lt;!-- Enables POJO @Controllers (like CartController) --&gt;
+    &lt;bean class=
+"org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/&gt;
+    
+    &lt;!-- Enables annotated methods on POJO @Controllers (like CartController) --&gt;
+    &lt;bean class=
+"org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/&gt;
+    
+    &lt;!-- Maps a logical view name to a physical resource --&gt;
+    &lt;bean id="viewResolver" class=
+"org.springframework.web.servlet.view.InternalResourceViewResolver"&gt;
+        &lt;property name="prefix" value="/WEB-INF/jsp/"/&gt;
+        &lt;property name="suffix" value=".jsp"/&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;</pre>
+</div>
+
+
+<p>Nothing special here assuming you already know Spring MVC.</p>
+
+<h3>Milestone 1: Spring MVC is working</h3>
+
+
+<p>At this point you should be able to deploy the application.  Point your browser at</p>
+
+<center><code>http://localhost:8080/mycart1/home.do</code></center>
+
+
+<p>and you should get a very simple home page.  If so, congratulations, Spring MVC is working.</p>
+
+<p>Now it&rsquo;s time to create our first flow using Spring Web Flow.</p>
+
+<div class="outro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
+</div>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/04/smtp-and-smtp-auth/">SMTP and SMTP-AUTH</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-04T17:31:39-07:00" pubdate data-updated="true">May 4<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This article explains the basics of the Simple Mail Transport Protocol (SMTP) and its extension, SMTP-AUTH. SMTP is the <i>de facto</i> standard application layer protocol for sending e-mail across the Internet, and SMTP-AUTH augments SMTP by supporting client authentication, which allows clients to use an SMTP server as an e-mail relay.</p>
+
+<p>If you haven&rsquo;t played with SMTP over telnet before, it&rsquo;s entertaining and possibly even eye-opening. You&rsquo;ll learn how spammers use SMTP and SMTP-AUTH to achieve their nefarious ends. Hopefully you won&rsquo;t use it for that but this article explains enough of SMTP that you&rsquo;ll understand how to use and abuse it.</p>
+
+<div class="alert warning"><strong>WARNING: OUR TELNET SESSION IS NOT ENCRYPTED.</strong> Even though we use base64 encoding to send the username/password pair to the server, base64 is not encryption. It prevents casual observers from seeing your password, but it can easily be reversed and hence you are basically sending your password in the clear. If you manually start a telnet session such as the one below (and do so only if you are comfortable that you understand the risks involved), I strongly suggest changing your password on the SMTP server immediately afterward.</div>
+
+
+
+
+<h3>Send yourself an e-mail from &lt;insert_sith_lord_here&gt;</h3>
+
+
+<p>Have you ever wanted to receive an e-mail from your favorite Sith Lord? Let&rsquo;s open up a telnet session that does just that. To do that you will need an SMTP server, which as mentioned above allows you to send e-mail over the Internet. You will also need to know your username and password for the SMTP server as most SMTP servers require that. You can get the SMTP server&rsquo;s host and port from your ISP, and presumably you set the username and password up with your ISP as well.</p>
+
+<pre>$ telnet smtp.example.com 25
+
+S: 220 smtp.example.com ESMTP Sendmail 8.13.8/8.13.6; Thu, 27 Mar 2008 23:14:59 -0700
+
+C: EHLO wheelersoftware.com
+
+S: 250-smtp.example.com Hello wheelersoftware.com [204.13.10.15], pleased to meet you
+S: 250-ENHANCEDSTATUSCODES
+S: 250-PIPELINING
+S: 250-EXPN
+S: 250-VERB
+S: 250-8BITMIME
+S: 250-SIZE 20000000
+S: 250-DSN
+S: 250-ETRN
+S: 250-AUTH LOGIN PLAIN
+S: 250-STARTTLS
+S: 250-DELIVERBY
+S: 250 HELP
+
+C: AUTH LOGIN
+
+S: 334 VXNlcm5hbWU6
+
+C: d2lsbGll
+
+S: 334 UGFzc3dvcmQ6
+
+C: ZnVuc210cA==
+
+S: 235 2.0.0 OK Authenticated
+
+C: MAIL FROM:&lt;darth.vader@deathstar.com&gt;
+
+S: 250 2.1.0 &lt;darth.vader@deathstar.com&gt;... Sender ok
+
+C: RCPT TO:&lt;willie@example.com&gt;
+
+S: 250 2.1.5 &lt;willie@example.com&gt;... Recipient ok
+
+C: DATA
+
+S: 354 Enter mail, end with "." on a line by itself
+
+C: Date: Thu, 27 Mar 2008 23:12:49 -0700 (MST)
+C: From: darth.vader@deathstar.com
+C: To: willie@example.com
+C: Subject: Great article
+C: 
+C: Hi Willie,
+C: I enjoyed your article on TCP/IP-based application protocols.
+C: Join me, and together we can rule the galaxy as father and son.
+C: Darth Vader
+C: .
+
+S: 250 2.0.0 m2S6ExD6029743 Message accepted for delivery
+
+C: QUIT
+
+S: 221 2.0.0 smtp.example.com closing connection
+
+[The server closes the connection]</pre>
+
+
+
+
+<h3>Session analysis</h3>
+
+
+
+
+<pre>$ telnet smtp.example.com 25
+
+S: 220 smtp.example.com ESMTP Sendmail 8.13.8/8.13.6; Thu, 27 Mar 2008 23:14:59 -0700</pre>
+
+
+<p>The session begins with me telnetting to an SMTP server using port 25, which is the default SMTP port. If you don&rsquo;t know the location of an SMTP server on your network, you&rsquo;ll need to talk to your local sysadmin or else your ISP.</p>
+
+<p>The server issues a 220 reply code (indicating that the service is ready) and identifies itself as being an ESMTP (Extended SMTP) server.</p>
+
+<pre>C: EHLO wheelersoftware.com
+
+S: 250-smtp.example.com Hello wheelersoftware.com [204.13.10.15], pleased to meet you
+S: 250-ENHANCEDSTATUSCODES
+S: 250-PIPELINING
+S: 250-EXPN
+S: 250-VERB
+S: 250-8BITMIME
+S: 250-SIZE 20000000
+S: 250-DSN
+S: 250-ETRN
+S: 250-AUTH LOGIN PLAIN
+S: 250-STARTTLS
+S: 250-DELIVERBY
+S: 250 HELP</pre>
+
+
+<p>SMTP has a <code>HELO</code> command that one uses to communicate the client host to the SMTP server, but ESMTP servers support <code>EHLO</code> (which stands for &ldquo;Extended HELLO&rdquo;), which returns a list of extensions (commands and keywords) that the ESMTP server supports. For example, the <code>STARTTLS</code> command allows the client to start a TLS (Transport Layer Security) session with the server so that the communication will be encrypted.</p>
+
+<pre>C: AUTH LOGIN
+
+S: 334 VXNlcm5hbWU6
+
+C: d2lsbGll
+
+S: 334 UGFzc3dvcmQ6
+
+C: ZnVuc210cA==
+
+S: 235 2.0.0 OK Authenticated</pre>
+
+
+<p>This is the SMTP-AUTH part. SMTP-AUTH adds to SMTP support for client authentication, and so now I tell the server that I want to log in. The server responds with the humorous (to me, anyway) response &ldquo;VXNlcm5hbWU6&rdquo;, which is the base64 encoding of &ldquo;Username:&rdquo;. (You can encode and decode these using <a href="http://www.motobit.com/util/base64-decoder-encoder.asp">this base64 encoder/decoder</a>; now you can see why I said above that base64 doesn&rsquo;t provide you any real protection.) I provide the base64-encoded version of my username (willie &rarr; d2lsbGll). Then the server asks me for my password; &ldquo;UGFzc3dvcmQ6&rdquo; is the base64 encoding of &ldquo;Password:&rdquo;. So I provide it (funsmtp &rarr; ZnVuc210cA==). Server checks the password and gives me the A-OK.</p>
+
+<pre>C: MAIL FROM:&lt;darth.vader@deathstar.com&gt;
+
+S: 250 2.1.0 &lt;darth.vader@deathstar.com&gt;... Sender ok
+
+C: RCPT TO:&lt;willie@example.com&gt;
+
+S: 250 2.1.5 &lt;willie@example.com&gt;... Recipient ok
+
+C: DATA
+
+S: 354 Enter mail, end with "." on a line by itself
+
+C: Date: Thu, 27 Mar 2008 23:12:49 -0700 (MST)
+C: From: darth.vader@deathstar.com
+C: To: willie@example.com
+C: Subject: Great article
+C: 
+C: Hi Willie,
+C: I enjoyed your article on TCP/IP-based application protocols.
+C: Join me, and together we can rule the galaxy as father and son.
+C: Darth Vader
+C: .
+
+S: 250 2.0.0 m2S6ExD6029743 Message accepted for delivery</pre>
+
+
+<p>Here I&rsquo;m just entering in the e-mail headers and body itself. When I&rsquo;m done, I just enter . on a line by itself, and the server accepts the message for delivery.</p>
+
+<pre>C: QUIT
+
+S: 221 2.0.0 smtp.example.com closing connection</pre>
+
+
+<p>Finally I log out.</p>
+
+<h3>Conclusion</h3>
+
+
+<p>That&rsquo;s it! Nothing new or earth-shattering here, but it&rsquo;s definitely useful to know how the SMTP protocol works and what you can do with it. Happy e-mailing!</p>
+
+<h3>Resources</h3>
+
+
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/Smtp">SMTP - Wikipedia</a>: Nice overview of SMTP, including a sample communications session over telnet.</li>
+<li><a href="http://en.wikipedia.org/wiki/SMTP-AUTH">SMTP-AUTH - Wikipedia</a>: Describes the SMTP-AUTH extension to SMTP, which adds client authentication to the SMTP protocol.</li>
+<li><a href="http://cr.yp.to/smtp.html">SMTP: Simple Mail Transfer Protocol</a></li>
+<li><a href="http://cr.yp.to/smtp/ehlo.html">The EHLO verb and SMTP extensions</a></li>
+<li><a href="http://www.greenend.org.uk/rjk/2000/05/21/smtp-replies.html">SMTP reply codes</a></li>
+</ul>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/27/tutorial-wireshark-in-fifteen-minutes/">Tutorial: Wireshark in Fifteen Minutes</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-27T18:15:29-07:00" pubdate data-updated="true">Mar 27<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>If you&rsquo;ve ever wanted the fastest possible introduction to the Wireshark network protocol analyzer, today is your lucky day.  I&rsquo;m going to show you how to do something useful with Wireshark in fifteen minutes, even if you&rsquo;ve never used it before.</p>
+
+<p>This tutorial is a quickstart.  It is not at all comprehensive.  But if you just want to try it out then this is for you.</p>
+
+<p><b>Step 1.</b> <a href="http://www.wireshark.org/">Download</a> and install Wireshark.  I&rsquo;m using version 0.99.8 for Windows.  The installation is completely straightforward.</p>
+
+<p><b>Step 2.</b> Start it up.</p>
+
+<p><b>Step 3.</b> Think of some network application running on your machine you&rsquo;d like to investigate.  For this tutorial I&rsquo;ll take a look at an SMTP (e-mail) session initiated by an application I wrote.  I&rsquo;ll pretend I&rsquo;m troubleshooting the SMTP communication and to do that I want to see what&rsquo;s happening between my app and the SMTP server.  You can pick whatever you like but pick something where you know the IP address of the remote host.  For instance you might pick an HTTP communication between your machine and a remote host.  Anyway write the IP address down.</p>
+
+<p><b>Step 4.</b> From the Wireshark menubar, choose Capture &rarr; Options.  First, pick the interface (i.e., network interface card, or NIC) you want to investigate.  Don&rsquo;t press the Start button yet.</p>
+
+<p><b>Step 5.</b> <strong>IMPORTANT: TURN <a href="http://en.wikipedia.org/wiki/Promiscuous_mode">PROMISCUOUS MODE</a> OFF!  IF YOU&rsquo;RE AT WORK, YOUR NETWORK ADMINISTRATOR MAY SEE YOU RUNNING IN PROMISCUOUS MODE AND SOMEBODY MAY DECIDE TO FIRE YOU FOR THAT.</strong>  Don&rsquo;t risk it, especially not for a tutorial.  Don&rsquo;t press the Start button yet.</p>
+
+<p><b>Step 6.</b> We need to create a capture filter to prevent Wireshark from capturing all network traffic going through the interface we chose in Step 4.  It is surprising just how much network traffic goes through the interface and we don&rsquo;t want to see all of it.  In the text field next to the &ldquo;Capture Filter&rdquo; button, type <code>host &lt;ip_address&gt;</code>, substituting in the IP address you care about for the <code>&lt;ip_address&gt;</code> part.  This will create a filter that passes only that traffic either originating from or going to the specified host.</p>
+
+<p><b>Step 7.</b> Now you can press Start.  Wireshark is now capturing any data involving the specified IP address, whether as a source or as a destination.</p>
+
+<p><b>Step 8.</b> If you aren&rsquo;t already doing so, run the application of interest.  In this case I&rsquo;m going to run the SMTP client that I mentioned in Step 3.  You should see a list of packets appear in the Wireshark window.</p>
+
+<p><b>Step 9.</b>  Let&rsquo;s take a look at the SMTP session that my app had with the SMTP server.  Go to Analyze &rarr; Follow TCP Stream.  You should see the TCP stream content.  Here&rsquo;s what I saw in mine.  I&rsquo;ve suppressed certain parts for security reasons but you get the picture:</p>
+
+<pre>220 [suppressed] ESMTP Sendmail 8.13.8/8.13.6; Fri, 28 Mar 2008 01:15:04 -0700
+EHLO [suppressed]
+250-[suppressed] Hello [suppressed], pleased to meet you
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-EXPN
+250-VERB
+250-8BITMIME
+250-SIZE 20000000
+250-DSN
+250-ETRN
+250-AUTH LOGIN PLAIN
+250-STARTTLS
+250-DELIVERBY
+250 HELP
+AUTH LOGIN
+334 VXNlcm5hbWU6
+[suppressed]
+334 UGFzc3dvcmQ6
+[suppressed]
+535 5.7.0 authentication failed</pre>
+
+
+<p>The above is an SMTP-AUTH session that shows a failed authentication.  As you can imagine, this sort of visibility can be extremely useful in troubleshooting networked applications.  For instance, here I can see that my app was able to connect with the SMTP server and send my credentials, but the SMTP server rejected them.</p>
+
+<p>That obviously just scratches the surface with respect to Wireshark&rsquo;s capabilities, but that should be enough to get you started.  Have fun!</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/19/setting-up-public-key-authentication-pka-over-ssh/">Setting Up Public Key Authentication (PKA) Over SSH</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-19T07:18:48-07:00" pubdate data-updated="true">Mar 19<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I assume you already know the whys, concepts, and terminology; this is just a statement of the steps involved. I&rsquo;m using OpenSSH and a DSA key pair.</p>
+
+<h3>Step 1</h3>
+
+
+<p>Generate a key pair:</p>
+
+<pre>ssh-keygen -t dsa
+Generating public/private dsa key pair.
+Enter file in which to save the key (/home/Willie/.ssh/id_dsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/Willie/.ssh/id_dsa.
+Your public key has been saved in /home/Willie/.ssh/id_dsa.pub.
+The key fingerprint is:
+f2:f7:5b:9b:f7:64:2b:d8:fe:ca:ad:f5:13:35:9f:63 Willie@ARCATA</pre>
+
+
+<p>This creates your key pair, and places them in your <code>~/.ssh</code> directory. The public key is <code>id_dsa.pub</code>; the private key is <code>id_dsa</code>. If it isn&rsquo;t already obvious, the public key is not a secret, and the private key is. :&ndash;)</p>
+
+<h3>Step 2</h3>
+
+
+<p>Install the public key to any SSH servers for which you&rsquo;d like to use PKA. To do this, SSH into the server machine and open up the <code>~/.ssh/authorized_keys</code> file in a text editor. If you haven&rsquo;t already installed a public key to the server in the past, then you&rsquo;ll be creating a new file. Just append the contents of your id_dsa.pub file to <code>authorized_keys</code>. Here&rsquo;s mine:</p>
+
+<pre>ssh-dss AAAAB3NzaC1kc3MAAACBAOybEZ4kAaKROXoibeR+V/ajTY3L/aN6K5lVbdWKsw+9uPl/cyj4
+6Qu5UYHkLS5tiGci8Olx7jNfku4/k1z8/JoGDTqwAixMxgb/NNKTUB7ZnhxfVTenSI/oVtM/lNpCiOdg
+U7ESOyNrxPFVU6K1pWId+LGxeweWTw+08vwIOShTAAAAFQDx6q5JWhV2EDGUMXFwj3QF8+8a4wAAAIBW
+Mee5MphZPYxG7la772tAYREo+37eXfP3SW49GmPHJFdydFcf5VtroLlzKJ1Iy9HUwnKjiEv2qE1B2xVD
+jJslgQ34QVKKswQDRCXlyshyKbbRMd37MSYNpNqdZ5gTJT+EMa8+NoTUGwXOitSMMtx2WmpVo4Fu7Fp1
+eDYvSVChjAAAAIB6uisHso6iPMz11qbKNaHSIqIAV+7iNJZD7aeFuytLDG20Y70b4Jy4Mr4g8RH+MtAL
+fyq6aTcv/g/j2DMeJjwjqLXQFbaFekmQEOfoQ6IZJ5CylthMP1PzRcR5KeCUInKj9CRkTlWLlTMk5es+
+VEebIHg9SWNstkjWBLwlQhemgA== Willie@ARCATA</pre>
+
+
+<p>(For formatting purposes, I&rsquo;ve included line breaks above, but don&rsquo;t introduce line breaks into your public key when you paste it into <code>authorized_keys</code>.)</p>
+
+<h3>Step 3</h3>
+
+
+<p>Adjust the permissions on your <code>.ssh</code> directory, and on the files inside it, so that nobody else can write to them.</p>
+
+<h3>Step 4</h3>
+
+
+<p>Set up the SSH agent. This allows you to enter your passphrase one time per shell session instead of having to type it in every time you want to SSH to your server. Just type <code>ssh-agent</code> followed by <code>ssh-add</code>. Some people just put this in their startup script (e.g., <code>.bash_profile</code>). You&rsquo;ll need to use <code>eval $(ssh-agent)</code> instead of <code>ssh-agent</code> if you choose to do that. You&rsquo;ll have to enter your passphrase every time you open a shell, but after that you can SSH anywhere where you&rsquo;ve installed your public key without having to enter your passphrase.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/19/apachetomcat-integration/">Apache/Tomcat Integration</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-19T06:51:54-07:00" pubdate data-updated="true">Mar 19<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Here&rsquo;s a step-by-step tutorial that shows how to integrate Tomcat 5.5.x with Apache 2.0.x under Windows XP using the AJP 1.3 connector. The exact versions I used for this tutorial were Tomcat 5.5.9 and Apache 2.0.54, but the instructions ought to work for Tomcat 5.5.x and Apache 2.0.x generally.</p>
+
+<h3>Preliminaries</h3>
+
+
+
+
+<h4>Step 1</h4>
+
+
+<p>Decide which directory you want to use to deploy your web app. In a bit we will be pointing both Tomcat and Apache at this directory.</p>
+
+<h3>Configure Tomcat</h3>
+
+
+
+
+<h4>Step 2</h4>
+
+
+<p>In your Tomcat <code>server.xml</code> file, make sure that your AJP 1.3 connector config is not commented out. Mine looks like this:</p>
+
+<pre>&lt;Connector port="8009" 
+    enableLookups="false"
+    redirectPort="8443"
+    protocol="AJP/1.3"/&gt;</pre>
+
+
+<p>and it immediately follows the config for the HTTP connector running on port 8080 (Tomcat default). The AJP connector listens on port 8009 for requests that Apache forwards to Tomcat. The idea is that Apache services the requests for static content itself, and forwards requests requiring servlet/JSP processing. Incidentally, if you don&rsquo;t intend to use Tomcat as a standalone server, you should comment out the Coyote standalone connector that listens on port 8080.</p>
+
+<h4>Step 3</h4>
+
+
+<p>Also in <code>server.xml</code>, point the Catalina engine at the directory you just chose. In my own case, the config looks like this:</p>
+
+<pre>&lt;Engine name="Catalina" defaultHost="localhost"&gt;
+    &lt;Host name="localhost" appBase="C:/cygwin/home/web/deploy"
+          unpackWARs="true" autoDeploy="true"
+          xmlValidation="false" xmlNamespaceAware="false"&gt;
+         &lt;Valve className="org.apache.catalina.valves.AccessLogValve"
+                directory="C:/cygwin/home/web/logs" prefix="localhost_access_log."
+                suffix=".txt" pattern="common" resolveHosts="false"/&gt;
+    &lt;/Host&gt;
+&lt;/Engine&gt;</pre>
+
+
+
+
+<h3>Configure Apache</h3>
+
+
+
+
+<h4>Step 4</h4>
+
+
+<p>Download the <code>mod_jk</code> binary from the URL given in the References section below. The specific version I am using is a Windows binary, <code>mod_jk-1.2.14-apache-2.0.54.so</code>. <code>mod_jk</code> is the Apache module that allows Apache to talk to Tomcat.</p>
+
+<h4>Step 5</h4>
+
+
+<p>Copy the file you just downloaded into the Apache modules directory, but note that you need to rename it to <code>mod_jk.so</code>.</p>
+
+<h4>Step 6</h4>
+
+
+<p>Put a <code>workers.properties</code> file in the Apache configuration directory, right next to <code>httpd.conf</code>. Here is a sample <code>workers.properties</code> file; obviously you&rsquo;ll need to modify it to match your own local environment.</p>
+
+<h4>Step 7</h4>
+
+
+<p>Now modify <code>httpd.conf</code> to tell Apache about <code>mod_jk</code> and about our <code>workers.properties</code> file. Note that the worker name you choose here needs to match the worker name that you defined in <code>workers.properties</code>. Also, you will have to decide which requests get forwarded to Tomcat, and specify that here as JK mountpoints. Here&rsquo;s the configuration I&rsquo;m using; modify as necessary:</p>
+
+<pre># Load mod_jk module
+# Update this path to match your modules location
+LoadModule jk_module C:/apache-2.0.54/Apache2/modules/mod_jk.so
+
+# Where to find workers.properties
+# Update this path to match your conf directory location
+# (put workers.properties next to httpd.conf)
+JkWorkersFile C:/apache-2.0.54/Apache2/conf/workers.properties
+
+# Where to put jk logs
+# Update this path to match your logs directory location
+# (put mod_jk.log next to access_log)
+JkLogFile C:/cygwin/home/web/logs/mod_jk.log
+
+# Set the jk log level [debug/error/info]
+JkLogLevel info
+
+# Select the log format
+JkLogStampFormat "[%a %b %d %H:%M:%S %Y] "
+
+# JkOptions indicate to send SSL KEY SIZE, 
+JkOptions +ForwardKeySize +ForwardURICompat -ForwardDirectories
+
+# JkRequestLogFormat set the request format 
+JkRequestLogFormat "%w %V %T"
+
+# Specify which requests get forwarded to Tomcat.  (My web app is called
+# "mywebapp"; change as necessary.  Note that I'm forwarding Struts *.do
+# requests to Tomcat, along with the top-level home page request, which in my
+# case happens to be a Struts request.)
+JkMount /mywebapp/ ajp13w
+JkMount /mywebapp/*.do ajp13w
+JkMount /mywebapp/*.jsp ajp13w</pre>
+
+
+
+
+<h4>Step 8</h4>
+
+
+<p>Modify <code>httpd.conf</code> so that it obtains documents from the same directory you chose in step 1 above.</p>
+
+<p>That should do it. If you access your web app on port 80, things should hopefully work the way you want them to. Important: do not try to access your web app on port 8080, especially if you commented out the Coyote connector in <code>server.xml</code>. The whole point of the above was to put Tomcat behind Apache, and now we have that. Client requests come in on port 80, and if there are requests whose URIs match the JkMount URIs specified in <code>httpd.conf</code>, then Apache forwards those to Tomcat on port 8009 via an AJP 1.3 request.</p>
+
+<h3>References</h3>
+
+
+<ul>
+<li><a href="http://tomcat.apache.org/tomcat-5.5-doc/config/ajp.html">The AJP Connector</a>: Explains what you need to do in <code>server.xml</code> if you want to get fancy with your AJP config.</li>
+</ul>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/18/annotation-based-transactions-in-spring/">Annotation-based Transactions in Spring</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-18T15:52:55-07:00" pubdate data-updated="true">Mar 18<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>The post shows how to use transaction management annotations in Spring.  I&rsquo;m using Spring 2.5 though these features have been available at least since Spring 2.0.</p>
+
+<p>Spring provides several different approaches to transaction management:</p>
+
+<ul class="square">
+    <li><b>Programmatic:</b> You can write your transactions using Java source code directly.  Normally you wouldn&#8217;t do this unless you needed fine-grained control over some particular transaction.</li>
+    <li>
+        <b>Declarative:</b> You can declare transaction definitions in either a centralized way using XML or in a distributed way using annotations:
+        <ul class="square">
+            <li>
+                <b>XML-based:</b> You can configure transactions in Spring&#8217;s centralized application context file.  Once again you have options:
+                <ul class="square">
+                    <li><b>Proxy-based:</b> In this approach you wrap your service beans with transactional proxies.  The proxy and the service bean both implement the same Java interface so the application can&#8217;t tell them apart.  This is a fairly verbose approach with respect to the actual context configuration though there are techniques you can use to streamline the configuration.</li>
+                    <li><b>AOP-based:</b> Here you define AOP aspects to endow your service beans with transactional semantics.  Not quite as verbose as the proxy-based approach.</li>
+                </ul>
+            </li>
+            <li><b>Annotation-based:</b> You can use Java 5 annotations to distribute transaction configuration across Java classes.</li>
+        </ul>
+    </li>
+</ul>
+
+
+<p>As the title suggests, this article deals with annotation-based configuration.  In my opinion this is the cleanest and most sensible approach: context file configuration is almost nil and the transaction definitions are conveniently located with the service interfaces and/or beans themselves.</p>
+
+<p>Let&rsquo;s start with a basic overview of transactions, and then we&rsquo;ll get to the good stuff.</p>
+
+<h3>Transaction basics</h3>
+
+
+<p>Feel free to skip this section if you already understand transactions and just want to see how to define transactions in Spring using annotations.</p>
+
+<p>The core idea behind a transaction is that it&rsquo;s a complex operation completed as an all-or-nothing set of simpler operations.  If one of the simpler operations fails, then none of the operations should be applied.</p>
+
+<p>The classic example is making a purchase, and indeed this is probably where the name &ldquo;transaction&rdquo; comes from.  There are several steps:</p>
+
+<ol>
+<li>Pull funds from buyer&#8217;s account</li>
+<li>Add funds to seller&#8217;s account</li>
+<li>Decrease product inventory</li>
+</ol>
+
+
+<p>A failure could happen at any of those steps.  For example, at step 1, if the buyer doesn&rsquo;t have enough money, then the transaction should fail.  (We wouldn&rsquo;t add funds to the seller&rsquo;s account and we wouldn&rsquo;t decrease product inventory.)  At step 2, if the seller&rsquo;s account has been frozen due to suspected involvement in illegal activities, then the transaction should fail.  At step 3, if the product is out of stock, then again the transaction should fail.</p>
+
+<p>That&rsquo;s just the classic example.  There are other examples that are transactions in the technical sense even though a non-technical person wouldn&rsquo;t normally regard them as transactions <i>per se</i>.  For instance, my web site allows end users to submit comments on articles. I have a database table for comments and a separate link table that links comments to their associated articles.  (I have it this way because I want to be able to relate comments to other entities as well.)  So to add a comment, I need to insert a record into the comment table and then another record into the link table.  If either of those inserts fails, then I don&rsquo;t want to run either one.  That&rsquo;s a transaction too, at least in the narrower technical sense that we&rsquo;re discussing here.</p>
+
+<p>I would say that the all-or-nothing nature of transactions is their defining characteristic, but it is generally recognized that there are four major characteristics we have in mind when we call something a transaction.  They are the ACID properties.</p>
+
+<h4>ACID properties</h4>
+
+
+<p>ACID is an acronym that stands for atomic, consistent, isolated and durable.  An operation is a transaction if and only if it has these four characteristics, which I&rsquo;ll describe briefly:</p>
+
+<ul class="square">
+
+<li><b>Atomic:</b> This is the aforementioned all-or-nothing property. Even though a transaction comprises multiple operations, it is completed as a single logical unit of work.  Either the whole thing succeeds or none of it does.</li>
+
+<li><b>Consistent:</b> We want our &#8220;transactional resource&#8221; (which in most cases means our database) to be consistent with reality.  So for example if I have 4,132 widgets in stock after I sell you five of them, then I want the database to say that I have 4,132 widgets in stock after I run a <code>sell(you, 5, widget)</code> transaction. The consistency property means that after a transaction completes, the database (or whatever transactional resource we&#8217;re using) matches up with the real world.</li>
+
+<li><b>Isolated:</b> In general we want to be able to run lots of transactions against the database at the same time, and we don&#8217;t want to make a big mess out of things in the process.  The isolation property means that when you run a transaction, it achieves its results without interference from other transactions.  That doesn&#8217;t mean that the transactions can&#8217;t run concurrently&mdash;it just means that the transactions shouldn&#8217;t corrupt each other in the process.  In practice it&#8217;s nontrivial to strike the right balance between concurrency and isolation; transactions however exhibit some level of isolation, and well-designed transactions exhibit the &#8220;right&#8221; amount of isolation.</li>
+
+<li><b>Durable:</b> This just means that after a transaction has ended, its results are made persistent.  Probably they would have called this property &#8220;persistent&#8221; instead of &#8220;durable&#8221;, but &#8220;ACIP&#8221; is not as cool as &#8220;ACID&#8221;.</li>
+
+</ul>
+
+
+
+
+<h4>Defining individual transactions</h4>
+
+
+<p>Now that we know what transactions are, we need to understand how individual transactions are actually specified.  Defining a transaction involves picking a chunk of code (maybe a method, maybe a set of methods, maybe a block of code inside a method) and setting values for the following five parameters:</p>
+
+<ul class="square">
+
+<li><b>Propagation behavior:</b> When defining a transaction we must specify its &#8220;boundaries&#8221;: where does the transaction start and where does it end?  In Spring (and also in EJB), the boundaries of a transaction may or may not coincide with the boundaries of a Java method.  In one respect this is not unlike using the <code>synchronized</code> keyword: if one synchronized method calls another on the same class, then the protected scope includes both methods, not just one, and so the boundaries do not coincide with a single method.  But the difference is that with transactions you have a lot more flexibility as far as defining the boundaries.  Certainly it is possible to enter a transaction starting from one method and then include additional method calls within the scope of that initial transaction.  But you can do other things too, such as declare that calls to other methods open up new transactions, or that a given method must always run within the scope of an existing transaction, etc.  I won&#8217;t go over all the options here but there are seven and you can see them here: <a href="http://static.springframework.org/spring/docs/2.5.0/api/org/springframework/transaction/TransactionDefinition.html">transaction propagation options</a>.  Probably <code>PROPAGATION_REQUIRED</code> is the most typical.</li>
+
+<li><b>Isolation level:</b> I mentioned above that in practice concurrency trades against isolation.  (Once again there&#8217;s an analogy with threads, incidentally.)  You can specify the level of isolation you need for a given transaction; the general rule of thumb is assign the weakest isolation level you can safely get away with so as to maximize concurrency.  Again I won&#8217;t go into the details but you can find them here: <a href="http://static.springframework.org/spring/docs/2.5.0/api/org/springframework/transaction/TransactionDefinition.html">transaction isolation levels</a>.  The most typical cases are <code>ISOLATION_READ_COMMITTED</code> and <code>ISOLATION_REPEATABLE_READ</code>.  The <code>ISOLATION_READ_UNCOMMITTED</code> is so weak as to be almost useless in practice, and <code>ISOLATION_SERIALIZABLE</code> is so strong that you don&#8217;t want to use it unless you really, really need the safety it provides: it&#8217;s a concurrency-killer.</li>
+
+<li><b>Timeout:</b> I&#8217;m currently reading a great book on software development called <a href="http://www.pragprog.com/titles/mnee">Release It!: Design and Deploy Production-Ready Software</a>, by Michael T. Nygard.  In a nutshell this book makes the case that designing software against a functional requirements document isn&#8217;t (at all) the same thing as designing software for the data center, and to do the latter you need to assume that serious bugs will infiltrate your production releases and design your software to deal with that reality.  One of the key insights is that problems occur primarily at integration points, and one of the strategies for dealing with that is to use timeouts. Transaction timeouts allow the calling application to give up if the database hasn&#8217;t completed the transaction within a specifiable interval of time.</li>
+
+<li><b>Read-only:</b> This flag indicates whether the transaction will be, well, read-only.  If so, you can flag it as such and the underlying database or other resource can apply optimizations based on that fact.</li>
+
+<li><b>Rollback behavior:</b> By default, both Spring and EJB roll back a transaction (i.e., cancel it without applying any of the changes) when runtime exceptions, but not when checked exceptions occur.  You can modify that behavior.</li>
+
+</ul>
+
+
+<p>With that overview concluded, let&rsquo;s now examine Spring&rsquo;s annotation-based transaction management.  It is ridiculously straightforward.</p>
+
+<h3>Annotating the Java interface</h3>
+
+
+<p>With Spring, you typically apply transaction annotations either to Java interfaces for service beans, or else to the service beans themselves.  If you apply the annotations to the interfaces then the transaction definition holds true for any classes implementing those interfaces.  We&rsquo;ll do that here, but remember that you can apply the annotations to the service beans themselves as well.</p>
+
+<p>Here&rsquo;s an interface for a simple article service.  This service allows the application to get an article by ID, and also to post a comment for a given article.</p>
+
+<pre>package myapp.service;
+
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import myapp.model.Article;
+import myapp.model.Comment;
+
+@Transactional(
+    propagation = Propagation.REQUIRED,
+    isolation = Isolation.DEFAULT,
+    readOnly = true)
+public interface ArticleService {
+    
+    Article getArticle(long articleId);
+    
+    @Transactional(readOnly = false)
+    void postComment(long articleId, Comment comment);
+}</pre>
+
+
+
+
+<div class="alert warning">In this example I&#8217;m annotating the <code>ArticleService</code> interface, but that works only with interface-based proxies, not for class-based proxies. In general it&#8217;s better to place the <code>@Transactional</code> annotation on concrete classes, not interfaces. &mdash; Willie</div>
+
+
+<p>The first thing to notice is again just how ridiculously simple this is.  I probably don&rsquo;t need to explain it but I will anyway just to be safe.  The <code>@Transactional</code> annotation we define on the interface is setting default values for the various methods that form the interface.  So we are saying here that unless the method itself specifies otherwise, we want <code>Propagation.REQUIRED</code> for the propagation behavior, we want the default isolation level, and we want to flag methods as read-only.</p>
+
+<p>The only other piece to mention is that I&rsquo;ve overridden the <code>readOnly</code> setting for the <code>postComment</code> method since that&rsquo;s obviously a write method.</p>
+
+<p>If it could be any simpler I&rsquo;m not sure how.  Now let&rsquo;s look at the Spring configuration file.</p>
+
+<h3>The Spring configuration file</h3>
+
+
+<p>Here it is:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"&gt;
+    
+    &lt;!-- Wire beans here --&gt;
+    ...
+
+    &lt;bean id="transactionManager"
+        class="org.springframework.orm.hibernate3.HibernateTransactionManager"&gt;
+        ...
+    &lt;/bean&gt;
+    
+    &lt;!-- This tells Spring to activate annotation-driven transactions --&gt;
+    &lt;tx:annotation-driven/&gt;
+&lt;/beans&gt;</pre>
+
+
+<p>That&rsquo;s it&mdash;really!  Make sure you include both the <code>aop</code> and <code>tx</code> namespaces and schema locations since that&rsquo;s where the magic lives.  You have to wire your beans up just like you normally would (though note that you can even <a href="spring-autowiring-annotations.html">use annotations to autowire your beans</a>).  And you have to provide a transaction manager of one kind or another.  I&rsquo;m using the Hibernate 3 <code>HibernateTransactionManager</code> but use whatever you want. If you give your transaction manager the id <code>transactionManager</code>, then you can take advantage of a little Spring convention-over-configuration: <code>&lt;tx:annotation-driven&gt;</code> will pick that up automatically.  (And if you want to call your transaction manager something else, that&rsquo;s fine too.  Just reference that ID using the <code>transaction-manager</code> attribute of the <code>&lt;tx:annotation-driven&gt;</code> element.)</p>
+
+<p>Oh, the <code>&lt;tx:annotation-driven&gt;</code> element just tells Spring that you want it to pick the transaction definitions up from the Java annotations.  I&rsquo;m not sure how it works behind the scenes, but I think Spring will run through the beans in your context and create the necessary transaction aspects.  Not positive about that&mdash;if you know the details, I&rsquo;m interested&mdash;but in any case you end up with annotation-driven transactions.  Nice!</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/13/how-to-recaptcha-your-java-application/">How to reCAPTCHA Your Java Application</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-13T07:42:36-07:00" pubdate data-updated="true">Mar 13<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>reCAPTCHA is a novel CAPTCHA system developed by the School of Computer Science at my alma mater, Carnegie Mellon University. I won&rsquo;t explain its coolness here since they do a good job of <a href="http://recaptcha.net/learnmore.html" target="_blank">explaining that coolness themselves</a>. What I will do here, though, is explain how to get your Java app reCAPTCHAed very quickly. Note however that reCAPTCHA is not tied specifically to Java.</p>
+
+<p>In this tutorial I&rsquo;m using Spring 2.5 MVC with annotations, and Commons Validator, but you&rsquo;ll be able to follow this whether or not you&rsquo;re using Spring and Validator.</p>
+
+<p>These instructions are based on the <a href="http://recaptcha.net/apidocs/captcha/client.html" target="_blank">instructions from the reCAPTCHA site</a>, but I&rsquo;m focusing specifically on Java integration whereas the site makes you dig around a bit to get the information. Not too bad, but enough that there&rsquo;s value in my writing a Java-specific tutorial. :&ndash;)</p>
+
+<h3>Step 1. Get your account and key pair</h3>
+
+
+<p>First, go to <a href="http://recaptcha.net/" target="_blank">the reCAPTCHA web site</a> and create an account. As part of that account creation process you&rsquo;ll have to specify the domain your reCAPTCHA will be protecting. The reCAPTCHA site will will give you a key pair for that domain. The key pair allows you to authenticate your reCAPTCHA requests to the reCAPTCHA servers, as we&rsquo;ll see.</p>
+
+<h3>Step 2. Put the reCAPTCHA JavaScript in your app&#8217;s form</h3>
+
+
+
+
+<p><p>Here&rsquo;s the JavaScript you need to put in your form, meaning in between the &lt;form&gt; and &lt;/form&gt; tags. Put it wherever you would have normally put a CAPTCHA text box. This JavaScript will generate the reCAPTCHA box when users request the page:</p>
+
+<p><pre>&lt;script type=&ldquo;text/javascript&rdquo;</p>
+
+<pre><code>src="http://api.recaptcha.net/challenge?k=&amp;lt;your_public_key&amp;gt;"&amp;gt;
+</code></pre>
+
+<p>&lt;/script&gt;
+&lt;noscript&gt;</p>
+
+<pre><code>&amp;lt;iframe src="http://api.recaptcha.net/noscript?k=&amp;lt;your_public_key&amp;gt;"
+    height="300" width="500" frameborder="0"&amp;gt;&amp;lt;/iframe&amp;gt;&amp;lt;br&amp;gt;
+&amp;lt;textarea name="recaptcha_challenge_field" rows="3" cols="40"&amp;gt;
+&amp;lt;/textarea&amp;gt;
+&amp;lt;input type="hidden" name="recaptcha_response_field" 
+    value="manual_challenge"&amp;gt;
+</code></pre>
+
+<p>&lt;/noscript&gt;</pre></p>
+
+<p>It probably goes without saying, but I&rsquo;ll say it anyway: you need to replace the two instances of &lt;your_public_key&gt; with the public key that you received during the account creation process. Be careful that you don&rsquo;t use your private key by mistake. If you do that then everybody will be able to see your private key and act like they&rsquo;re you.</p>
+
+<p><h3>Step 3. Run your app and make sure the reCAPTCHA is showing up</h3></p>
+
+<p>You should see it there in your form. It&rsquo;s OK if you are coming from <code>localhost</code> or <code>127.0.0.1</code> instead of the domain that you specified in the account creation step; reCAPTCHA will allow that. You should be able to click the buttons on the reCAPTCHA box and they should work.</p>
+
+<p>After you goof around with that a bit, you&rsquo;ll need to update your app itself so that it actually uses the reCAPTCHA box to validate the form submission.</p>
+
+<p>Let&rsquo;s turn now to the Java piece, where we validate the form and reCAPTCHA.</p>
+
+<p><h3>Step 4: Validate the form, including the reCAPTCHA</h3></p>
+
+<p>You&rsquo;ll find it convenient to <a href="http://code.google.com/p/recaptcha/downloads/list?q=label:java-Latest" target="_blank">download the recaptcha4j library</a>. It provides a simple API for submitting user responses to the reCAPTCHA server and finding out whether a user&rsquo;s response is valid.</p>
+
+<p>At this point I&rsquo;m just going to lay some code on you. As mentioned above I&rsquo;m using <a href="spring-mvc-annotations.html">Spring 2.5 MVC with annotations</a> and Commons Validator, but the main thing is for you to look at how I&rsquo;m using the <code>ReCaptchaImpl</code> class and just copy that.</p>
+
+<p><pre>import net.tanesha.recaptcha.ReCaptchaImpl;
+import net.tanesha.recaptcha.ReCaptchaResponse;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;</p>
+
+<p>&hellip;</p>
+
+<p>@RequestMapping(value = &ldquo;/comments/postcomment.do&rdquo;, method = RequestMethod.POST)
+public String doPost(</p>
+
+<pre><code>    HttpServletRequest req,
+    @RequestParam("articleId") long articleId,
+    @RequestParam("recaptcha_challenge_field") String challenge,
+    @RequestParam("recaptcha_response_field") String response,
+    @ModelAttribute("comment") Comment comment,
+    BindingResult result) {
+
+// Validate the form (other than the reCAPTCHA)
+validator.validate(comment, result);
+
+// Validate the reCAPTCHA
+String remoteAddr = req.getRemoteAddr();
+ReCaptchaImpl reCaptcha = new ReCaptchaImpl();
+
+// Probably don't want to hardcode your private key here but
+// just to get it working is OK...
+reCaptcha.setPrivateKey("&amp;lt;your_private_key&amp;gt;");
+
+ReCaptchaResponse reCaptchaResponse =
+    reCaptcha.checkAnswer(remoteAddr, challenge, response);
+
+if (!reCaptchaResponse.isValid()) {
+    FieldError fieldError = new FieldError(
+        "comment",
+        "captcha",
+        response,
+        false,
+        new String[] { "errors.badCaptcha" },
+        null,
+        "Please try again.");
+    result.addError(fieldError);
+}
+
+// If there are errors, then validation fails.
+if (result.hasErrors()) {
+    String path = comment.getPagePath();
+    log.debug("Form validation error; forwarding to " + path);
+    return "forward:" + path;
+}
+
+// Else validation succeeds.
+log.debug("Form validation passed");
+comment.setIpAddress(remoteAddr);
+comment.setDate(new Date());
+
+// Post the comment
+log.debug("Posting the comment");
+articleService.postComment(articleId, comment);
+log.debug("Comment posted");
+
+return "redirect:" + comment.getPagePath() + "#comments";
+</code></pre>
+
+<p>}</pre></p>
+
+<p>Here&rsquo;s the <a href="http://static.springframework.org/spring/docs/2.5.x/api/org/springframework/validation/FieldError.html" target="_blank">API for FieldError</a> since I know that&rsquo;s not clear from the code. Basically I&rsquo;m using that to indicate that a validation error occurred and set up an error message for the user. If you&rsquo;re not using Spring/Validator then you&rsquo;ll do something else here.</p>
+
+<p>The <code>Comment</code> class is just a class from my app, so don&rsquo;t worry about that one.</p>
+
+<p><h3>You did it</h3></p>
+
+<p>Good job. If you&rsquo;re feeling ambitious, try to defeat reCAPTCHA with super-advanced OCR. If you succeed then it represents an advance in OCR technology. Tell somebody and become famous. :&ndash;)</p>
+
+<p><div class="endnote">Post migrated from my Wheeler Software site.</div></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/10/make-web-services-transparent-with-spring-2-5-and-apache-cxf-2-0/">Make Web Services Transparent With Spring 2.5 and Apache CXF 2.0</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-10T13:43:21-07:00" pubdate data-updated="true">Mar 10<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In our <a href="http://springinpractice.com/2008/02/29/web-services-with-spring-2-5-and-apache-cxf-2-0/">previous installment</a>, we showed how to create Java-first web services in Spring 2.5 using Apache CXF 2.0.  This time we&rsquo;re going to show how to consume web services, once again using Spring 2.5 and Apache CXF 2.0.</p>
+
+<p>Something great about the Spring/CXF duo is that your web service clients don&rsquo;t know that they&rsquo;re web service clients.  The approach is simple: as in any Spring app, you define Java interfaces for your services and inject the service implementations into the client classes that use them (such as MVC controllers).  CXF allows you to generate dynamic proxies according to the same Java service contract&mdash;the proxies are just another service implementation&mdash;and hence your client classes have no idea that they&rsquo;re calling web services.</p>
+
+<p>This article shows you what you need to do to get it to work.  If you haven&rsquo;t already done so, please see the previous article, <a href="http://springinpractice.com/2008/02/29/web-services-with-spring-2-5-and-apache-cxf-2-0/">Web services with Spring 2.5 and Apache CXF 2.0</a>, to get your web services set up.  That article describes a user comment service that I build upon in the current article.</p>
+
+<h3>Project setup</h3>
+
+
+<p>First we need to set up the web service client project. Here are the various dependencies involved.</p>
+
+<h4>Spring 2.5</h4>
+
+
+<p>These all come from the Spring 2.5 distribution.  You can use whatever Spring 2.5 libraries you need for your own app.  Here I just happen to be using Spring MVC and JSTL, though neither of those is required for Spring/CXF integration.</p>
+
+<ul class="square">
+<li><code>jstl.jar</code> (in <code>lib/j2ee</code>)</li>
+<li><code>spring.jar</code></li>
+<li><code>spring-mvc.jar</code> (in <code>dist/modules</code>; the sample app uses Spring MVC)</li>
+<li><code>standard.jar</code> (in <code>lib/jakarta-taglibs</code>; this is the JSTL reference implementation)</li>
+</ul>
+
+
+
+
+<h4>CXF and dependencies</h4>
+
+
+<p>You can get these from the CXF 2.0.4 distribution.  Whether all of these are really necessary I don&rsquo;t know&mdash;for example I&rsquo;m not sure why we need the JavaMail library&mdash;but I&rsquo;m just going by what the CXF user manual says.</p>
+
+<ul class="square">
+<li><code>commons-logging-1.1.jar</code></li>
+<li><code>cxf-2.0.4-incubator.jar</code> (this is the main CXF JAR)</li>
+<li><code>geronimo-activation_1.1_spec-1.0-M1.jar</code> (or Sun&#8217;s Activation jar)</li>
+<li><code>geronimo-annotation_1.0_spec-1.1.jar</code> (JSR 250)</li>
+<li><code>geronimo-javamail_1.4_spec-1.0-M1.jar</code> (or Sun&#8217;s JavaMail jar)</li>
+<li><code>geronimo-servlet_2.5_spec-1.1-M1.jar</code> (or Sun&#8217;s Servlet jar)</li>
+<li><code>geronimo-stax-api_1.0_spec-1.0.jar</code></li>
+<li><code>geronimo-ws-metadata_2.0_spec-1.1.1.jar (JSR 181)</code></li>
+<li><code>jaxb-api-2.0.jar</code></li>
+<li><code>jaxb-impl-2.0.5.jar</code></li>
+<li><code>jaxws-api-2.0.jar</code></li>
+<li><code>neethi-2.0.2.jar</code></li>
+<li><code>saaj-api-1.3.jar</code></li>
+<li><code>saaj-impl-1.3.jar</code></li>
+<li><code>wsdl4j-1.6.1.jar</code></li>
+<li><code>wstx-asl-3.2.1.jar</code></li>
+<li><code>XmlSchema-1.3.2.jar</code></li>
+<li><code>xml-resolver-1.2.jar</code></li>
+</ul>
+
+
+
+
+<h4>Aegis dependencies</h4>
+
+
+<p>In addition to the above, you will need to add <code>jdom-1.0.jar</code> since Aegis databinding uses it.</p>
+
+<h4>Client library dependencies</h4>
+
+
+<p>In the previous article we created three classes in the <code>contactus</code> package: <code>ContactUsService</code>, <code>ContactUsServiceImpl</code>, and <code>Message</code>.  You will need to JAR <code>ContactUsService</code> (which is a service interface) and <code>Message</code> (which is a domain model class) and add the JAR as a dependency for the client application.  You do not need to include <code>ContactUsServiceImpl</code> since that&rsquo;s the backend for the web service; it&rsquo;s not part of the interface.  On the client side we will see that CXF will create a web service proxy according to the <code>ContactUsService</code> interface, and it will use <code>Message</code> for marshalling and unmarshalling.</p>
+
+<p>With the dependencies in place, we&rsquo;ll now create a simple client that can view user messages using the web service we created the last time.  We&rsquo;re not going to treat the &ldquo;post user message&rdquo; operation in this article though it works in exactly the same way (which is why we&rsquo;re not going to treat it).</p>
+
+<h3>Creating the client application</h3>
+
+
+<p>This sample app is based on Spring MVC.  For that we&rsquo;ll need to create a couple of MVC controllers, a couple of JSPs, a <code>web.xml</code> file, and a Spring application context file.</p>
+
+<h4>Spring MVC controller for viewing messages</h4>
+
+
+<p>First we&rsquo;ll create a Spring MVC controller called <code>myapp.ViewMessagesController</code>.</p>
+
+<pre>package myapp;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import contactus.ContactUsService;
+
+@Controller
+public final class ViewMessagesController {
+    private ContactUsService contactUsService;
+    
+    public void setContactUsService(ContactUsService contactUsService) {
+        this.contactUsService = contactUsService;
+    }
+    
+    @RequestMapping("/viewmessages.do")
+    public ModelMap viewMessages() {
+        return new ModelMap("messages", contactUsService.getMessages());
+    }
+}</pre>
+
+
+<p>Since this is an article about Spring/CXF integration and not about Spring MVC, I won&rsquo;t go into the details of Spring MVC or annotation-based configuration.  If however you are interested in learning more, please see my article <a href="spring-mvc-annotations.html">Annotation-Based MVC in Spring 2.5</a>.</p>
+
+<p>At any rate, the code is easy enough to understand.  We have a dependency injection method <code>setContactUsService</code>.  Any implementation of <code>ContactUsService</code> could go in there, including the one we wrote in the previous article, <code>contactus.ContactUsServiceImpl</code>.  In this case, though, we&rsquo;re going to use a CXF-generated dynamic proxy as shown below.</p>
+
+<p>The <code>viewMessages</code> method simply grabs a list of messages from the <code>ContactUsService</code> and puts it in a model that the JSP will be able to see.</p>
+
+<h4>JSP for viewing messages</h4>
+
+
+<p>You will need to put this file at <code>/WEB-INF/jsp/viewmessages.jsp</code> in order for the request mapping to work as specified in <code>ViewMessagesController</code> above and <code>myapp-servlet.xml</code> below.  For those who are unfamiliar with Spring&rsquo;s annotation-based MVC configuration, the <code>@RequestMapping(&ldquo;/viewmessages.do&rdquo;)</code> annotation maps the given path to the <code>viewMessages</code> method, and the view resolver in <code>myapp-servlet.xml</code> tells Spring to look inside <code>/WEB-INF/jsp/</code> for the corresponding JSP.</p>
+
+<pre>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;View Messages&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;View Messages&lt;/h1&gt;
+        &lt;ul&gt;
+            &lt;c:forEach var="message" items="${messages}"&gt;
+                &lt;li&gt;${message.lastNameFirstName} (${message.email}): ${message.text}&lt;/li&gt;
+            &lt;/c:forEach&gt;
+        &lt;/ul&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+
+<p>This just displays a list of user messages.  I&rsquo;m using JSTL and JSTL EL.  The <code>${messages}</code> reference in the <code>forEach</code> tag refers to the list of messages that I placed in the <code>ModelMap</code> in <code>ViewMessagesController.viewMessages</code> above.  Spring takes care of making the contents of the <code>ModelMap</code> available to the JSP.</p>
+
+<h4>web.xml</h4>
+
+
+
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    id="ws" version="2.5"&gt;
+    
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;myapp&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+        &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+    &lt;/servlet&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;myapp&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+&lt;/web-app&gt;</pre>
+
+
+<p>This just sets up the Spring MVC <code>DispatcherServlet</code> and tells the servlet container that the <code>*.do</code> extension mapping goes to the <code>DispatcherServlet</code>.</p>
+
+<p>Now let&rsquo;s dig into the guts of it&mdash;the Spring application context.</p>
+
+<h3>Creating the Spring application context</h3>
+
+
+<p>This is where all the good stuff is: in the Spring application context.</p>
+
+<h4>Spring application context: myapp-servlet.xml</h4>
+
+
+<p>Put this file at <code>/WEB-INF/myapp-servlet.xml</code> so that it&rsquo;s where <code>DispatcherServlet</code> expects to find it. The <code>myapp-</code> part needs to match the value specified for <code>&lt;servlet-name&gt;</code> above.  (There&rsquo;s a way to change this but I&rsquo;m not worried about that for this sample app.)</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"&gt;
+
+    &lt;!-- Configure CXF to use Aegis data binding instead of JAXB --&gt;
+    &lt;bean id="aegisBean"
+          class="org.apache.cxf.aegis.databinding.AegisDatabinding"
+          scope="prototype"/&gt;
+    &lt;bean id="jaxwsAndAegisServiceFactory"
+          class="org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean"
+          scope="prototype"&gt; 
+        &lt;property name="dataBinding" ref="aegisBean"/&gt;
+        &lt;property name="serviceConfigurations"&gt;
+          &lt;list&gt;
+            &lt;bean class="org.apache.cxf.jaxws.support.JaxWsServiceConfiguration"/&gt;
+            &lt;bean class="org.apache.cxf.aegis.databinding.AegisServiceConfiguration"/&gt;
+            &lt;bean class="org.apache.cxf.service.factory.DefaultServiceConfiguration"/&gt; 
+          &lt;/list&gt;
+        &lt;/property&gt;
+    &lt;/bean&gt;
+
+    &lt;!-- Factory to create the dynamic proxy --&gt;
+    &lt;bean id="contactUsFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean"&gt;
+        &lt;property name="serviceClass" value="contactus.ContactUsService"/&gt;
+        &lt;property name="address"
+                  value="http://localhost:8080/cxf-service-example/contactus"/&gt;
+        &lt;property name="serviceFactory" ref="jaxwsAndAegisServiceFactory"/&gt;
+    &lt;/bean&gt;
+    
+    &lt;!-- Web service dynamic proxy --&gt;
+    &lt;bean id="contactUsService"
+          class="contactus.ContactUsService"
+          factory-bean="contactUsFactory"
+          factory-method="create"/&gt;
+    
+    &lt;!-- Controllers --&gt;
+    &lt;bean class="myapp.ViewMessagesController"&gt;
+        &lt;property name="contactUsService" ref="contactUsService"/&gt;
+    &lt;/bean&gt;
+    
+    &lt;!-- View resolvers --&gt;
+    &lt;bean id="viewResolver"
+          class="org.springframework.web.servlet.view.InternalResourceViewResolver"&gt;
+        &lt;property name="prefix" value="/WEB-INF/jsp/"/&gt;
+        &lt;property name="suffix" value=".jsp"/&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;</pre>
+
+
+<p>There&rsquo;s lots to talk about here.  Let&rsquo;s do it bean-by-bean:</p>
+
+<p><b>aegisBean:</b> CXF supports different databinding mechanisms (i.e., mechanisms for mapping back and forth between Java and XML). The default is JAXB but I was never able to get that to work for complex data types like <code>contactus.Message</code>.  So instead I used Aegis (which is bundled with CXF) and it works great.</p>
+
+<p><b>jaxwsAndAegisServiceFactory:</b> This factory creates service models either based on a service&rsquo;s WSDL or else based on the structure of the service class.  These service models are in turn used by the service proxy factory, which creates your client-side web-service-aware dynamic proxies.  Anyway, you don&rsquo;t have to worry too much about <code>jaxwsAndAegisServiceFactory</code>; the only reason we&rsquo;re including it is that we need to be able to tell it to use Aegis databinding.</p>
+
+<p><b>contactUsFactory:</b> This is a factory that generates the dynamic proxies we&rsquo;ve been talking about.  These proxies implement the <code>contactus.ContactUsService</code> interface, and this is what gives us the transparency referenced in the title of this article: the client application has no idea that it&rsquo;s working with web services at all (other than in the configuration).  If you wanted to, you could collapse the client app and the <code>contactus.ContactUsServiceImpl</code> backend and remove the web service altogether.  That&rsquo;s part of the beauty of Spring (and of Java interfaces and dynamic proxies).</p>
+
+<p>We specify not only the service class but also the web service endpoint address and the service factory.  Again the only reason we have to deal with the service factory at all is that we&rsquo;re using the non-default Aegis databinding.  If you&rsquo;re able to get it working with JAXB then more power to you.  (And I&rsquo;d be interested in hearing about it!)</p>
+
+<p><strong>IMPORTANT:</strong> You will need to set the host, port and context path in the <code>address</code> property to match your web service deployment address.  The one in the config file is the one I&rsquo;m using but you&rsquo;re probably using at least a different context path.</p>
+
+<p>The other beans are just Spring MVC beans.  Nothing we need to worry about here.</p>
+
+<p>We&rsquo;re now ready to try it out!</p>
+
+<h3>Try it out</h3>
+
+
+<p>Your application&rsquo;s view messages functionality should now work. Start up both your web service and your application.  Then point your browser to</p>
+
+<p><code><a href="http://localhost:8080/cxf-client-example/viewMessages.do">http://localhost:8080/cxf-client-example/viewMessages.do</a></code></p>
+
+<p><strong>(well, substitute in your host, port and context path!)</strong> and you should see the pair of hardcoded messages that we created in the last article:</p>
+
+<div style="margin:20px 0"><img src="http://wheelersoftware.s3.amazonaws.com/articles/spring-cxf-consuming-web-services/browser.png" alt="Screenshot" /></div>
+
+
+<p>If you got the screen above, then it&rsquo;s working!  Your application is pulling the messages from a web service, and transparently so.  If you decide you don&rsquo;t want to use web services, no problem: just pull the web service out and wire the service bean right into your MVC controller or other client class.</p>
+
+<p>I hope you found this useful.  As always let me know if you have comments, questions or corrections.</p>
+
+<h3>Resources</h3>
+
+
+
+
+<ul class="square">
+<li><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-cxf-consuming-web-services/cxf-service-example.zip">Service source code (JARs not included)</a></li>
+<li><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-cxf-consuming-web-services/cxf-client-example.zip">Client source code (JARs not included)</a></li>
+</ul>
+
+
+<p><strong>Update (2008-09-03):</strong> Sam Brodkin was kind enough to create <a href="http://www.jroller.com/brodkin/entry/a_maven_project_for_willie">a Maven project</a> for this article. Thanks Sam!</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/02/29/web-services-with-spring-2-5-and-apache-cxf-2-0/">Web Services With Spring 2.5 and Apache CXF 2.0</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-29T12:19:27-08:00" pubdate data-updated="true">Feb 29<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In this tutorial I explain how to get a web service up and running using Spring 2.5 and Apache CXF 2.0, which is the <a href="http://xfire.codehaus.org/XFire+and+Celtix+Merge">combination of Celtix and XFire</a> and is considered XFire 2.0.  (I don&rsquo;t know what the Celtix team would say about that, but that&rsquo;s what the <a href="http://xfire.codehaus.org/">XFire site</a> says.)  Here I just treat the web service itself; to learn about consuming the web service using Spring and CXF, please see the article <a href="http://springinpractice.com/2008/03/10/make-web-services-transparent-with-spring-2-5-and-apache-cxf-2-0/">Make web services transparent with Spring 2.5 and Apache CXF 2.0</a>.</p>
+
+<p>CXF supports both WSDL-first and Java-first web service development.  This article takes the Java-first approach.</p>
+
+<h3>Project setup</h3>
+
+
+<p>The first thing you&rsquo;ll need to do is <a href="http://incubator.apache.org/cxf/download.html">download CXF from the Apache CXF site</a>.  At the time of this writing the project is in incubator status and the latest version is 2.0.4.  That&rsquo;s the version I&rsquo;m using.</p>
+
+<p>You&rsquo;ll also find it useful to know about the section of the CXF user documentation that deals with <a href="http://cwiki.apache.org/CXF20DOC/writing-a-service-with-spring.html">writing a service with Spring</a>, but currently the docs describe how to integrate with Spring 2.0, and since I want to integrate with Spring 2.5, there are some differences worth highlighting along the way.</p>
+
+<p>Also, the docs describe a &ldquo;Hello, World&rdquo; web service that just returns a string, and in this tutorial we want to go a <i>little</i> further than that and actually do a class databinding.</p>
+
+<p>Here are the service-side dependencies you&rsquo;ll need.  Inside the distribution there is a file called <code>WHICH_JARS</code> that describes in a little more detail what the JARs are for and which ones you&rsquo;ll really need, if you&rsquo;re interested in that.  But the following is essentially the list given in the user docs.</p>
+
+<h4>CXF itself</h4>
+
+
+
+
+<ul class="square">
+    <li><code>cxf-2.0.4-incubator.jar</code></li>
+</ul>
+
+
+
+
+<h4>CXF dependencies</h4>
+
+
+<p>Note that for CXF 2.0.4 the documented dependencies are almost but not quite the same as the JARs that are actually included in the distribution, once again, at the time of this writing (February 2008).  Specifically the <code>stax</code>, <code>neethi</code> and <code>XMLSchema</code> JARs are not the ones listed.  Here&rsquo;s the corrected list for CXF 2.0.4:</p>
+
+<ul class="square">
+<li><code>commons-logging-1.1.jar</code></li>
+<li><code>geronimo-activation_1.1_spec-1.0-M1.jar</code> (or Sun&#8217;s Activation jar)</li>
+<li><code>geronimo-annotation_1.0_spec-1.1.jar</code> (JSR 250)</li>
+<li><code>geronimo-javamail_1.4_spec-1.0-M1.jar</code> (or Sun&#8217;s JavaMail jar)</li>
+<li><code>geronimo-servlet_2.5_spec-1.1-M1.jar</code> (or Sun&#8217;s Servlet jar)</li>
+<li><code>geronimo-stax-api_1.0_spec-1.0.jar</code></li>
+<li><code>geronimo-ws-metadata_2.0_spec-1.1.1.jar (JSR 181)</code></li>
+<li><code>jaxb-api-2.0.jar</code></li>
+<li><code>jaxb-impl-2.0.5.jar</code></li>
+<li><code>jaxws-api-2.0.jar</code></li>
+<li><code>neethi-2.0.2.jar</code></li>
+<li><code>saaj-api-1.3.jar</code></li>
+<li><code>saaj-impl-1.3.jar</code></li>
+<li><code>wsdl4j-1.6.1.jar</code></li>
+<li><code>wstx-asl-3.2.1.jar</code></li>
+<li><code>XmlSchema-1.3.2.jar</code></li>
+<li><code>xml-resolver-1.2.jar</code></li>
+</ul>
+
+
+
+
+<h4>Aegis dependencies</h4>
+
+
+<p>In addition to the above, you will need to add <code>jdom-1.0.jar</code> since Aegis databinding uses it.</p>
+
+<h4>Spring dependencies</h4>
+
+
+<p>In this case ignore what&rsquo;s in the CXF documentation, because we&rsquo;re integrating with Spring 2.5 instead of Spring 2.0.  I&rsquo;m going to assume that you have Spring 2.5 already set up on your web services project, including Hibernate or anything else that your web services will need on the implementation side.</p>
+
+<p>Just in case you were wondering, you don&rsquo;t need the Spring MVC module&rsquo;s <code>DispatcherServlet</code> as CXF comes with its own servlet, <code>org.apache.cxf.transport.servlet.CXFServlet</code>.</p>
+
+<p>OK, that should be good for basic project setup.  Let&rsquo;s write a simple service.</p>
+
+<h3>Let&#8217;s write a simple web service</h3>
+
+
+<p>Let&rsquo;s go basic but realistic and implement a &ldquo;contact us&rdquo; web service.  The idea is that lots of different applications and/or web sites need to have a web-based form to allow end users to contact an admin team (business, tech support, development, whatever) responsible for monitoring such communications.  We&rsquo;ll implement a web service so that multiple applications can share it easily.  There will be two operations:</p>
+
+<ul class="square">
+    <li><b>View the list of submitted messages:</b> This allows the admin team to see what the end users are saying.</li>
+    <li><b>Post a message:</b> This allows end users to ask a question, tell us how great we are, demand their money back, etc.</li>
+</ul>
+
+
+
+
+<h4>Create the object model</h4>
+
+
+<p>As we want to explore more than the barest &ldquo;Hello, World&rdquo; functionality, let&rsquo;s create a <code>Message</code> class that we can pass to the service and that we can get from the service.  This will allow us to play a bit with Java/XML databindings.</p>
+
+<p>Here&rsquo;s the <code>Message</code> class:</p>
+
+<pre>package contactus;
+
+import org.apache.cxf.aegis.type.java5.IgnoreProperty;
+
+public final class Message {
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String text;
+    
+    public Message() { }
+    
+    public Message(String firstName, String lastName, String email, String text) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.text = text;
+    }
+
+    public String getFirstName() { return firstName; }
+
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+
+    public void setLastName(String lastName) { this.lastName = lastName; }
+    
+    @IgnoreProperty
+    public String getLastNameFirstName() { return lastName + ", " + firstName; }
+    
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) { this.email = email; }
+
+    public String getText() { return text; }
+
+    public void setText(String text) { this.text = text; }
+}</pre>
+
+
+<p>In real life I might have a bunch of Hibernate annotations in there (I&rsquo;m a fan of annotation-based configuration), and I would create a DAO.  But as this is a tutorial, we&rsquo;ll keep it simple.</p>
+
+<p>If you look carefully, however, you can see that I did in fact include an annotation. The <code>@IgnoreProperty</code> annotation is part of the Aegis databinding mechanism, which comes with CXF but is not the default.  (JAXB is the default.)  I ended up using Aegis instead of JAXB because JAXB was giving me trouble when I tried to return complex data types like <code>Message</code> from a web service.  Maybe it works and maybe it doesn&rsquo;t&mdash;I don&rsquo;t know&mdash;but when I plugged Aegis in it worked immediately and now I intend to use Aegis.  (More on JAXB/Aegis a little later.)  Anyway, <code>@IgnoreProperty</code> tells Aegis that I don&rsquo;t want <code>getLastNameFirstName()</code> to show up in the auto-generated WSDL.  It&rsquo;s just a read-only convenience method.</p>
+
+<h4>Create the service interface</h4>
+
+
+<p>Now we define a service interface.</p>
+
+<pre>package contactus;
+
+import java.util.List;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
+
+@WebService
+public interface ContactUsService {
+    
+    List&lt;Message&gt; getMessages();
+    
+    void postMessage(@WebParam(name = "message") Message message);
+}</pre>
+
+
+<p>The <code>@WebService</code> and <code>@WebParam</code> are <a href="http://java.sun.com/javaee/5/docs/api/javax/jws/package-summary.html">JAX-WS annotations</a>.  The first indicates that the interface defines a web service interface (we&rsquo;ll use it to autogenerate a WSDL) and the second allows us to use an HTTP parameter called &ldquo;message&rdquo; to reference the operation&rsquo;s argument instead of having to call it &ldquo;arg0&rdquo;, which is the default.</p>
+
+<h4>Create the service implementation</h4>
+
+
+<p>Here&rsquo;s our simple implementation of the <code>ContactUsService</code> interface.</p>
+
+<pre>package contactus;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jws.WebService;
+
+@WebService(endpointInterface = "contactus.ContactUsService")
+public final class ContactUsServiceImpl implements ContactUsService {
+
+    @Override
+    public List&lt;Message&gt; getMessages() {
+        List&lt;Message&gt; messages = new ArrayList&lt;Message&gt;();
+        messages.add(new Message(
+                "Willie", "Wheeler", "willie.wheeler@xyz.com", "Great job"));
+        messages.add(new Message(
+                "Dardy", "Chen", "dardy.chen@xyz.com", "I want my money back"));
+        return messages;
+    }
+
+    @Override
+    public void postMessage(Message message) {
+        System.out.println(message);
+    }
+}</pre>
+
+
+<p>Here the <code>@WebService</code> annotation is marking this class as a web service implementation, and also specifying that the WSDL should be generated using the <code>ContactUsService</code> interface.</p>
+
+<p>With that, we have the Java backend for the web service. Let&rsquo;s move on to configuration.</p>
+
+<h3>Configure your web service</h3>
+
+
+<p>We need to create <code>web.xml</code> and a Spring application context file.</p>
+
+<h4>web.xml configuration</h4>
+
+
+
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    id="services" version="2.5"&gt;
+    
+    &lt;context-param&gt;
+        &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+        &lt;param-value&gt;/WEB-INF/appContext.xml&lt;/param-value&gt;
+    &lt;/context-param&gt;
+    &lt;listener&gt;
+        &lt;listener-class&gt;
+            org.springframework.web.context.ContextLoaderListener
+        &lt;/listener-class&gt;
+    &lt;/listener&gt;
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;CXFServlet&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;
+            org.apache.cxf.transport.servlet.CXFServlet
+        &lt;/servlet-class&gt;
+    &lt;/servlet&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;CXFServlet&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+&lt;/web-app&gt;</pre>
+
+
+<p>Nothing surprising here.  The main thing worth mentioning is that we&rsquo;re using the <code>CXFServlet</code> to process all requests, which we&rsquo;re assuming are all requests for web services.</p>
+
+<p>As you might guess from the <code>web.xml</code> file above, we need to create a Spring application context file called <code>appContext.xml</code>.</p>
+
+<h4>appContext.xml configuration</h4>
+
+
+
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:cxf="http://cxf.apache.org/core"
+    xmlns:jaxws="http://cxf.apache.org/jaxws"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+        http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+        http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd"
+    default-autowire="byName"&gt;
+
+    &lt;!-- Load CXF modules from cxf.jar --&gt;
+    &lt;import resource="classpath:META-INF/cxf/cxf.xml" /&gt;
+    &lt;import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" /&gt;
+    &lt;import resource="classpath:META-INF/cxf/cxf-servlet.xml" /&gt;
+    
+    &lt;!-- Enable message logging using the CXF logging feature --&gt;
+    &lt;cxf:bus&gt;
+        &lt;cxf:features&gt;
+            &lt;cxf:logging/&gt;
+        &lt;/cxf:features&gt;
+    &lt;/cxf:bus&gt;
+    
+    &lt;!-- The service bean --&gt;
+    &lt;bean id="contactUsServiceImpl" class="contactus.ContactUsServiceImpl"/&gt;
+
+    &lt;!-- Aegis data binding --&gt;
+    &lt;bean id="aegisBean"
+        class="org.apache.cxf.aegis.databinding.AegisDatabinding"
+        scope="prototype"/&gt; 
+    &lt;bean id="jaxws-and-aegis-service-factory"
+        class="org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean"
+        scope="prototype"&gt;
+        &lt;property name="dataBinding" ref="aegisBean"/&gt;
+        &lt;property name="serviceConfigurations"&gt;
+            &lt;list&gt;
+              &lt;bean class="org.apache.cxf.jaxws.support.JaxWsServiceConfiguration"/&gt;
+              &lt;bean class="org.apache.cxf.aegis.databinding.AegisServiceConfiguration"/&gt;
+              &lt;bean class="org.apache.cxf.service.factory.DefaultServiceConfiguration"/&gt; 
+            &lt;/list&gt;
+        &lt;/property&gt;
+    &lt;/bean&gt;
+ 
+    &lt;!-- Service endpoint --&gt;
+    &lt;!-- See http://incubator.apache.org/cxf/faq.html regarding CXF + Spring AOP --&gt;
+    &lt;jaxws:endpoint id="contactUsService"
+            implementorClass="contactus.ContactUsServiceImpl"
+            implementor="#contactUsServiceImpl"
+            address="/contactus"&gt;
+        &lt;jaxws:serviceFactory&gt;
+            &lt;ref bean="jaxws-and-aegis-service-factory"/&gt;
+        &lt;/jaxws:serviceFactory&gt;
+    &lt;/jaxws:endpoint&gt;
+&lt;/beans&gt;</pre>
+
+
+<p>Let&rsquo;s talk about <code>appContext.xml</code>.</p>
+
+<p>The first three imports just import some bean definitions from the CXF JAR file.  I don&rsquo;t know the details and I don&rsquo;t think we&rsquo;re supposed to care about the details.</p>
+
+<p>The bus config just puts logging in.  That&rsquo;s optional.  If you run this in a production environment you probably want to turn that off because it&rsquo;s verbose.</p>
+
+<p>The service bean definition is just telling Spring about the service bean we wrote. We&rsquo;re going to put a web service endpoint in front of it.</p>
+
+<p>The next piece on Aegis specifies the databinding mechanism we want to use for mapping back and forth between Java and XML.  I mentioned earlier that I tried using the default JAXB but was having problems getting it to work, so someone recommended to me to try Aegis and that worked like a charm.</p>
+
+<p>Finally we define the web service endpoint.  The <code>#contactUsServiceImpl</code> piece connects the endpoint up to the service bean.  (Yes, the hash mark is required.) We use the JAX-WS/Aegis service factory that we defined earlier so we can use the Aegis databinding.</p>
+
+<p>I&rsquo;m not using transactions or persistence in my simple service bean.  In a realistic service you are going to have transactions and persistence.  To make CXF play nicely with AOP (and hence Spring&rsquo;s declarative transactions) you are going to need to include the <code>implementorClass</code> attribute as I&rsquo;ve done.  For more details on that see the CXF FAQs at <a href="http://incubator.apache.org/cxf/faq.html"><a href="http://incubator.apache.org/cxf/faq.html">http://incubator.apache.org/cxf/faq.html</a></a>.</p>
+
+<h4>A validation annoyance in Eclipse</h4>
+
+
+<p>Though it in no way reflects a fault with Eclipse itself, if you are using Eclipse 3.3 you may be getting some annoying validation errors in the IDE, such as &ldquo;<code>cvc-complex-type.2.4.c: The matching wildcard is strict, but no declaration can be found for element &lsquo;jaxws:endpoint&rsquo;.</code>&rdquo;  This is because the schema locations for the <code><a href="http://cxf.apache.org/core">http://cxf.apache.org/core</a></code> and <code><a href="http://cxf.apache.org/jaxws">http://cxf.apache.org/jaxws</a></code> keys don&rsquo;t actually point at real XSDs, so the validator won&rsquo;t recognize elements from the <code>cxf</code> and <code>jaxws</code> namespaces.  (That&rsquo;s why I say it isn&rsquo;t Eclipse&rsquo;s fault.)  This doesn&rsquo;t create a problem with the actual build, but the IDE will complain as it tries to validate the Spring app context files against the missing XSDs.  I haven&rsquo;t yet discovered the &ldquo;right&rdquo; solution to this problem (I&rsquo;d be delighted to have somebody tell me) but there are three workarounds I know about:</p>
+
+<ul class="square">
+    <li>You can map the <code>http://www.springframework.org/schema/beans</code> key to the <code>http://www.springframework.org/schema/beans/spring-beans.xsd</code> location (notice that I&#8217;ve removed the <code>-2.5</code> part).  That gets rid of the validation errors though now you&#8217;re using the Spring 2.0 beans schema.  That may be OK for you.</li>
+    <li>You can turn off XML validation.  That seems pretty drastic but it&#8217;s an option (and in fact it&#8217;s what I&#8217;ve myself done).</li>
+    <li>You can just ignore the errors.  Can&#8217;t&#8230; bring&#8230; myself&#8230; to&#8230; do&#8230; it&#8230; .</li>
+</ul>
+
+
+<p>There may be something you can do with Window &rarr; Preferences &rarr; Web and XML &rarr; XML Catalog but I didn&rsquo;t see it: even if you put the <code>core.xsd</code> and <code>jaxws.xsd</code> in the catalog, those XSDs in turn reference other schema locations that don&rsquo;t resolve to an XSD and it looks like a lot of work to me.</p>
+
+<p>Anyway as I say if somebody knows the right way to handle this please let me know and I&rsquo;ll gladly update the article and credit you. :&ndash;)</p>
+
+<h3>Let &#8216;er rip</h3>
+
+
+<p>At this point you should have a working web service. Try it out. The URLs are:</p>
+
+<ul class="square">
+    <li><code>[path to CXFServlet]</code> - List of web services</li>
+    <li><code>[path to CXFServlet]/contactus?wsdl</code> - WSDL for the Contact Us service</li>
+    <li><code>[path to CXFServlet]/contactus/getMessages</code> - getMessages operation. Take a look at
+    this and notice that, as promised, the individual messages don&#8217;t contain the
+    <code>firstNameLastName</code> property, since we told Aegis to <code>@IgnoreProperty</code>.</li>
+    <li><code>[path to CXFServlet]/contactus/postMessage?message=...</code> - postMessage operation</li>
+</ul>
+
+
+<p>So for example if you are running an out-of-the-box Tomcat instance then your URLs would be</p>
+
+<ul class="square">
+    <li><code>http://localhost:8080/mywebservices</code></li>
+    <li><code>http://localhost:8080/mywebservices/contactus?wsdl</code></li>
+    <li><code>http://localhost:8080/mywebservices/contactus/getMessages</code></li>
+    <li><code>http://localhost:8080/mywebservices/contactus/postMessage?message=...</code></li>
+</ul>
+
+
+<p>replacing <code>mywebservices</code> with whatever you happened to use for your context root.</p>
+
+<p>That&rsquo;s it!  If you want to learn how to consume web services using Spring 2.5 and CXF, please see my follow-up article <a href="http://springinpractice.com/2008/03/10/make-web-services-transparent-with-spring-2-5-and-apache-cxf-2-0/">Make web services transparent with Spring 2.5 and Apache CXF 2.0</a>.</p>
+
+<p><strong>Update (2008-09-03):</strong> Sam Brodkin was kind enough to create <a href="http://www.jroller.com/brodkin/entry/a_maven_project_for_willie">a Maven project</a> for this article. Thanks Sam!</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/9/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/7/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

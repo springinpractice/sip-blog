@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2011/12/26/devops-how-not-to-collect-configuration-management-data/
 layout: post
-title: Devops: How NOT to collect configuration management data
+title: "Devops: How NOT to collect configuration management data"
 date: 2011-12-26 22:31:55
 comments: true
 categories: [Architecture, Chapter 11 - CMDB]

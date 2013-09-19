@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Fixing PKIX path building issues when using JavaMail and SMTP - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="I&rsquo;m writing this post in support of chapter 8 in my book Spring in Practice, which deals with Spring/JavaMail integration, since it&rsquo;s not &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Fixing PKIX Path Building Issues When Using JavaMail and SMTP</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-29T06:08:01-07:00" pubdate data-updated="true">Apr 29<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I&rsquo;m writing this post in support of <a href="http://springinpractice.com/category/book/chapter-8/">chapter 8</a> in my book <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, which deals with <a href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/">Spring/JavaMail integration</a>, since it&rsquo;s not always straightforward to <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">configure an app to use SMTP</a>.</p>
+
+<h3>The problem</h3>
+
+
+<p>Suppose that you&rsquo;ve configured your JavaMail app to send e-mail via an SMTP server, but you get the following error:</p>
+
+<pre>HTTP ERROR 500
+
+Problem accessing /sip/contact.html. Reason:
+
+    Mail server connection failed; nested exception is javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target. Failed messages: javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+
+Caused by:
+
+org.springframework.mail.MailSendException: Mail server connection failed; nested exception is javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target. Failed messages: javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target; message exception details (1) are:
+Failed message 1:
+javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+    at com.sun.mail.smtp.SMTPTransport.sendCommand(SMTPTransport.java:1420)
+    at com.sun.mail.smtp.SMTPTransport.sendCommand(SMTPTransport.java:1408)
+    at com.sun.mail.smtp.SMTPTransport.ehlo(SMTPTransport.java:847)
+    at com.sun.mail.smtp.SMTPTransport.protocolConnect(SMTPTransport.java:384)
+    at javax.mail.Service.connect(Service.java:297)
+    at org.springframework.mail.javamail.JavaMailSenderImpl.doSend(JavaMailSenderImpl.java:389)
+    at org.springframework.mail.javamail.JavaMailSenderImpl.send(JavaMailSenderImpl.java:340)
+    at org.springframework.mail.javamail.JavaMailSenderImpl.send(JavaMailSenderImpl.java:336)
+
+        ... snip ...
+</pre>
+
+
+<p>What&rsquo;s going on, and how do you fix it?</p>
+
+<h3>What&#8217;s going on</h3>
+
+
+<p>Your Java runtime doesn&rsquo;t trust the certificate.</p>
+
+<p>Normally Java verifies certificates through the standard <a href="http://en.wikipedia.org/wiki/Chain_of_trust">chain of trust</a> mechanism. But if that chain terminates with a certificate that Java doesn&rsquo;t trust, then Java will complain in the way described above.</p>
+
+<h3>How you fix it</h3>
+
+
+
+
+<h4>Step 1. Decide whether you want to &#8220;fix&#8221; it at all</h4>
+
+
+<p>Before you tell Java to trust the cert, make sure that that&rsquo;s actually the right thing to do. I don&rsquo;t have any guidance to offer on that particular point, but if you&rsquo;re trying to connect to a well-known service (say Google) and your Java runtime gives you the PKIX issue, that&rsquo;s a red flag.</p>
+
+<div class="alert warning">If for whatever reason you think Java ought to trust the certificate, then stop&mdash;you&#8217;re done. Don&#8217;t import the certificate into your truststore until you figure out why it (or one of the certs in the chain) isn&#8217;t already there.</div>
+
+
+
+
+<h4>Step 2. Download the certificate from the remote SMTP server</h4>
+
+
+<p>You can use <code>openssl</code> to get the cert, at least on Unix/Linux and MacOS. I think Cygwin provides <code>openssl</code> on Windows too.</p>
+
+<p>Here&rsquo;s an example for mail.kattare.com, which is the SMTP server I happen to be using. Kattare uses STARTTLS so I&rsquo;m using the <code>-starttls smtp</code> flag:</p>
+
+<pre>openssl s_client -connect mail.kattare.com:2525 -starttls smtp > kattare-smtp.cer</pre>
+
+
+<p>The call will look like it&rsquo;s hung for a little while, but it hasn&rsquo;t. You can either wait it out or else just hit Ctrl-C, as the part of the response that we&rsquo;re actually interested in returns immediately.</p>
+
+<p>Now open the file with your favorite text editor and strip out everything other than the certificate itself. Here&rsquo;s what the result looks like for the mail.kattare.com cert:</p>
+
+<pre>-----BEGIN CERTIFICATE-----
+MIIDfjCCAuegAwIBAgIDFJoPMA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT
+MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0
+aWZpY2F0ZSBBdXRob3JpdHkwHhcNMTAwOTE5MDEzMDUxWhcNMTIxMTIwMTQ0MjI4
+WjCB4TEpMCcGA1UEBRMgRFZxc0c5bkIxUGNleTNZVUFzY3otOFNWV0ZnL2Y1aU8x
+CzAJBgNVBAYTAlVTMRYwFAYDVQQKDA0qLmthdHRhcmUuY29tMRMwEQYDVQQLEwpH
+VDE3NDM3OTM5MTEwLwYDVQQLEyhTZWUgd3d3LnJhcGlkc3NsLmNvbS9yZXNvdXJj
+ZXMvY3BzIChjKTEwMS8wLQYDVQQLEyZEb21haW4gQ29udHJvbCBWYWxpZGF0ZWQg
+LSBSYXBpZFNTTChSKTEWMBQGA1UEAwwNKi5rYXR0YXJlLmNvbTCBnzANBgkqhkiG
+9w0BAQEFAAOBjQAwgYkCgYEA3E9EOUrXoPLgz/N1MFB4xtld2NyDJK5jzPk313VQ
+dldvYY8SOd6XqnO/WAmm/2FaFRjhEZ7HcNPAauVeMXW2YQVGSkimeWd8ZDbKU8o6
+vJuFJmnRpfxIIZxS1gzJanFrv7v+TtlIQRDP/YI5OnXkZ0sSLVBb2MK7wHLDbtej
+dhECAwEAAaOB1TCB0jAfBgNVHSMEGDAWgBRI5mj5K9KylddH2CMgEE8zmJCf1DAO
+BgNVHQ8BAf8EBAMCBPAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMCUG
+A1UdEQQeMByCDSoua2F0dGFyZS5jb22CC2thdHRhcmUuY29tMDoGA1UdHwQzMDEw
+L6AtoCuGKWh0dHA6Ly9jcmwuZ2VvdHJ1c3QuY29tL2NybHMvc2VjdXJlY2EuY3Js
+MB0GA1UdDgQWBBRCAb04OmdhLLLRIAtJGNgYnJKQcjANBgkqhkiG9w0BAQUFAAOB
+gQCZQVc8nNHGo5Sr1hh9ZMBK2bcivXqLeJkOVt2pQ0OoMWDsq7/ei4njcN5QJXf0
+mK3Qb4bUkdJUemS3QITRXVqNnBZaP0XUAKBxK5htwHJLuQ83q71Td6NkqSj4yS35
+jM3JXG7LRkr/G6M24RCxBKONckQy+3j1wdy/jZwfisilPg==
+-----END CERTIFICATE-----</pre>
+
+
+
+
+<h4>Step 3. Import the certificate into your local truststore</h4>
+
+
+<p>You&rsquo;ll want to import the cert into the truststore in your Java home directory. My Java home is at</p>
+
+<pre>/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home</pre>
+
+
+<p>but yours is probably somewhere else. Anyway, once you find it, the truststore is at <code>/lib/security/jssecacerts</code>, at least if you&rsquo;re using JSSE.</p>
+
+<pre>sudo keytool -import -alias [alias] -file [cert_file] -keystore [java_home]/lib/security/jssecacerts</pre>
+
+
+<p>For example, for me it&rsquo;s:</p>
+
+<pre>sudo keytool -import -alias mail.kattare.com -file kattare-smtp.cer -keystore /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/security/jssecacerts</pre>
+
+
+<p>Enter your <code>sudo</code> password and then your keystore password, and then answer yes when it asks you whether to trust the certificate. This will import the cert into the keystore (which doubles as a truststore).</p>
+
+<h4>Step 4. Restart your app and try again</h4>
+
+
+<p>Hopefully this time it works, or at least gets rid of the PKIX error.</p>
+
+<h3>References</h3>
+
+
+
+
+<ul>
+<li><a href="http://serverfault.com/questions/131627/how-to-inspect-remote-smtp-servers-tls-certificate">How to inspect remote SMTP server&#8217;s TLS certificate? [serverfault]</a>: Explains how to get the remote certificate.</li>
+<li><a href="http://stackoverflow.com/questions/373295/digital-certificate-how-to-import-cer-file-in-to-truststore-file-using">Digital Certificate: How to import .cer file in to .truststore file using? [stackoverflow]</a>: Explains how to import the certificate into your truststore.</li>
+<li><a href="http://en.wikipedia.org/wiki/STARTTLS">STARTTLS [Wikipedia]</a>: Background material on STARTTLS.</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-29T06:08:01-07:00" pubdate data-updated="true">Apr 29<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-08-communicating/'>Chapter 08 - Communicating</a>, <a class='category' href='/blog/categories/troubleshooting/'>Troubleshooting</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/" data-via="williewheeler" data-counturl="http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2012/04/25/the-spring-constructor-namespace-and-some-deep-thoughts/" title="Previous Post: The Spring constructor namespace">&laquo; The Spring constructor namespace</a>
+      
+      
+        <a class="basic-alignment right" href="/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/" title="Next Post: Configuring Jetty to use Gmail as an SMTP provider">Configuring Jetty to use Gmail as an SMTP provider &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

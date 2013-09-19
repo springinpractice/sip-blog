@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/01/17/more-skybase-screenshots/
 layout: post
-title: More Skybase screenshots
+title: "More Skybase screenshots"
 date: 2012-01-17 21:30:03
 comments: true
 categories: [Chapter 11 - CMDB, Demos, News]

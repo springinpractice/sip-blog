@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/03/10/make-web-services-transparent-with-spring-2-5-and-apache-cxf-2-0/
 layout: post
-title: Make web services transparent with Spring 2.5 and Apache CXF 2.0
+title: "Make web services transparent with Spring 2.5 and Apache CXF 2.0"
 date: 2008-03-10 20:43:21
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Tutorials]

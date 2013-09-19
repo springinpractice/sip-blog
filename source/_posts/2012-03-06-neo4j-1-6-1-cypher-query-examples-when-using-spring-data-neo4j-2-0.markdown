@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/03/06/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/
 layout: post
-title: Neo4j 1.6.1 Cypher query examples when using Spring Data Neo4j 2.0
+title: "Neo4j 1.6.1 Cypher query examples when using Spring Data Neo4j 2.0"
 date: 2012-03-06 01:36:56
 comments: true
 categories: [Chapter 02 - Data, Chapter 11 - CMDB, Quick Tips]

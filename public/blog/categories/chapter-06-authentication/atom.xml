@@ -1,0 +1,782 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Chapter 06 - Authentication | Spring in Practice]]></title>
+  <link href="http://springinpractice.com/blog/categories/chapter-06-authentication/atom.xml" rel="self"/>
+  <link href="http://springinpractice.com/"/>
+  <updated>2013-09-18T23:53:48-07:00</updated>
+  <id>http://springinpractice.com/</id>
+  <author>
+    <name><![CDATA[Willie Wheeler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Quick tip: upgrade a legacy password storage scheme]]></title>
+    <link href="http://springinpractice.com/2010/09/06/quick-tip-upgrade-a-legacy-password-storage-scheme/"/>
+    <updated>2010-09-06T15:25:39-07:00</updated>
+    <id>http://springinpractice.com/2010/09/06/quick-tip-upgrade-a-legacy-password-storage-scheme</id>
+    <content type="html"><![CDATA[<p>This one&rsquo;s a Spring Security quick tip that I wanted to share. Suppose that you have a password storage scheme that stores passwords as plaintext, and you want to upgrade that to storing hashes. No problem; simply replace the plaintext passwords with hashed versions (e.g., SHA-256).</p>
+
+<p>But what if your legacy scheme is to store hashed passwords, and you want to upgrade that to store salted, hashed passwords? Here you don&rsquo;t have the original passwords, so you can&rsquo;t construct salted, hashed versions of the originals, at least not without resorting to reversing the passwords, which we generally don&rsquo;t want to do. How do we proceed?</p>
+
+<p>It&rsquo;s easy. Just use multiple authentication providers pointing at the same source: one for hashed passwords, and one for salted, hashed passwords. Here&rsquo;s how it looks in Spring Security 3:</p>
+
+<pre style="margin:20px 0;">&lt;authentication-manager&gt;
+
+    &lt;!-- For legacy passwords --&gt;
+    &lt;authentication-provider user-service-ref="userDetailsService" /&gt;
+
+    &lt;!-- Salted, hashed passwords --&gt;
+    &lt;authentication-provider user-service-ref="userDetailsService"&gt;
+        &lt;password-encoder ref="passwordEncoder"&gt;
+            &lt;salt-source ref="saltSource" /&gt;
+        &lt;/password-encoder&gt;
+    &lt;/authentication-provider&gt;
+&lt;/authentication-manager&gt;
+
+</pre>
+
+
+<p>The first provider handles the legacy simple hash-based scheme, and the second handles the new scheme.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring Security 3 database schemas for MySQL]]></title>
+    <link href="http://springinpractice.com/2010/07/05/spring-security-database-schemas-for-mysql/"/>
+    <updated>2010-07-05T17:36:28-07:00</updated>
+    <id>http://springinpractice.com/2010/07/05/spring-security-database-schemas-for-mysql</id>
+    <content type="html"><![CDATA[<p>In preparation for a <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization?oid=hom25493">DZone Refcard on Spring Security 3</a> I&rsquo;m doing, here are the Spring Security database schemas for MySQL.</p>
+
+<p>This isn&rsquo;t intended to be an exhaustive treatment. Rather it&rsquo;s more a reference for the MySQL dialect version of the database schemas, though I included a few brief notes just to help people get a high-level understanding of the schemas. For more detailed information, please consult the <a href="http://static.springsource.org/spring-security/site/reference.html">Spring Security 3 Reference Documentation</a>.</p>
+
+<h3>User schema</h3>
+
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/users_erd.png" alt="User schema ERD" /></p>
+
+<p>Each user can have zero or more &ldquo;authorities&rdquo;, or roles. I think Spring Security expects there to be at least one role, though, because login involving roleless users fail.</p>
+
+<pre>create table users (
+    username varchar(50) not null primary key,
+    password varchar(50) not null,
+    enabled boolean not null
+) engine = InnoDb;
+
+create table authorities (
+    username varchar(50) not null,
+    authority varchar(50) not null,
+    foreign key (username) references users (username),
+    unique index authorities_idx_1 (username, authority)
+) engine = InnoDb;
+</pre>
+
+
+
+
+<h3 style="margin-top:20px;">Group schema</h3>
+
+
+<p>The group schema provides a way to organize users into groups and then assign roles to those groups. Each user inherits the roles from his associated groups.</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/groups_erd.png" alt="Group schema ERD" /></p>
+
+<pre>create table groups (
+    id bigint unsigned not null auto_increment primary key,
+    group_name varchar(50) not null
+) engine = InnoDb;
+
+create table group_authorities (
+    group_id bigint unsigned not null,
+    authority varchar(50) not null,
+    foreign key (group_id) references groups (id)
+) engine = InnoDb;
+
+create table group_members (
+    id bigint unsigned not null auto_increment primary key,
+    username varchar(50) not null,
+    group_id bigint unsigned not null,
+    foreign key (group_id) references groups (id)
+) engine = InnoDb;
+
+</pre>
+
+
+
+
+<h3 style="margin-top:20px;">Remember-me schema</h3>
+
+
+<p>Haven&rsquo;t actually used this one, but from what I understand, this schema supports a hardened, persistent remember-me authentication scheme. Spring Security&rsquo;s default remember-me scheme doesn&rsquo;t use the database at all (just a cookie).</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/remember_erd.png" alt="Remember-me schema ERD" /></p>
+
+<pre>create table persistent_logins (
+    username varchar(64) not null,
+    series varchar(64) primary key,
+    token varchar(64) not null,
+    last_used timestamp not null
+) engine = InnoDb;
+
+</pre>
+
+
+
+
+<h3 style="margin-top:20px;">ACL schema</h3>
+
+
+<p>Access control lists (ACLs) might be the most challenging aspect of Spring Security, but the underlying schema is actually pretty straightforward. The concept is that each secure domain object has an associated ACL that defines who can do what with that domain object. Exactly the same idea as permissions on an OS folder, for example.</p>
+
+<p>The SID (&ldquo;security identity&rdquo;) represents the &ldquo;who&rdquo;, and comes in both principal and role flavors; that is, the SID can be either an individual user or else it can be a role. The class and object identity, taken together, represent the domain object. Finally, the <code>acl_entry</code> table contains all the ACLs; each access control entry (ACE) specifies an ordered triple &lt;domain object, SID, permission&gt; and indicates whether the permission in question is granted or denied for the SID and domain object. To take an example, SID Ben might have the write permission granted for a particular forum message.</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/dbschemas/acl_erd.png" alt="ACL schema ERD" /></p>
+
+<pre>create table acl_sid (
+    id bigint unsigned not null auto_increment primary key,
+    principal tinyint(1) not null,
+    sid varchar(100) not null,
+    unique index acl_sid_idx_1 (sid, principal)
+) engine = InnoDb;
+
+create table acl_class (
+    id bigint unsigned not null auto_increment primary key,
+    class varchar(100) unique not null
+) engine = InnoDb;
+
+create table acl_object_identity (
+    id bigint unsigned not null auto_increment primary key,
+    object_id_class bigint unsigned not null,
+    object_id_identity bigint unsigned not null,
+    parent_object bigint unsigned,
+    owner_sid bigint unsigned,
+    entries_inheriting tinyint(1) not null,
+    unique index acl_object_identity_idx_1
+        (object_id_class, object_id_identity),
+    foreign key (object_id_class) references acl_class (id),
+    foreign key (parent_object) references acl_object_identity (id),
+    foreign key (owner_sid) references acl_sid (id)
+) engine = InnoDb;
+
+create table acl_entry (
+    id bigint unsigned not null auto_increment primary key,
+    acl_object_identity bigint unsigned not null,
+    ace_order int unsigned not null,
+    sid bigint unsigned not null,
+    mask int not null,
+    granting tinyint(1) not null,
+    audit_success tinyint(1) not null,
+    audit_failure tinyint(1) not null,
+    unique index acl_entry_idx_1 (acl_object_identity, ace_order),
+    foreign key (acl_object_identity)
+        references acl_object_identity (id),
+    foreign key (sid) references acl_sid (id)
+) engine = InnoDb;</pre>
+
+
+
+
+<h3>Sample code</h3>
+
+
+
+
+<ul>
+<li><a href="https://github.com/springinpractice/sip06">Spring in Practice, chapter 6 [GitHub]</a> - authentication</li>
+<li><a href="https://github.com/springinpractice/sip07">Spring in Practice, chapter 7 [GitHub]</a> - authorization, including ACLs</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Hashing and salting passwords with Spring Security 2]]></title>
+    <link href="http://springinpractice.com/2008/10/11/hashing-and-salting-passwords-with-spring-security-2/"/>
+    <updated>2008-10-11T12:02:44-07:00</updated>
+    <id>http://springinpractice.com/2008/10/11/hashing-and-salting-passwords-with-spring-security-2</id>
+    <content type="html"><![CDATA[<div class="intro"><span class="icon stickyNote">This post was originally written as a recipe for our book <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, but we just didn't have enough room to include it. It's still (we think, anyway) a great recipe, so we're making it available here free of charge. This will give readers of this website a chance to see the sort of recipe we're including in the book.</span>
+
+This material is based upon another post called <a href="http://springinpractice.com/2008/08/31/storing-passwords-securely/">Storing passwords securely</a>.</div>
+
+
+
+
+<h3>Prerequisites</h3>
+
+
+<p><a href="http://www.manning.com/wheeler/">4.3 Save user registrations</a></p>
+
+<h3>Key Technologies</h3>
+
+
+<p>Spring Security, hash functions (e.g., MD5, SHA-1)</p>
+
+<h2>Background</h2>
+
+
+<p>When you&rsquo;re building an application involving user passwords, one of the challenges is to protect the passwords from prying eyes. We generally want to protect user registration data in transit from the browser to the server to prevent eavesdroppers on the network from getting at that data. But it&rsquo;s not enough to protect the data in transit. It&rsquo;s as important to store it securely.</p>
+
+<p>It may not be immediately clear why you need to store the passwords securely. If, for instance, you have a corporate firewall that prevents the bad guys on the outside from getting to your password store, then why bother?</p>
+
+<p>There are a few different answers to that. First, one basic security principle is to take a layered approach. There are no security silver bullets, and so overreliance on any particular process or technology (such as firewalls) creates unnecessary risk. Storing passwords securely gives you protection if a bad guy somehow gets in. (And it happens.)</p>
+
+<p>A second answer is that the question makes the faulty assumption that the bad guys are on the outside. In an organization of any size, you can&rsquo;t be sure that you don&rsquo;t have bad guys on the inside, and the last thing you want them to do is use user passwords to log into your websites, or even other websites. The latter is a real concern since many users tend to use the same (or similar) passwords on multiple sites.</p>
+
+<p>A third answer is that even if your organization is small (maybe it&rsquo;s just you), you&rsquo;d like to be able to tell your users in your privacy policy that their passwords are stored securely, and that no one&mdash;not even the technical folks who administer the site&mdash;has any ability to see the stored passwords. That gives your users greater confidence that their information is safe and that you&rsquo;re taking security seriously.</p>
+
+<p>So let&rsquo;s get to it!</p>
+
+<h2>Problem</h2>
+
+
+<p>You want to store passwords securely to prevent anybody&mdash;even yourself and other technical staff&mdash;from being able to view them.</p>
+
+<h2>Solution</h2>
+
+
+<p>In this recipe we&rsquo;re going to use Spring Security 2 to store passwords securely. We&rsquo;ll also show how to authenticate against secured passwords.</p>
+
+<p>Spring Security makes it fairly easy to store passwords securely. The actual storage mechanism (database, LDAP or other) doesn&rsquo;t really matter since that&rsquo;s abstracted away, which is nice.</p>
+
+<p>Before we jump into the how-to part of the recipe, let&rsquo;s briefly examine hash functions and how they work, since we&rsquo;ll need this background to understand what we&rsquo;re doing in the subsequent discussion.</p>
+
+<h3>Understanding hash functions</h3>
+
+
+<p>The idea behind this recipe is that we want to store passwords in encrypted form in the persistent store. There are in general two different approaches to encryption here: ciphers and hash functions. The two are similar in that each provides a way to encrypt data, but they differ in that only ciphers provide an easy way (assuming you know a secret key) to decrypt the data. Hash functions don&rsquo;t provide for easy decryption; hence they are sometimes referred to as one-way hash functions. All hash functions, however, are one-way.</p>
+
+<p>When storing encrypted passwords, the typical practice is to use a hash function, such as MD5 or SHA-1, to encrypt the password before saving it. The reason for preferring a hash function to a cipher is that we don&rsquo;t usually want anybody to be able to recover the password: we never (or should never) display it on the screen or in e-mails, for example. A string of plaintext encrypted by a hash function is called a <em>hash</em>.</p>
+
+<p>Here are a couple of examples of hashed text:</p>
+
+<ul>
+<li><code>4fe0e930dd0adf9daaba0b7219bbe1f1bbb7809c</code></li>
+<li><code>3af00c6cad11f7ab5db4467b66ce503e</code></li>
+</ul>
+
+
+<p>The first string is an SHA-1 hash of the string <code>dardy</code>, and the second is an MD5 hash of the string <code>friend</code>. You can easily Google for free online hash calculators, both for MD5 and for SHA-1.</p>
+
+<p>You might ask how we can use stored password hashes to authenticate users if we can&rsquo;t recover the plaintext password from the hash. The answer is that we don&rsquo;t compare plaintext passwords, but rather we compare the hashes. When the user submits a username/password pair, we hash the submitted password and compare that hash with the stored hash. If the two match, then we conclude that the submitted password was correct.</p>
+
+<p>We can draw this conclusion due to a special property of hash functions: in general, different plaintext inputs map to different hashes. That is, in general, different plaintext inputs very, very rarely &ldquo;collide.&rdquo; There are of course limits to this non-collision, but for practical purposes we can assume that different passwords will have different hashes. So if the hashes match, then the submitted password was correct.</p>
+
+<p>Sound good? Let&rsquo;s start with the authentication side of things, and then we&rsquo;ll tackle user registrations.</p>
+
+<h3>Configuring your app for authentication against secured passwords</h3>
+
+
+<p>When discussing secure storage of passwords, there are really two different sides to consider. First, during the registration process (or else during account provisioning, if that&rsquo;s how you&rsquo;re doing things), you have to obfuscate the password in some fashion before saving it to the data store. And secondly you have to be able to use those obfuscated passwords during authentication.</p>
+
+<p>We&rsquo;re going to start with the authentication part first, since that&rsquo;s pretty easy to set up. We&rsquo;re going to assume the following:</p>
+
+<ul>
+<li>Your app has an existing user account model is called <code>Account</code>, with a corresponding <code>AccountDao</code> interface and implementation to support CRUD operations.</li>
+<li>You also have a service bean, which we'll assume is <code>AccountServiceImpl</code>, that supports user registrations. The registrations store the passwords as plaintext.</li>
+<li>Your app is configured to support Spring Security 2 username/password authentication against plaintext passwords. You're using two separate application context files: <code>applicationContext.xml</code> and <code>applicationContext-security.xml</code>, and you're using namespace configuration in <code>applicationContext-security.xml</code>.</li>
+</ul>
+
+
+<p>Given the assumptions above, it isn&rsquo;t hard to modify the configuration to use hashed passwords during the login process. Let&rsquo;s see how.</p>
+
+<h3>Create some user accounts in the database with hashed passwords</h3>
+
+
+<p>Create an account or two in your database with SHA-1 hashed passwords. You can use the following website to compute SHA-1 hashes of plaintext passwords:</p>
+
+<p><a href="http://sha1-hash-online.waraxe.us/"><a href="http://sha1-hash-online.waraxe.us/">http://sha1-hash-online.waraxe.us/</a></a></p>
+
+<p>For example, the SHA-1 hash of <code>flower</code> is <code>5a46b8253d07320a14cace9b4dcbf80f93dcef04</code>. When entering your hash into the hash calculator at the link above, be sure not to enter a carriage return character, as that&rsquo;s significant and will completely change the hash. Anyway, create the database records, using the SHA-1 hash as the password.</p>
+
+<h3>Update applicationContext-security.xml to authenticate against hashed passwords</h3>
+
+
+<p>We want to add something called a <code>PasswordEncoder</code> to our Spring configuration. <code>PasswordEncoder</code> is an interface defining a contract for computing hashes. There are different <code>PasswordEncoder</code> implementations according to the hash function you want to apply. Two popular options, for example, are <code>Md5PasswordEncoder</code> for MD5 hashes and <code>ShaPasswordEncoder</code> for (you guessed it) SHA. We&rsquo;ll use SHA here but either choice is legitimate. Don&rsquo;t use <code>Md4PasswordEncoder</code> unless you are working with a legacy system, as it is known to be weak.</p>
+
+<p>The namespace configuration supports <code>PasswordEncoder</code>s. Just add a single line to your <code>authentication-provider</code> element like this:</p>
+
+<pre>&lt;authentication-provider&gt;
+    &lt;password-encoder hash="sha" /&gt;
+    &lt;jdbc-user-service data-source-ref="dataSource" /&gt;
+&lt;/authentication-provider&gt;</pre>
+
+
+<p>Yep, that&rsquo;s it! This configuration sets SHA-1 as our hash algorithm.</p>
+
+<h3>Try it out</h3>
+
+
+<p>Try logging in using the account you just created. Type in the plaintext password, not the hash. The login should work. If so, congratulations, your app authenticates against secure passwords! (You&rsquo;ll need to convert whatever other passwords you have into SHA-1 hashes.)</p>
+
+<p>Now we&rsquo;re going to jump over to the other side, which is storing passwords securely during either the registration or account provisioning process. We&rsquo;ll assume a registration process but the technique is the same in either case.</p>
+
+<h3>Configuring your app to secure passwords during registration</h3>
+
+
+<p>Saving secured passwords is somewhat more involved than authenticating against them. Part of the reason is that we&rsquo;d like to use the same <code>PasswordEncoder</code> instance during registration that we used during login, partly just because it&rsquo;s &ldquo;cleaner&rdquo;, and relatedly, because it allows us to avoid having to coordinate two separate <code>PasswordEncoder</code> instances should we decide to switch from SHA-1 to MD5, or add salt, or whatever. Basically it boils down to our being good adherents to the <a href="http://en.wikipedia.org/wiki/DRY_code">DRY principle</a>.</p>
+
+<p>Unfortunately, the namespace configuration for <code>authentication-provider</code> doesn&rsquo;t accept an externally-defined <code>PasswordEncoder</code> bean; you have to use the <code>password-encoder</code> namespace element inside of <code>authentication-provider</code>. So instead of using the namespace configuration, we&rsquo;re going to drop back to good, old-fashioned bean configuration.</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans:beans xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-2.0.4.xsd"&gt;
+
+    &lt;-- 1 --&gt;
+    &lt;beans:bean id="accountDao" class="example.HbnAccountDao" /&gt;
+    
+    &lt;-- 2 --&gt;
+    &lt;beans:bean id="userDetailsService"
+        class="example.UserDetailsServiceImpl"
+        p:userDao="accountDao" /&gt;
+
+    &lt;-- 3 --&gt;
+    &lt;beans:bean id="passwordEncoder"
+        class="org.springframework.security.providers.encoding.ShaPasswordEncoder" /&gt;
+
+    &lt;-- 4 --&gt;
+    &lt;beans:bean
+        class="org.springframework.security.providers.dao.DaoAuthenticationProvider"
+        p:userDetailsService-ref="userDetailsService"
+        p:passwordEncoder-ref="passwordEncoder"&gt;
+        &lt;custom-authentication-provider /&gt;
+    &lt;/beans:bean&gt;
+&lt;/beans:beans&gt;</pre>
+
+
+<p>In the code above, we begin by creating a data access object for user accounts <span class="cueball">1</span>. Next we create an implementation of Spring&rsquo;s <code>UserDetailsService</code> interface, which we&rsquo;ve called <code>UserDetailsServiceImpl</code> <span class="cueball">2</span>. <code>UserDetailsService</code> is essentially a service provider interface for the <code>DaoAuthenticationProvider</code>; it allows the latter to obtain <code>UserDetails</code> instances for authentication purposes. Third we create the <code>PasswordEncoder</code> itself <span class="cueball">3</span>; in this case we&rsquo;re using <code>ShaPasswordEncoder</code>, which hashes passwords using SHA (the default strength is SHA-1). Finally, we&rsquo;re creating a <code>DaoAuthenticationProvider</code> <span class="cueball">4</span> and injecting it with the <code>userDetailsService</code> and <code>passwordEncoder</code> we created previously. We also include a <code>custom-authentication-provider</code> element to register our authentication provider with an <code>AuthenticationManager</code> hiding in the background.</p>
+
+<p><img src="http://wheelersoftware.s3.amazonaws.com/articles/spring-security-hash-salt-passwords/authn.jpg" alt="Authentication" /></p>
+
+<p>For the curious, the <code>AuthenticationManager</code> in question is <code>ProviderManager</code>, a provider-based implementation of the <code>AuthenticationManager</code> interface, and it is automatically created by the <code>http</code> element unless you&rsquo;ve already defined one explicitly. See the figure above for a class diagram.</p>
+
+<p>That takes care of configuration. Let&rsquo;s see what we need to do in order to save registrations with a hashed password.</p>
+
+<h3>Update AccountServiceImpl to hash the password</h3>
+
+
+<p>There are two updates you&rsquo;ll need to make to your <code>AccountServiceImpl</code> bean. The first one is that you&rsquo;ll need to provide a setter for a <code>PasswordEncoder.</code> And once you create that setter, go back to your application context configuration and make sure you&rsquo;re actually injecting a <code>PasswordEncoder</code> into the <code>AccountServiceImpl</code> bean.</p>
+
+<p>The second update is to modify your <code>registerAccount()</code> method in <code>AccountServiceImpl</code> so that it hashes passwords:</p>
+
+<pre>public void registerAccount(Account account) {
+    accountDao.save(account); // 1
+    String encPassword =
+        passwordEncoder.encodePassword(account.getPassword(), null); // 2
+    account.setPassword(encPassword); // 3
+    accountDao.save(account); // 4
+}</pre>
+
+
+<p>First we save the account with the plaintext password <span class="cueball">1</span>. There&rsquo;s a reason for saving the account before actually hashing the password, but we&rsquo;ll have to wait until later in the recipe for the reason why. Then we hash the password <span class="cueball">2</span>, update it on the account <span class="cueball">3</span>, and save the account with the new password <span class="cueball">4</span>. The account now has a hashed password in the database.</p>
+
+<p>Good job! You&rsquo;re now saving secured passwords into your database, and you&rsquo;re able to authenticate against them.</p>
+
+<p>But I&rsquo;m afraid that it&rsquo;s time for some bad news.</p>
+
+<h3>Meet the dictionary attack</h3>
+
+
+<p>Our new password storage scheme is off to a good start. It certainly prevents casual observers from accidentally seeing user passwords. But it does little to thwart the efforts of a semi-determined attacker. Let&rsquo;s talk about the dictionary attack.</p>
+
+<p>To understand how it works, recall that hashing different strings generally results in different hashes. We can use that fact to create a big lookup table for a dictionary of potential passwords. The lookup table takes a hash and then returns the string that generated it.</p>
+
+<p>As luck would have it, we don&rsquo;t even have to create our own lookup table. Helpful folks on the Internet have already done it for us. For instance, go to</p>
+
+<p><a href="http://tools.benramsey.com/md5/"><a href="http://tools.benramsey.com/md5/">http://tools.benramsey.com/md5/</a></a></p>
+
+<p>and enter the MD5 hash we presented earlier; namely,</p>
+
+<p><code>3af00c6cad11f7ab5db4467b66ce503e</code></p>
+
+<p>Voil&agrave;! You&rsquo;ve unhashed a hash. This is called a <em>dictionary attack</em>.</p>
+
+<p>If an attacker were to acquire a list of hashed passwords, he could make quick work of it using a dictionary of the sort just described. In some contexts that might be very bad.</p>
+
+<h3>Add a little salt to that hash</h3>
+
+
+<p>Ideally we&rsquo;d like to thwart even the semi-determined attacker. To improve our scheme, we now introduce the idea of salt.</p>
+
+<p>The strategy behind salt is to make it much more painful for the attacker to recover hashed passwords. Instead of allowing ourselves to be attacked by a single well-known dictionary, we are going to force the attacker to create a new and unique dictionary for every single password he wants to try to recover. Can he still do it? Sure. But it&rsquo;s just a lot more work now. We&rsquo;ve effectively eliminated merely semi-determined attackers from the pool of attackers. That&rsquo;s nothing to scoff at since their numbers are large.</p>
+
+<p>Here&rsquo;s how we do it. Instead of hashing passwords, we concatenate a string&mdash;called a salt&mdash;to the plaintext password, and then hash the concatenated string. This effectively breaks the standard dictionary attack, because now all of the hashes in your password store are &ldquo;new.&rdquo;</p>
+
+<p>What happens, though, if we use a single, common salt across all users? While this is better than using no salt at all, it&rsquo;s still not hard to overcome if the attacker knows the salt. The attacker simply has to create a single new dictionary, this time concatenating the salt to each individual dictionary word before hashing. Then it&rsquo;s the same as before.</p>
+
+<p>We want to make things harder for him. Instead of using a common salt across all users, we want the salt to be different for each user. That way, the attacker has to create a new dictionary for every single user he wants to attack. Again, he can do it, but it&rsquo;s much more time-consuming.</p>
+
+<p>One good way to create a salt is to use some property of the user. It is better to choose something that won&rsquo;t change, such as a numeric primary key, than it is to choose something that might change, such as an e-mail address. If you use (say) e-mail addresses for salt, and a user changes his e-mail address, he won&rsquo;t be able to log in anymore because the authentication system won&rsquo;t be able to create the correct hash.</p>
+
+<p>Usernames are a reasonable choice as they don&rsquo;t usually change, but a numeric primary key is even better, given the specific scheme Spring Security uses to concatenate the password with the salt. Spring Security uses braces to delimit the salt, and hence disallows braces inside the salt itself. For example, if my password/salt is <code>college/willie</code>, then Spring Security will hash the string <code>college{willie}</code>. You may well want to allow braces in the username (it&rsquo;s common for gamers to include such characters in their usernames). You can avoid the whole issue&mdash;including the added complexity of disallowing braces in usernames&mdash;by using the user&rsquo;s numeric primary key, if the user schema supports that.</p>
+
+<p>So let&rsquo;s do just that.</p>
+
+<h3>Update applicationContext-security.xml to handle salt</h3>
+
+
+<p>All we need to do to <code>applicationContext-security.xml</code> is add a <code>SaltSource</code> bean and inject it into the <code>DaoAuthenticationProvider</code>. We do this in the listing below.</p>
+
+<pre>&lt;beans:bean id="passwordEncoder"
+    class="org.springframework.security.providers.encoding.ShaPasswordEncoder" /&gt;
+&lt;beans:bean id="saltSource"
+    class="org.springframework.security.providers.dao.salt.ReflectionSaltSource"
+    p:userPropertyToUse="id" /&gt;
+&lt;beans:bean
+    class="org.springframework.security.providers.dao.DaoAuthenticationProvider"
+    p:userDetailsService-ref="userDetailsService"
+    p:passwordEncoder-ref="passwordEncoder"
+    p:saltSource-ref="saltSource"&gt;
+    &lt;custom-authentication-provider /&gt;
+&lt;/beans:bean&gt;</pre>
+
+
+<p>We mentioned above that it&rsquo;s possible to use a global salt, but that it&rsquo;s not as good as using a salt that varies from user to user. (For a more detailed explanation, please see my article <a href="http://springinpractice.com/2008/08/31/storing-passwords-securely/">Storing Passwords Securely</a>.) <code>ReflectionSaltSource</code> allows us to use a property of our user (specifically, a property of a <code>UserDetails</code> instance; we&rsquo;ll see that shortly) to provide a salt. As with the <code>PasswordEncoder</code>, we&rsquo;ve defined the <code>SaltSource</code> explicitly as a bean so we can inject it into <code>AccountServiceImpl</code>.</p>
+
+<h3>Update AccountServiceImpl to salt the password</h3>
+
+
+<p>The first step is to add a setter for a <code>SaltSource</code> instance to <code>AccountServiceImpl</code>, and wire it up in your application context file.</p>
+
+<p>Next, we&rsquo;ll once again update <code>registerAccount()</code>.</p>
+
+<pre>public void registerAccount(Account account) {
+    accountDao.save(account);
+    UserDetailsAdapter userDetails = new UserDetailsAdapter(account); // 1
+    String password = userDetails.getPassword();
+    Object salt = saltSource.getSalt(userDetails); // 2
+    account.setPassword(passwordEncoder.encodePassword(password, salt)); // 3
+    accountDao.save(account);
+}</pre>
+
+
+<p>As before, we&rsquo;re saving the account with a plaintext password first. I promised earlier to explain why I&rsquo;m doing that, so here&rsquo;s the explanation. In many cases (such as when using Hibernate), entities aren&rsquo;t assigned IDs until after they&rsquo;re persisted. Since we&rsquo;re basing our salt on the ID, we need to save the account before generating the salt and hash.</p>
+
+<p>Next we wrap the <code>account</code> with a class we wrote to adapt our <code>Account</code> class to the <code>UserDetails</code> interface; namely, <code>UserDetailsAdapter</code> <span class="cueball">1</span> (we&rsquo;ll see it momentarily).</p>
+
+<p>We&rsquo;re using the <code>SaltSource</code> to get the salt from our <code>UserDetailsAdapter</code> <span class="cueball">2</span>. As we saw in the configuration, this salt source uses reflection to grab the account ID and present it to the <code>PasswordEncoder</code> as salt <span class="cueball">3</span>.</p>
+
+<p>The next listing shows our <code>UserDetailsAdapter</code> class, which again is just an example of a <code>UserDetails</code> implementation. I&rsquo;m extending the <code>org.springframework.security.userdetails.User</code> class for convenience, but note that that&rsquo;s a <code>UserDetails</code> implementation.</p>
+
+<pre>package examples;
+
+import java.util.Set;
+
+import org.springframework.security.GrantedAuthority;
+import org.springframework.security.GrantedAuthorityImpl;
+import org.springframework.security.User;
+
+public class UserDetailsAdapter extends User { // 1
+    private final Long id;
+    
+    public UserDetailsAdapter(Account acct) {
+        super(acct.getUsername(), acct.getPassword(), acct.isEnabled(),
+                true, true, true, toAuthorities(acct.getAuthorityNames()));
+        this.id = acct.getId();
+    }
+    
+    private static GrantedAuthority[] toAuthorities(Set&lt;String&gt; authNames) {
+        GrantedAuthority[] auths = new GrantedAuthority[authNames.size()];
+        int i = 0;
+        for (String authName : authNames) {
+            auths[i++] = new GrantedAuthorityImpl(authName);
+        }
+        return auths;
+    }
+    
+    public Long getId() {
+        return id;
+    }
+}</pre>
+
+
+<p>Again, we&rsquo;re just extending <code>User</code> for convenience <span class="cueball">1</span>; the important thing is that our <code>UserDetailsAdapter</code> implements <code>UserDetails</code>, which allows <code>DaoAuthenticationProvider</code> to use it to perform authentication.</p>
+
+<p>There you have it&mdash;salted and hashed passwords. This won&rsquo;t stop the most determined attackers from unmasking your passwords, but it will stop most others.</p>
+
+<h2>Discussion</h2>
+
+
+<p>The ideas in this recipe can also be applied to storing answers to challenge questions in a secure way (for instance, &ldquo;What is your mother&rsquo;s maiden name?&rdquo;). The relevant similarities are that the information should be secured (otherwise it might be used to recover or reset passwords on other websites), and that we typically don&rsquo;t need to decrypt answers to challenge questions. It might be helpful to convert the answers to some kind of canonical form before saving them, such as converting everything to uppercase, removing punctuation and trimming extra whitespace, just to eliminate minor variations in the way that people answer the question.</p>
+
+<p>It is also useful to understand where this recipe does not apply. In most cases where you want to store data securely, you need to be able to decrypt the stored data. A good example is storing credit card numbers securely for Payment Card Industry (PCI) compliance. You need to be able to recover the credit card number so you can apply it to customer orders. One-way hashes, which support encryption but not decryption, will not help you with this.</p>
+
+<p>When you store passwords using hashes, you cannot offer password recovery functionality to end users, because the system doesn&rsquo;t have any way to actually recover the passwords. All you can offer is the ability to reset passwords. This is better from a security perspective anyway since there&rsquo;s always the chance that you might disclose a password to somebody other than the intended recipient, and that somebody might use it to access not only your site but other sites, as we discussed in the background above.</p>
+
+<h2>Resources</h2>
+
+
+<p>If you found this article helpful, you may also find the following useful:</p>
+
+<ul>
+<li><a href="http://springinpractice.com/2008/08/31/storing-passwords-securely/">Storing passwords securely</a> - Another post I wrote about storing passwords securely, but treating the subject more generally as opposed to being Spring-specific. The discussion about hashing and salting is a little more in-depth, and there's also a section on key strengthening, which can make your passwords even more secure.</li>
+<li><a href="http://www.manning.com/wheeler/">Spring in Practice</a> - A book that my collaborators and I are writing for Manning Publications about Spring generally. We have lots of information about Spring Security, including chapters on user registrations, authentication and authorization.</li>
+<li><a href="http://springinpractice.wordpress.com/2008/09/06/login-remember-me/">Excerpt: Login and remember-me discussion</a> - An excerpt from Spring in Practice that compares normal username/password authentication with remember-me authentication.</li>
+</ul>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Excerpt: Login and remember-me discussion]]></title>
+    <link href="http://springinpractice.com/2008/09/06/login-remember-me/"/>
+    <updated>2008-09-06T08:37:16-07:00</updated>
+    <id>http://springinpractice.com/2008/09/06/login-remember-me</id>
+    <content type="html"><![CDATA[<p>[caption id=&ldquo;attachment_85&rdquo; align=&ldquo;alignright&rdquo; width=&ldquo;240&rdquo; caption=&ldquo;A healthy human retina. Our book doesn&#039;t go into biometric authentication but this is a cool photo anyway.&rdquo;]<a href="http://www.flickr.com/photos/bike/2635107055/"><img class="size-full wp-image-85" title="Human retina" src="http://springinpractice.com/wp-content/uploads/2008/09/retina2.jpg" alt="" width="240" height="160" /></a>[/caption]</p>
+
+<p><em><a href="http://www.manning.com/wheeler/">Spring in Practice</a></em> centers on using Spring to implement technical solutions to common problems, but it&rsquo;s also important for developers to understand the problem they&rsquo;re trying to solve before implementing a solution. In the book we work pretty hard to provide that understanding.</p>
+
+<p>Here&rsquo;s an except from the discussion section for a recipe on implementing login forms and remember-me authentication using Spring Security. While discussion sections might treat the problem, the solution or both, this particular discussion digs a little deeper some security/usability tradeoffs to consider when implementing username/password and remember-me authentication.</p>
+
+<blockquote>
+<h3>Discussion</h3>
+In the background we briefly mentioned that username/password logins are only one approach to authentication. While other authentication mechanisms are commercially available—for example, there are laptops with thumbprint scanners—for most web-based applications, username/password combinations are the most practical approach. It's simply unrealistic to assume that general web users will have card readers, key fobs, biometric scanners and so forth. Such assumptions may be more plausible in controlled environments.
+
+It's useful to understand some of the drawbacks of username/password authentication. The main drawback is that in general, the stronger a user's password is, the harder it is to remember. That in turn increases the chance that the user will either write it down somewhere or else use it for multiple websites, both of which increase the chance that the password will be compromised. Password reuse is problematic partly because a shared password is distributed across many systems (which can be dangerous if that password is not properly managed; see recipes 4.3 and 4.5), and partly because the damage is not limited in the event that the shared password is compromised.
+
+People have devised different approaches to dealing with parts of this problem. One approach is called single sign-on (SSO), and it works nicely in homogeneous computing environments such as corporate intranets. The idea is that the environment (rather than the application) provides for centralized authentication and then that authentication is shared with the applications in that environment. Another approach is the relatively recent OpenID standard, which differs from SSO in being decentralized. With OpenID, a user picks a participating site to be an authentication provider, and then other participating sites use that provider to authenticate the user. This is different than SSO in that with OpenID, different sites require separate logins. While neither SSO nor OpenID does much to limit the damage when a password is compromised (though a password could be reset from a single location), they do have the benefit that they prevent password fatigue without distributing the password across multiple systems.
+
+Remember-me authentication also highlights the tradeoff between security and usability. It's important to recognize that we're really authenticating the browser rather than the user. Because there are various scenarios in which there's a many-to-one relationship between users and browsers (for example, a shared public machine, the family computer, a computer in somebody's unlocked office), we should treat remember-me authentication as not-entirely-convincing. One good approach is to give a remember-me user access to low-risk functionality, but to force a login if the user tries to access higher-risk functionality. Amazon uses exactly this technique: remember-me users can see product recommendations, but to buy something they have to log in.
+
+The upshot is this: add login forms and remember-me to your app only if it makes sense to do so. In some cases it would make even more sense to use SSO, auto-provision the accounts, externalize your authentication with OpenID, and so on. Just because Spring Security makes it easy to add a login form and remember-me doesn't mean that you should. If you include remember-me in particular, keep in mind the design issues we just discussed.
+
+Now that we've seen how to create a basic, unstyled login form, it's time to get to work on making it look better. The next recipe will show you how.</blockquote>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Storing passwords securely]]></title>
+    <link href="http://springinpractice.com/2008/08/31/storing-passwords-securely/"/>
+    <updated>2008-08-31T03:28:35-07:00</updated>
+    <id>http://springinpractice.com/2008/08/31/storing-passwords-securely</id>
+    <content type="html"><![CDATA[<p>When dealing with user account information, there are lots of different security concerns that come up. Some examples include making sure users use strong passwords, preventing automated registrations, helping end users distinguish real sites from phishing sites, transmitting user data securely, and so forth&mdash;the list goes on and on.</p>
+
+<p>In this article we&rsquo;re going to look at a specific piece of the overall user account security puzzle, and that&rsquo;s the problem of storing user passwords securely. Specifically we will see how you can use techniques from cryptography&mdash;hashing and salting your passwords&mdash;to make it harder for would-be attackers to uncover user passwords in the event that the password database (or password file, or whatever) is compromised.</p>
+
+<p>We&rsquo;re only going to cover the concepts and techniques here; we won&rsquo;t get into how to actually implement this on any particular platform or using any particular framework. My brother John and I are currently writing a book for Manning Publications called <a href="http://www.manning.com/wheeler/">Spring in Practice</a> that will explain how to implement password salting and hashing using the <a href="http://www.springframework.org/">Spring Framework</a>, but for this article we&rsquo;ll just look at the concepts and techniques.</p>
+
+<h3>Why store user passwords securely?</h3>
+
+
+<p>It&rsquo;s worth thinking for a moment whether it&rsquo;s really even necessary to &ldquo;store user passwords securely,&rdquo; if doing so involves anything more than limiting access to password data. If only a small number of trustworthy technical staffers have access to the user passwords, then why can&rsquo;t we just store the data in the clear? Doesn&rsquo;t that make it easier for technical staff to troubleshoot system issues (for example, admins can just log in as other users to try to reproduce errors), and doesn&rsquo;t that make it easier to help users recover forgotten passwords?</p>
+
+<p>The answer to both of those questions is yes, but the story doesn&rsquo;t end there. The problem is that storing plaintext passwords also makes it easier for bad guys to see user passwords, and that&rsquo;s true whether bad guys break in from the outside or whether you have bad guys on your admin team. If attackers can log into your applications under somebody else&rsquo;s account, that&rsquo;s potentially very bad for you and your users. Moreover, because users often have the bad habit of reusing passwords (or else simple variants of passwords) across multiple applications and web sites, it&rsquo;s very difficult for you to limit the scope of the damage once somebody actually gets ahold of user passwords. The situation is possibly very damaging to your users and embarrassing to your organization. In all but the most trivial cases, it makes a lot of sense to store user data securely.</p>
+
+<p>As an aside, note that in doing so, we don&rsquo;t give up the ability to allow admins or tech support reps to impersonate other users, nor do we sacrifice the ability to help users who have forgotten their passwords. We just have to use other techniques to accomplish those things, such as &ldquo;run-as&rdquo; impersonation, and using password resets in lieu of password recovery. Let&rsquo;s however stay focused on storing passwords securely.</p>
+
+<p>So now we&rsquo;ve seen why we don&rsquo;t want to store plaintext passwords. In the rest of this article we&rsquo;re going to look at four increasingly sophisticated cryptographic techniques for making it harder for attackers to get at your passwords. All four are based on something called a hash function, so let&rsquo;s start by talking about hash functions a bit.</p>
+
+<h3>Understanding hash functions</h3>
+
+
+<p>Hash functions are a tool from cryptography, and they are functions in the mathematical sense: for any given &ldquo;acceptable&rdquo; input, it spits out a specific output. In this case, the domain of acceptable inputs would be plaintext strings, and outputs are garbled-up (i.e., encrypted) versions of the plaintext strings, called <em>hashes</em>.</p>
+
+<p>Let&rsquo;s play around with some examples before we go on, just so you can see what I&rsquo;m talking about. Go to your favorite search engine and type &ldquo;online hash function calculator.&rdquo; (Obviously you can use command line tools and programming APIs to compute hash functions as well.) You should see some links that allow you to calculate hashes using specific hash functions with names like MD5, SHA-1, RIPEMD-160 and others. Here&rsquo;s one:</p>
+
+<ul>
+ <li><a href="http://www.hashemall.com/">http://www.hashemall.com/</a></li>
+</ul>
+
+
+<p>Select an MD5 hash calculator, and enter some plaintext. When you hit submit, you should see a hash value. Note that whitespace in your plaintext is significant, so if you hash &lsquo;friend&rsquo; and &lsquo;friend[CR]&rsquo;, the output will be different.</p>
+
+<p>Here are some MD5 hashes:</p>
+
+<table>
+ <tr>
+  <th style="width:40%">Plaintext input</th>
+  <th style="width:60%">MD5 hash (hex)</th>
+ </tr>
+ <tr>
+  <td><code>friend</code></td>
+  <td><code>3af00c6cad11f7ab5db4467b66ce503e</code></td>
+ </tr>
+ <tr>
+  <td><code>friends</code></td>
+  <td><code>28f20a02bf8a021fab4fcec48afb584e</code></td>
+ </tr>
+ <tr>
+  <td><code>password</code></td>
+  <td><code>5f4dcc3b5aa765d61d8327deb882cf99</code></td>
+ </tr>
+ <tr>
+  <td><code>I pledge allegiance to the flag</code></td>
+  <td><code>bb00ea10b4ee04c4319c0c05bf9c29fc</code></td>
+ </tr>
+</table>
+
+
+<p>Just for kicks let&rsquo;s get some SHA-1 hashes for the same plaintext inputs:</p>
+
+<table>
+ <tr>
+  <th style="width:40%">Plaintext input</th>
+  <th style="width:60%">SHA-1 hash (hex)</th>
+ </tr>
+ <tr>
+  <td><code>friend</code></td>
+  <td><code>e69867ca7d5a7b0ab60a2a61e7b791c106f7bf64</code></td>
+ </tr>
+ <tr>
+  <td><code>friends</code></td>
+  <td><code>3d9209c4598bfbc38b3c096081bee3a09697e939</code></td>
+ </tr>
+ <tr>
+  <td><code>password</code></td>
+  <td><code>5baa61e4c9b93f3f0682250b6cf8331b7ee68fd8</code></td>
+ </tr>
+ <tr>
+  <td><code>I pledge allegiance to the flag</code></td>
+  <td><code>fc1d13f4e3b942d6c31185ff033c5b7acfe22751</code></td>
+ </tr>
+</table>
+
+
+<p>There&rsquo;s a lot of good stuff going on here. The main point is that MD5 and SHA-1 both do essentially the same thing: they convert plaintext into garbled text with certain properties (which we&rsquo;ll discuss momentarily). So they&rsquo;re both hash functions, albeit different hash functions.</p>
+
+<p>I just mentioned &ldquo;certain properties.&rdquo; Here are some worth noting:</p>
+
+<ul>
+ <li>All of the MD5 hashes are the same length as each other, and similarly, all of the SHA-1 hashes are the same length. MD5 hashes use 128 bits (usually expressed as 32 hex digits) and SHA-1 hashes use 160 bits (usually expressed as 40 hex digits). In general hash functions (or more exactly, cryptographic hash functions) return fixed-size hashes.</li>
+ <li>It was really easy to compute the hashes from the inputs. If you used one of the online calculators, for example, your hash value was calculated more or less instantly after you provided the plaintext.</li>
+ <li>Looking at the hashes, there's no obvious way to map it back to the plaintext. Ideally it is computationally infeasible to determine the plaintext input from the hash.</li>
+ <li>Similar inputs, such as 'friend' and 'friends', produce dramatically different hashes.</li>
+</ul>
+
+
+<p>The properties just given are characteristic of hash functions. For a hash function to be &ldquo;cryptographically secure,&rdquo; we typically want two more properties to be true:</p>
+
+<ul>
+ <li>Given a hash, it is computationally infeasible to find an input that produces that hash.</li>
+ <li>Given an input, it is computationally infeasible to find another input that produces the same hash.</li>
+</ul>
+
+
+<p>The MD5 and SHA-1 hash functions are generally considered to be secure though researchers have found weaknesses in each. For many practical purposes, it is at the time of this writing (late 2008) safe to use either of the two. <strong>If however you are doing something that requires exceptionally strong security (for example, financial applications), please consult a security expert.</strong></p>
+
+<p>That&rsquo;s what we needed to know about hash functions. Now let&rsquo;s learn how we can use them to store passwords securely.</p>
+
+<h3>Using hashes to protect passwords from casual observers and undetermined attackers</h3>
+
+
+<p>The first thing we might reasonably want to do is protect passwords from casual observers, such as technical staff who have access to passwords in the database. While your admins are probably people you trust, there&rsquo;s no reason to tempt them, right?</p>
+
+<p>The easiest way to protect passwords from casual observers is to hash the passwords before storing them in the database. That way admins see only hex codes instead of plaintext passwords.</p>
+
+<p>If you recall from the previous section, we mentioned that in general we can&rsquo;t compute the password from the hash. You might wonder then how we accomplish logins. The answer to that is to hash the user&rsquo;s submitted password when he logs in, and then to compare the submitted hash with the stored hash. Because different passwords will almost certainly have different hashes, we can conclude that the authentication was successful if and only if the two hashes match. Sounds great, right?</p>
+
+<p>Not exactly. This scheme does in fact prevent the casual observer from accidentally seeing passwords, and it may even present the newbie attacker from recovering a password. But in jujutsu-like fashion, we can use the for-all-practical-purposes 1-1 nature of the hash function as a tool to defeat it. Let&rsquo;s look at an example, shall we?</p>
+
+<ol>
+ <li>Go to Google and search for "online md5 hash database". Here are a couple that I found. (Note that I don't have any control over these websites and in particular I can't promise that they won't have unsavory ads. These two don't appear to have that, but sometimes hacker websites do have that sort of thing.)
+  <ul>
+   <li><a href="http://md5.igrkio.info/md5-hash-database.html">http://md5.igrkio.info/md5-hash-database.html</a> (this is a metasearch)</li>
+   <li><a href="http://gdataonline.com/seekhash.php">http://gdataonline.com/seekhash.php</a></li>
+  </ul>
+ </li>
+ <li>Copy the MD5 hash for 'friend', 'friends' or 'password' above.</li>
+ <li>Paste it into the hash database search field submit it.</li>
+ <li>Hey, you've recovered your password! Huh?!</li>
+</ol>
+
+
+<p>So what&rsquo;s going on here? It turns out that there are various online hash databases&mdash;essentially lookup tables&mdash;that map hashes to the inputs that generated them. Helpful hackers around the world create such databases by precomputing the hashes associated with dictionary words and close variants (in multiple languages, even). Because different passwords map to different hashes, you can create a lookup table for any explicitly given set of passwords. If an attacker has such a hash database at his disposal, it&rsquo;s pretty easy to launch a so-called <em>dictionary attack</em> against a compromised password database. The attacker can either attack passwords one-by-one, or (more commonly), the attacker can simply look for hashes associated with common passwords (&lsquo;password&rsquo;, &lsquo;qwerty&rsquo;, etc.) and do whatever he wants to do with them afterward.</p>
+
+<p>You&rsquo;ll notice that we did not pick the hash for &lsquo;I pledge allegiance to the flag&rsquo;. If you copy the MD5 hash for &lsquo;I pledge allegiance to the flag&rsquo; into a hash databases, chances are that it won&rsquo;t be able to figure out what generated the hash. (And if it does, it&rsquo;s easy enough to manufacture hashes that won&rsquo;t generate a match.) That&rsquo;s because the hash database creator did not precompute a hash for that particular phrase. And we can use that little tidbit to make our hashing scheme more secure, as we&rsquo;re about to see.</p>
+
+<h3>Using hashes and fixed salts to protect passwords from slightly-determined attackers</h3>
+
+
+<p>The key insight from the above is that we can thwart simple dictionary attacks by hashing inputs that are unlikely to have been used to generate a hash dictionary. One possibility would be to ask users to use strong passwords with a mix of uppercase, lowercase, digits and punctuation, but we don&rsquo;t want to have to depend on users to do that. (Anyway, the more complicated the passwords are, the more likely the user is to write the password down on a Post-It, which creates its own security issues.) So what else can we do?</p>
+
+<p>The answer is that we can concatenate the plaintext with some given additional piece of text, known as a &ldquo;salt,&rdquo; and then hash and store the result. The salt should be something that you&rsquo;re pretty sure wouldn&rsquo;t be used in generating a generic hash database. That way there&rsquo;s no chance that somebody could use an existing dictionary to attack your passwords.</p>
+
+<p>Let&rsquo;s say, for instance, that we choose <code>iamJeLLy%Dans0R</code> as our salt. Then we can generate safer hashes as follows:</p>
+
+<p> <table>
+  <tr>
+   <th>Plaintext password</th>
+   <th>Password + salt</th>
+   <th>MD5 hash of password + salt</th>
+  </tr>
+  <tr>
+   <td><code>friend</code></td>
+   <td><code>friend{iamJeLLy%Dans0R}</code></td>
+   <td><code>a62dc48775f623e180dd0ff2bc870b24</code></td>
+  </tr>
+  <tr>
+   <td><code>friends</code></td>
+   <td><code>friends{iamJeLLy%Dans0R}</code></td>
+   <td><code>ec844e0a820ae2e4444f70c5a447c467</code></td>
+  </tr>
+  <tr>
+   <td><code>password</code></td>
+   <td><code>password{iamJeLLy%Dans0R}</code></td>
+   <td><code>1d7eed225b27a9cd075478e7d5de29a6</code></td>
+  </tr>
+  <tr>
+   <td><code>I pledge allegiance to the flag</code></td>
+   <td><code>I pledge allegiance to the flag{iamJeLLy%Dans0R}</code></td>
+   <td><code>cd7e0f644ebecb7c7c3558c71a8f7a86</code></td>
+  </tr>
+ </table></p>
+
+<p>Call me an optimist, but I am pretty sure you are not going to find any of those hashes in an existing hash database. So now we are bulletproof, yes?</p>
+
+<p>No, not really. (And there probably isn&rsquo;t such a thing when it comes to security.) You may have noticed that I kept saying that the hashes wouldn&rsquo;t appear in an <em>existing</em> hash database. That&rsquo;s the clue you need in order to figure out how the attacker can still get at your passwords. Assume also that the attacker knows the salt value, which isn&rsquo;t necessarily unrealistic since he does after all have access to your passwords. Maybe he has access to the salt too. Do you see the attack?</p>
+
+<p>All the attacker needs to do is generate a new lookup table. He grabs a file containing hundreds of thousands of dictionary words, appends each one with the salt, computes the hash and finally creates the lookup entry. Ugh!</p>
+
+<p>How realistic is that? For casual observers and novice attackers, it&rsquo;s unlikely. But if somebody is fairly determined to get the passwords, it&rsquo;s not unlikely at all. Dictionary files in multiple languages are after all readily available&mdash;see, e.g., <a href="http://www.winedt.org/Dict/"><a href="http://www.winedt.org/Dict/">http://www.winedt.org/Dict/</a></a>&mdash;and anyway, it&rsquo;s not even necessary to process the entire dictionary. Just choose say 1,000 common words and do those. That&rsquo;ll get you pretty far if there are enough passwords in the password database.</p>
+
+<p>You might wonder why we would even look at this approach, given that it&rsquo;s easy enough to defeat. There are multiple reasons. First, even though it&rsquo;s easy to defeat, it does in fact create an extra obstacle to getting at the passwords, and that obstacle is sufficiently frustrating that it will filter out attackers who aren&rsquo;t at least fairly determined and knowledgeable. Secondly, we assumed that the salt was known. If you&rsquo;re able to keep the salt a secret (e.g., store it separately from the password database), then you have the makings of a practically impenetrable password storage scheme. The problem however is keeping the salt secret; presumably either the developers or the admins will know it. But if you&rsquo;re able to pull that off, go for it.</p>
+
+<p>The third reason is that we can use a modified version of our salt approach to make password recovery even more difficult still. The trick is to use different salts for different passwords. Let&rsquo;s see how that works.</p>
+
+<h3>Using hashes and variable salts to protect passwords from fairly determined attackers</h3>
+
+
+<p>To make it even harder to recover passwords from hashes, we&rsquo;re going to force the attacker to create a brand new dictionary for every single password he wants to attack. We do this by using a variable salt instead of a fixed salt. We simply choose some property of the user whose password we want to protect and use that as the salt. For example, we might use the user&rsquo;s numeric primary key, or perhaps the username.</p>
+
+<p>You can see that with this scheme there is no single dictionary that will support the attack. The attacker has to create a new dictionary for each password. The attacker has to have much more patience and be much more determined in order for this attack to work, because now the work is linear in the number of users instead of constant. Of course, the attacker can make his job easier by attacking only a subset of the users or else by focusing on some subset of the dictionary words, but in general the computing problem is more intensive (even though no more difficult logically speaking).</p>
+
+<p>When choosing a property to use as the salt, take care not to choose something that might change. If, for example, you were to choose the user&rsquo;s e-mail address and the user subsequently changed the e-mail address, then the user would suddenly lose the ability to log in.</p>
+
+<p>Our defenses are getting beefier and beefier, but still it&rsquo;s not entirely unlikely that somebody with enough patience and determination could crack our passwords. Can we make it even harder?</p>
+
+<h3>Using key strengthening to protect passwords from strongly determined attackers</h3>
+
+
+<p>There&rsquo;s a trick we can use called <em>key strengthening</em> or <em>key stretching</em>. The idea is to increase the time associated with recovering any given password so as to increase the amount of patience and determination required on the part of the attacker. It&rsquo;s simple to implement. Take the initial password + variable-salt combination (you could use a fixed salt too, but as we saw above, variable salts turn a constant-time problem into a linear-time problem), hash it iteratively some large number of times&mdash;say 1,000 times&mdash;and store the final result in the password database. The exact number of iterations is strongly dependent on the environment; you want the number of iterations to be small enough that it doesn&rsquo;t impact legitimate end users in a meaningful way when they try to log in (they shouldn&rsquo;t have to wait more than a second or two), but large enough that if you try to hash an entire dictionary, you&rsquo;re going to be waiting an awful long time. If you have lots of end users and logins, you also have to be careful that you don&rsquo;t introduce too much CPU load on your system since hashing is compute-intensive. (It&rsquo;s easy enough to imagine building out a compute farm if you really intend to get this serious about storing passwords securely.)</p>
+
+<p>Can this scheme be broken? Yes, of course. But once again we&rsquo;ve narrowed the circle of folks who are going to attempt it. Most attackers are going to look for a much easier target. Bad for the easier targets but good for you.</p>
+
+<h3>Summary</h3>
+
+
+<p>In this article we&rsquo;ve considered a series of increasingly sophisticated techniques for protecting your user passwords from attackers. As often happens with engineering, it&rsquo;s important to recognize that there&rsquo;s a tradeoff you&rsquo;re confronting here&mdash;you have to decide how to balance simplicity against security. If you&rsquo;re trying to protect passwords for an academic department&rsquo;s website, it&rsquo;s probably overkill to use key stretching. If on the other hand you&rsquo;re trying to protect financial data, key stretching may be only the starting point for you.</p>
+
+<p>It&rsquo;s important to recognize that security isn&rsquo;t a black-or-white affair. As it does in this case, it usually involves understanding where your likely threats are and then taking measures to protect against those, and perhaps even against threats that are even a little less likely but still plausible.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+]]></content>
+  </entry>
+  
+</feed>

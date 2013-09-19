@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Chapter 09 - Comments | Spring in Practice]]></title>
+  <title><![CDATA[Category: Chapter 09 – Comments | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-09-comments/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-16T02:13:12-07:00</updated>
+  <updated>2013-09-18T23:53:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -14,49 +14,26 @@
 
   
   <entry>
-    <title type="html"><![CDATA[How to run JavaScript from Java]]></title>
-    <link href="http://springinpractice.com/2012/05/13/how-to-run-javascript-from-java/"/>
-    <updated>2012-05-13T11:02:00-07:00</updated>
-    <id>http://springinpractice.com/2012/05/13/how-to-run-javascript-from-java</id>
-    <content type="html"><![CDATA[<p>Java 6 comes with the <a href="http://www.mozilla.org/rhino/">Rhino JavaScript engine</a>, which makes it easy to run JavaScript from inside your Java app. There are different situations in which you might want to do this. Chapter 9 of <a href="http://www.manning.com/wheeler/">Spring in Practice</a> affords a good example. There we&rsquo;re implementing a rich-text comment engine based on the WMD editor that <a href="http://stackoverflow.com">Stack Overflow</a> uses. We have a <code>showdown.js</code> script that maps Markdown to HTML, and we want to run it in two places:</p>
+    <title type="html"><![CDATA[Injecting a file from the classpath into a bean]]></title>
+    <link href="http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/"/>
+    <updated>2012-05-12T23:29:00-07:00</updated>
+    <id>http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean</id>
+    <content type="html"><![CDATA[<p>Here&rsquo;s a quick tip for you.</p>
 
-<ul>
-<li>on the client to present a preview pane</li>
-<li>on the server to store the Markdown as HTML for easy presentation (as opposed to running the script against every comment dynamically)</li>
-</ul>
+<p>Sometimes you need to inject a <code>java.io.File</code> from your classpath into a bean, but you don&rsquo;t want to have to spell out the absolute path (even in a configuration file). Never fear. It&rsquo;s easy:</p>
 
+<pre><code>&lt;bean id="tagProviderResource" class="org.springframework.core.io.ClassPathResource"&gt;
+    &lt;constructor-arg value="/htmlcleaner.xml" /&gt;
+&lt;/bean&gt;
 
-<p>Here&rsquo;s how we can run it on the server:</p>
+&lt;util:property-path id="tagProviderFile" path="tagProviderResource.file" /&gt;
 
-<pre><code>import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-...
-
-public final class RichTextFilter implements TextFilter {
-    @Inject private File showdownJsFile;
-
-    private String markdownToHtml(String markdown) {
-        try {
-            ScriptEngineManager mgr = new ScriptEngineManager();
-            ScriptEngine engine = mgr.getEngineByName("JavaScript");
-            engine.eval(showdownJs);
-            engine.eval("var markdown = '" + markdown + "';");
-            engine.eval("var converter = new Showdown.converter();");
-            engine.eval("var html = converter.makeHtml(markdown);");
-            return (String) engine.get("html");
-        } catch (ScriptException e) {
-            // Shouldn't happen unless somebody breaks the script
-            throw new RuntimeException(e);
-        }
-    }
-
-    ... other stuff ...
-}
+&lt;bean id="tagProvider" class="org.htmlcleaner.ConfigFileTagProvider"&gt;
+    &lt;constructor-arg ref="tagProviderFile" /&gt;
+&lt;/bean&gt;
 </code></pre>
 
-<p>To see how to inject the File into the class in Spring, see my post <a href="http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/">Injecting a file from the classpath into a bean</a>.</p>
+<p>In the configuration above, I used <code>ClassPathResource</code> to find the <code>htmlcleaner.xml</code> resource on the classpath. Then I used the handy <code>&lt;util:property-path&gt;</code> tag to assign the resource&rsquo;s <code>file</code> property its own ID. Finally, I inject the <code>File</code> using constructor injection.</p>
 ]]></content>
   </entry>
   

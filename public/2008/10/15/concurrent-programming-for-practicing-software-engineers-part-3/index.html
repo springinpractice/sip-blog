@@ -1,0 +1,418 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Concurrent programming for practicing software engineers, part 3 - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="This post is part of a three-part series: Part 1 | Part 2 | Part 3 This third and final post in our series on concurrency explains how &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Concurrent Programming for Practicing Software Engineers, Part 3</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-15T09:06:02-07:00" pubdate data-updated="true">Oct 15<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><div class="intro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Part 3</a></span>
+</div>
+
+
+<p>This third and final post in our series on concurrency explains how synchronization mistakes can lead to the problem of deadlocks, and what you can do to minimize or eliminate them.</p>
+
+<h3>How synchronization gives rise to deadlocks</h3>
+
+
+<p>We saw in the <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">previous post</a> how a thread will grab a lock just before entering a critical section, thereby forcing other threads to &ldquo;block&rdquo; (concurrency lingo for &ldquo;wait for another thread to release a lock&rdquo;) until they can acquire the lock. Normally this blocking behavior is unremarkable. It is a standard part of concurrent programming since we&rsquo;re trying to protect data from data races.</p>
+
+<p>If there&rsquo;s too much contention for locks, that can of course have a negative effect on performance since threads are sitting around waiting instead of doing work. But usually this just means subpar performance rather than hanging.</p>
+
+<p>The pathological case of contention for locks is <em>deadlocking</em>. This is characterized by two or more threads becoming permanently hung. They are notoriously difficult to predict, avoid and handle, but it&rsquo;s not impossible. The secret to understanding deadlocks is to understand that they arise when threads wait for each other to release a lock in a cyclic fashion. The simplest case would be thread T<sub>1</sub> waiting for T<sub>2</sub> to release a lock, and T<sub>2</sub> waiting for T<sub>1</sub> to release a lock. Neither one can make forward progress. The next simplest case is T<sub>1</sub> waiting for T<sub>2</sub>, T<sub>2</sub> waiting for T<sub>3</sub>, and T<sub>3</sub> waiting for T<sub>1</sub>. Now we have three deadlocked threads. Obviously the cycle can be of arbitrary length; all threads involved will be deadlocked.</p>
+
+<p>Here&rsquo;s a diagram that shows how it works:</p>
+
+<div style="margin: 20px auto; width: 584px;">
+    <div><img src="http://wheelersoftware.s3.amazonaws.com/articles/concurrent-programming/deadlocks.jpg" alt="The cyclic nature of deadlocks" /></div>
+    <div class="caption"><span class="figure-label">Figure 1.</span> Deadlocks arise from circular dependencies between threads.</div>
+</div>
+
+
+<p>In figure 1, you can see that each thread holds the lock needed by the preceding thread. As the dependencies are circular, there is no way for any of the threads to make forward progress once something like the above happens. All five threads are hung&mdash;that is, deadlocked.</p>
+
+<div style="margin-right: 10px; float: left">
+    <div><img src="http://wheelersoftware.s3.amazonaws.com/articles/concurrent-programming/vambrace-m16.jpg" alt="" /></div>
+    <div class="photo-caption" style="text-align: center">Photo credit: <a href="http://www.flickr.com/photos/gladius/2296372699/">gladius</a></div>
+</div>
+
+
+
+
+<h4>A furry aside</h4>
+
+
+<p>By now you might understand what I meant at the beginning of the article when I said that concurrent programming is kind of like an arms race. We start with single threads, but sometimes that&rsquo;s too slow, so we introduce multithreading. That causes a problem though, which is that the threads can interfere with one another when working with shared data. So we introduce turn-taking through mutexes (and through the <code>synchronized</code> keyword in particular). But that has the effect of limiting parallelism, and if we take that too far, we can end up sacrificing the parallelism (and performance) that we sought in the first place. In the most extreme case, we can inadvertently cause threads to deadlock.</p>
+
+<p>(Maybe <a href="http://en.wikipedia.org/wiki/Whac-a-mole">Whac-A-Mole</a> is a better metaphor. That&rsquo;s OK. I&rsquo;m going to stick with arms race just because I really like the mech/cyber photo. Think of it as an arms race between software engineers and small furry rodents.)</p>
+
+<div style="clear: both"></div>
+
+
+<p>Now let&rsquo;s consider an example of code vulnerable to deadlocks.</p>
+
+<h4>Some deadlocky code</h4>
+
+
+<p>For this one we&rsquo;re going to use the standard bank account funds transfer example. Yes, it&rsquo;s a clich&egrave;d example, but it&rsquo;s such a good example and originality is overrated anyway. Here&rsquo;s listing 3:</p>
+
+<div>
+    <div><span class="code-listing">Listing 3.</span> A deadlock just waiting to happen</div>
+        <pre>public void transferFunds(Account from, Account to, Money amount) {
+    synchronized (from) {
+        synchronized (to) {
+            from.decreaseBy(amount);
+            to.increaseBy(amount);
+        }
+    }
+}</pre>
+</div>
+
+
+<p>(We&rsquo;ll ignore exceptional conditions such as insufficient funds. Or, if you like, assume that <code>decreaseBy()</code> throws an unchecked <code>InsufficientFundsException</code>.)</p>
+
+<p>If it isn&rsquo;t obvious, the method is a service method that transfers funds from one account to another account. Before going further, take a look at the code and see if you can figure out how the deadlock can occur. Keep in mind what we said about cyclic dependencies.</p>
+
+<h4>Here&#8217;s how a deadlock can occur</h4>
+
+
+<p>Recall from the discussion above that deadlocks involve multiple threads. Each one grabs a lock that one of the other threads needs, and needs a lock that one of the other threads has. Here, we have two <code>synchronized</code> blocks, and each entry point corresponds to a place where a thread will try to grab a lock, maybe successfully and maybe not.</p>
+
+<p>With that information it&rsquo;s straightforward to construct the sequence of events that leads to the deadlock:</p>
+
+<ol>
+
+<li>Thread T<sub>1</sub> enters the method, with the source account being account 4 and the destination account being account 14. T<sub>1</sub> is able to acquire the lock for account 4, but then there&#8217;s a context switch before it can enter the second <code>synchronized</code> block.</li>
+
+<li>Thread T<sub>2</sub> also enters the method, with the source account being account 14 and the destination account being account 4. T<sub>2</sub> is able to acquire the lock for account 14, but then gets blocked when trying to acquire the lock for account 4. That stands to reason, since T<sub>1</sub> has it. Context switch.</li>
+
+<li>T<sub>1</sub> tries to grab the lock for account 14, but of course it can&#8217;t since T<sub>2</sub> has it. Threads T<sub>1</sub> and T<sub>2</sub> are now deadlocked.</li>
+
+</ol>
+
+
+<p>That&rsquo;s a fairly intricate bit of logic, and developers new to concurrent programming may wonder how in the heck they are supposed to anticipate problems like that. They may also wonder whether this series of events is so implausible that is just isn&rsquo;t worth worrying about. To answer the second concern first, deadlocks most certainly do occur in real code. Keep in mind that although the situations that produce them may be implausible, the problem is that CPU clock speeds are pretty incredible, and so things that seem implausible suddenly become just a matter of time.</p>
+
+<p>As to how to defend against deadlocks, we&rsquo;ll look at that right now.</p>
+
+<h3>Solving deadlocks with globally-defined lock orderings</h3>
+
+
+<p>There are different ways to either minimize the likelihood of deadlocking or else just avoid it altogether. One best practice is to minimize the scope of your critical sections so as to decrease the time that threads hang onto locks, and hence to decrease the likelihood of a deadlock. That however doesn&rsquo;t solve the issue; deadlocks can still occur.</p>
+
+<p>Another technique is to avoid the sort of nested locking that we saw in the example in the previous page. Instead of locking each account individually, we might define a single lock that any thread must acquire before doing a transfer. While this does indeed eliminate deadlocks, it does so at a very steep cost: acquiring the single lock becomes a bottleneck, and limits the parallelism we&rsquo;re trying to achieve in the first place. It does not scale.</p>
+
+<p>A third technique is to use timeouts. Under this approach, if any thread is blocked for a sufficiently lengthy period of time, it just gives up.</p>
+
+<p>Those are all legitimate techniques, but in this section we&rsquo;ll discuss global lock orders.</p>
+
+<h4>What is a globally-defined lock order?</h4>
+
+
+<p>Recall in our discussion of deadlocks that they arise from circular dependencies between the threads. Any given thread depends on a resource (a lock) that the previous thread in the ring holds. So one way to stamp out deadlocks is to define a global ordering on the locks so that such cycles can never arise. In other words, you define and publish rules around which locks to acquire before which other locks. This approach requires significant discipline from developers since there isn&rsquo;t any automatic way to enforce it. It is however extremely useful since it makes deadlocks impossible.</p>
+
+<p>Let&rsquo;s see how we might apply a global lock order to the funds transfer example.</p>
+
+<h4>The funds transfer example reconsidered</h4>
+
+
+<p>At first glance you might think, &ldquo;Wait a minute. The source account&rsquo;s lock is always grabbed before the destination account&rsquo;s lock, so how is it possible for a deadlock to occur?&rdquo; But upon closer examination it&rsquo;s clear that that&rsquo;s not a correct analysis. Whatever global lock order we define needs to translate ultimately down to instances, not roles in a transaction. Sometimes account 4 will be the source account, and sometimes it will be the destination account. Similarly for account 14. Whatever global lock order we define needs to handle that.</p>
+
+<p>One straightforward way to define a lock order for our current example would be to say that we always grab the lock for the account with the lower ID first. Listing 4 shows the new code:</p>
+
+<div>
+    <div><span class="code-listing">Listing 4.</span> Applying a globally-defined lock order</div>
+    <pre>public void transferFunds(Account from, Account to, Money amount) {
+    long fromId = from.getId();
+    long toId = to.getId();
+    long lowId = (fromId &lt; toId ? fromId : toId);
+    long highId = (fromId &lt; toId ? toId : fromId);
+    synchronized (lowId) {
+        synchronized (highId) {
+            from.decreaseBy(amount);
+            to.increaseBy(amount);
+        }
+    }
+}</pre>
+</div>
+
+
+<p>The code above is deadlock-free, because cyclic dependencies are impossible. Say thread T<sub>1</sub> wants to transfer funds from account 4 to account 14, and thread T<sub>2</sub> wants to transfer funds from account 14 to account 4. Both threads will try to grab the lock for account 4 before trying to grab the lock for account 14. Thus it&rsquo;s impossible to wait for the lock on account 4 while holding the lock for account 14, at least as long as all code observes the same globally-defined lock ordering that we&rsquo;ve observed here. (Hence &ldquo;global&rdquo;.)</p>
+
+<h3>Conclusion and recommended readings</h3>
+
+
+<p>In this series we looked at several key areas of concurrent programming that (in my opinion, anyway) all practicing software developers should understand. As regards concurrency, there is a gap between what typical developers <em>should</em> know and what they <em>actually</em> know, and that causes real-world production issues on a regular basis. I wrote this series to try to narrow that gap.</p>
+
+<p>There are of course lots of good resources for concurrent programming. Here are some of my favorites:</p>
+
+<ul class="square">
+
+<li><a href="http://www.infoq.com/presentations/goetz-concurrency-past-present">Concurrency: Past and Present</a>, by Brian Goetz: An entertaining presentation on concurrency. Goetz is a well-known authority on concurrent programming.</li>
+
+<li><a href="http://jcip.net/">Java Concurrency in Practice</a>, by Brian Goetz. A really great and approachable book.</li>
+
+<li><a href="http://www.amazon.com/Concurrent-Programming-Java-TM-Principles/dp/0201310090">Concurrent Programming in Java(TM): Design Principles and Pattern (2nd Edition)</a>, by Doug Lea. Another great book on concurrency; probably the standard. More academic than the Goetz book but still quite approachable.</li>
+
+<li><a href="http://sunnyday.mit.edu/papers/therac.pdf">The Therac-25 Accidents</a>: A classic software engineering paper on how race conditions actually injured and killed people. The basic idea is that the Therac-25 machine, which was designed to administer radiation to cancer patients, was vulnerable to race conditions that occurred as the human operator became more experienced with operating the machine (and thus keyboarded commands more quickly). The race conditions led to massive radiation overdoses. Long but well worth the read.</li>
+
+</ul>
+
+
+
+
+<div class="outro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Part 3</a></span>
+</div>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-15T09:06:02-07:00" pubdate data-updated="true">Oct 15<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/" data-via="williewheeler" data-counturl="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/" title="Previous Post: Concurrent programming for practicing software engineers, part 2">&laquo; Concurrent programming for practicing software engineers, part 2</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/10/27/spring-paranoia-with-initializingbean-and-assert/" title="Next Post: Spring paranoia with InitializingBean and Assert">Spring paranoia with InitializingBean and Assert &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

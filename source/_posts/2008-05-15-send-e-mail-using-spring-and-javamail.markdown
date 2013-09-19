@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/
 layout: post
-title: Send e-mail using Spring and JavaMail
+title: "Send e-mail using Spring and JavaMail"
 date: 2008-05-15 21:18:08
 comments: true
 categories: [Chapter 08 - Communicating, Tutorials]

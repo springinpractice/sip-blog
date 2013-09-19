@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/
 layout: post
-title: Configuring Jetty to use Gmail as an SMTP provider
+title: "Configuring Jetty to use Gmail as an SMTP provider"
 date: 2012-04-29 16:13:34
 comments: true
 categories: [Chapter 08 - Communicating, Chapter 09 - Comments, Quick Tips]

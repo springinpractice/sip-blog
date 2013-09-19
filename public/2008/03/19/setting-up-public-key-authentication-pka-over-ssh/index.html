@@ -1,0 +1,302 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Setting up public key authentication (PKA) over SSH - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="I assume you already know the whys, concepts, and terminology; this is just a statement of the steps involved. I&rsquo;m using OpenSSH and a DSA key &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2008/03/19/setting-up-public-key-authentication-pka-over-ssh">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Setting Up Public Key Authentication (PKA) Over SSH</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-19T07:18:48-07:00" pubdate data-updated="true">Mar 19<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I assume you already know the whys, concepts, and terminology; this is just a statement of the steps involved. I&rsquo;m using OpenSSH and a DSA key pair.</p>
+
+<h3>Step 1</h3>
+
+
+<p>Generate a key pair:</p>
+
+<pre>ssh-keygen -t dsa
+Generating public/private dsa key pair.
+Enter file in which to save the key (/home/Willie/.ssh/id_dsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/Willie/.ssh/id_dsa.
+Your public key has been saved in /home/Willie/.ssh/id_dsa.pub.
+The key fingerprint is:
+f2:f7:5b:9b:f7:64:2b:d8:fe:ca:ad:f5:13:35:9f:63 Willie@ARCATA</pre>
+
+
+<p>This creates your key pair, and places them in your <code>~/.ssh</code> directory. The public key is <code>id_dsa.pub</code>; the private key is <code>id_dsa</code>. If it isn&rsquo;t already obvious, the public key is not a secret, and the private key is. :&ndash;)</p>
+
+<h3>Step 2</h3>
+
+
+<p>Install the public key to any SSH servers for which you&rsquo;d like to use PKA. To do this, SSH into the server machine and open up the <code>~/.ssh/authorized_keys</code> file in a text editor. If you haven&rsquo;t already installed a public key to the server in the past, then you&rsquo;ll be creating a new file. Just append the contents of your id_dsa.pub file to <code>authorized_keys</code>. Here&rsquo;s mine:</p>
+
+<pre>ssh-dss AAAAB3NzaC1kc3MAAACBAOybEZ4kAaKROXoibeR+V/ajTY3L/aN6K5lVbdWKsw+9uPl/cyj4
+6Qu5UYHkLS5tiGci8Olx7jNfku4/k1z8/JoGDTqwAixMxgb/NNKTUB7ZnhxfVTenSI/oVtM/lNpCiOdg
+U7ESOyNrxPFVU6K1pWId+LGxeweWTw+08vwIOShTAAAAFQDx6q5JWhV2EDGUMXFwj3QF8+8a4wAAAIBW
+Mee5MphZPYxG7la772tAYREo+37eXfP3SW49GmPHJFdydFcf5VtroLlzKJ1Iy9HUwnKjiEv2qE1B2xVD
+jJslgQ34QVKKswQDRCXlyshyKbbRMd37MSYNpNqdZ5gTJT+EMa8+NoTUGwXOitSMMtx2WmpVo4Fu7Fp1
+eDYvSVChjAAAAIB6uisHso6iPMz11qbKNaHSIqIAV+7iNJZD7aeFuytLDG20Y70b4Jy4Mr4g8RH+MtAL
+fyq6aTcv/g/j2DMeJjwjqLXQFbaFekmQEOfoQ6IZJ5CylthMP1PzRcR5KeCUInKj9CRkTlWLlTMk5es+
+VEebIHg9SWNstkjWBLwlQhemgA== Willie@ARCATA</pre>
+
+
+<p>(For formatting purposes, I&rsquo;ve included line breaks above, but don&rsquo;t introduce line breaks into your public key when you paste it into <code>authorized_keys</code>.)</p>
+
+<h3>Step 3</h3>
+
+
+<p>Adjust the permissions on your <code>.ssh</code> directory, and on the files inside it, so that nobody else can write to them.</p>
+
+<h3>Step 4</h3>
+
+
+<p>Set up the SSH agent. This allows you to enter your passphrase one time per shell session instead of having to type it in every time you want to SSH to your server. Just type <code>ssh-agent</code> followed by <code>ssh-add</code>. Some people just put this in their startup script (e.g., <code>.bash_profile</code>). You&rsquo;ll need to use <code>eval $(ssh-agent)</code> instead of <code>ssh-agent</code> if you choose to do that. You&rsquo;ll have to enter your passphrase every time you open a shell, but after that you can SSH anywhere where you&rsquo;ve installed your public key without having to enter your passphrase.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-19T07:18:48-07:00" pubdate data-updated="true">Mar 19<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2008/03/19/setting-up-public-key-authentication-pka-over-ssh/" data-via="williewheeler" data-counturl="http://springinpractice.com/2008/03/19/setting-up-public-key-authentication-pka-over-ssh/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/03/19/apachetomcat-integration/" title="Previous Post: Apache/Tomcat integration">&laquo; Apache/Tomcat integration</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/03/27/tutorial-wireshark-in-fifteen-minutes/" title="Next Post: Tutorial: Wireshark in fifteen minutes">Tutorial: Wireshark in fifteen minutes &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/08/28/welcome-to-our-spring-in-practice-blog/
 layout: post
-title: Welcome to our Spring in Practice blog
+title: "Welcome to our Spring in Practice blog"
 date: 2008-08-28 22:56:31
 comments: true
 categories: [News]

@@ -1,0 +1,521 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Build a shopping cart with Spring Web Flow 2, part 3 - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="This post is part of a three-part series: Part 1 | Part 2 | Part 3 Building out the application Now that we&rsquo;ve gotten Spring MVC and SWF &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Build a Shopping Cart With Spring Web Flow 2, Part 3</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-07T10:51:39-07:00" pubdate data-updated="true">May 7<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><div class="intro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
+</div>
+
+
+
+
+<h3>Building out the application</h3>
+
+
+<p>Now that we&rsquo;ve gotten Spring MVC and SWF working, it&rsquo;s time to build out the shopping cart application.  Please download the following file before continuing:</p>
+
+<center><span class="icon archive"><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/mycart3.zip">mycart3.zip</a></span></center>
+
+
+<p>We won&rsquo;t be looking at every aspect of this application, but I&rsquo;ll highlight the most interesting pieces from a SWF point of view.</p>
+
+<h4>Dependencies for mycart3.zip</h4>
+
+
+<p>Besides the dependencies we had for <code>mycart2.zip</code>, there are four others you&rsquo;ll need:</p>
+
+<ul class="square">
+<li><code>cglib-nodep-2.1_3.jar</code></li>
+<li><code>jstl.jar</code></li>
+<li><code>standard.jar</code></li>
+<li><code>sitemesh-2.3.jar</code> (from <a href="http://www.opensymphony.com/sitemesh/download.action">www.opensymphony.com/sitemesh/download.action</a>)</li>
+</ul>
+
+
+<p>After you download <code>mycart3.zip</code> (and its dependencies), you can deploy it and then point your browser at</p>
+
+<p><p style="text-align:center"><a href="http://localhost:8080/mycart/home.do">http://localhost:8080/mycart/home.do</a></p>
+
+<p>Here are some notes to keep in mind:</p>
+
+<p><ul class="square"></p>
+
+<p><li>My registration and login flows don&rsquo;t actually &ldquo;do&rdquo; anything. They&rsquo;re not hooked up to Spring Security and they&rsquo;re not hooked up to a database.  So when you register you can just hit the submit button,and when you log in you can just hit the login button.  I just wanted to focus on the flows themselves.</li></p>
+
+<p><li>I&rsquo;m using Sitemesh to ensure a unified layout across the pages. Even if you are not familiar with Sitemesh, don&rsquo;t worry: it is very straightforward.  Basically you just put a servlet filter in front of the pages and the filter decorates the pages with a template (<code>/WEB-INF/jsp/pagetemplate.jsp</code> in this case) according to a simple configuration file (<code>/WEB-INF/decorators.xml</code>). If however you don&rsquo;t want to use Sitemesh, simply remove the filter from <code>web.xml</code> and Sitemesh is gone.</li></p>
+
+<p></ul></p>
+
+<p><h3>Multiple flows</h3></p>
+
+<p>Any given app may contain multiple flows, and <code>mycart3</code> is such an app.  We have four different flows:</p>
+
+<p><ul class="square">
+<li><code>addToCart</code>: add an item to a shopping cart</li>
+<li><code>checkout</code>: shopping cart checkout process</li>
+<li><code>login</code>: log into the app</li>
+<li><code>register</code>: register for a new user account</li>
+</ul></p>
+
+<p>In some of the cases we have what we would intuitively consider a flow in that there are multiple states involved; in other cases there is only one state to speak of and so it may seem strange to regard the flow as being a flow.  However we&rsquo;ll see how that can make sense in the following section.</p>
+
+<p>To create multiple flows, you will need to do the following. First, create the flow definition files and put them in your <code>/WEB-INF/flows</code> directory (or wherever you decided to put them).  Then add the flow locations to the flow registry, and the flow URL mappings to your <code>SimpleUrlHandlerMapping</code> (if that&rsquo;s what you&rsquo;re using), in your Spring application context, like so:</p>
+
+<p><div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/mycart-servlet.xml</code>
+<pre name="code" class="xml">&hellip;</p>
+
+<p>&lt;bean id=&ldquo;flowUrlMappings&rdquo; class=</p>
+
+<pre><code>    "org.springframework.web.servlet.handler.SimpleUrlHandlerMapping"&amp;gt;
+&amp;lt;property name="mappings"&amp;gt;
+    &amp;lt;value&amp;gt;
+        /addToCart.do=flowController
+        /checkout.do=flowController
+        /account/login.do=flowController
+        /account/register.do=flowController
+    &amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+&amp;lt;property name="alwaysUseFullPath" value="true"/&amp;gt;
+</code></pre>
+
+<p>&lt;/bean&gt;</p>
+
+<p>&lt;flow:flow-registry id=&ldquo;flowRegistry&rdquo; flow-builder-services=&ldquo;flowBuilderServices&rdquo;&gt;</p>
+
+<pre><code>&amp;lt;flow:flow-location path="/WEB-INF/flows/addToCart.xml"/&amp;gt;
+&amp;lt;flow:flow-location path="/WEB-INF/flows/checkout.xml"/&amp;gt;
+&amp;lt;flow:flow-location path="/WEB-INF/flows/login.xml"/&amp;gt;
+&amp;lt;flow:flow-location path="/WEB-INF/flows/register.xml"/&amp;gt;
+</code></pre>
+
+<p>&lt;/flow:flow-registry&gt;</p>
+
+<p>&hellip;</pre>
+</div></p>
+
+<p>Once you have those in place you should be set up for multiple flows.  Point your links at them and try them out!</p>
+
+<p><h3>Subflows</h3></p>
+
+<p>Going hand-in-hand with the idea of multiple flows is the idea that some flows might be subflows of other flows.  In <code>mycart3</code>,all four flows can be independently accessed, but in addition to that we have the <code>addToCart</code>, <code>login</code> and <code>register</code> flows being subflows to the <code>checkout</code> flow.  See Figure 3.</p>
+
+<p><div style="margin:20px 0;text-align:center"></p>
+
+<pre><code>&lt;div&gt;&lt;img src="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/subflows.jpg" alt="Figure 3. Subflows." /&gt;&lt;/div&gt;
+&lt;div class="caption"&gt;Figure 3. Subflows.&lt;/div&gt;
+</code></pre>
+
+<p></div></p>
+
+<p>Here&rsquo;s the idea.  The three flows we&rsquo;ve identified as subflows are defined as separate flows because clearly there are use cases where it makes sense for them to be accessed outside of a checkout process. For example, we want to be able to add products to a shopping cart while we&rsquo;re browsing the product catalog.  And of course we want people to be able to register and login even if they&rsquo;re not in a checkout process.</p>
+
+<p>But those are also flows that we might want to include as part of a checkout process too.  During checkout, we might want to recommend products to the customer.  Or if the user hasn&rsquo;t yet logged in or registered, we&rsquo;d want them to do that as part of the checkout process rather than forcing them to do that before they could enter the checkout process.</p>
+
+<p>By defining the login, registration and add-to-cart as flows, we make them available both independently (as top-level flows) and also as part of a larger flow (like the checkout flow).  That&rsquo;s why we have these defined as flows even though they are currently implemented as single-state flows.  (It is however easy to imagine these being multi-state flows.  For example, the login flow may ask you to answer a challenge question if it detects that you&rsquo;re coming in from an unusual IP address, or the add-to-cart flow may ask you to enter a quantity before proceeding.)</p>
+
+<p>So here is the checkout flow:</p>
+
+<p><div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/flows/checkout.xml</code>
+<pre name="code" class="xml">&lt;?xml version=&ldquo;1.0&rdquo; encoding=&ldquo;UTF-8&rdquo;?&gt;
+&lt;flow xmlns=&ldquo;<a href="http://www.springframework.org/schema/webflow">http://www.springframework.org/schema/webflow</a>&rdquo;</p>
+
+<pre><code>xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.springframework.org/schema/webflow
+    http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd"&amp;gt;
+
+&amp;lt;!-- Get the products one time, at the beginning of the flow --&amp;gt;
+&amp;lt;on-start&amp;gt;
+    &amp;lt;set name="flowScope.products" value="cartService.products"/&amp;gt;
+    &amp;lt;set name="flowScope.shippingOptions" value="cartService.shippingOptions"/&amp;gt;
+&amp;lt;/on-start&amp;gt;
+
+&amp;lt;!-- If not specified, the start state is the first state specified. --&amp;gt;
+&amp;lt;view-state id="viewCart" view="viewcart"&amp;gt;
+    &amp;lt;!-- cart is available to SWF but not stored on the session under that
+         name when using AOP proxy --&amp;gt;
+    &amp;lt;on-render&amp;gt;
+        &amp;lt;!-- Carry cart from Spring app context to request scope --&amp;gt;
+        &amp;lt;set name="requestScope.shoppingCart" value="shoppingCart"/&amp;gt;
+        &amp;lt;set name="requestScope.recommendations" value="cartService.recommendations"/&amp;gt;
+    &amp;lt;/on-render&amp;gt;
+    &amp;lt;transition on="addToCart" to="addProductToCart"/&amp;gt;
+    &amp;lt;transition on="register" to="register"/&amp;gt;
+    &amp;lt;transition on="login" to="login"/&amp;gt;
+&amp;lt;/view-state&amp;gt;
+
+&amp;lt;subflow-state id="addProductToCart" subflow="addToCart"&amp;gt;
+    &amp;lt;!-- This is where we go when the subflow returns. productAdded is
+         the name of an end-state. --&amp;gt;
+    &amp;lt;transition on="productAdded" to="viewCart"/&amp;gt;
+&amp;lt;/subflow-state&amp;gt;
+
+&amp;lt;!-- New customers create a new account before moving forward --&amp;gt;
+&amp;lt;subflow-state id="register" subflow="register"&amp;gt;
+    &amp;lt;transition on="accountAdded" to="paymentAndShipmentOptions"/&amp;gt;
+    &amp;lt;transition on="cancelRegistration" to="viewCart"/&amp;gt;
+&amp;lt;/subflow-state&amp;gt;
+
+&amp;lt;!-- Existing customers log in before moving forward --&amp;gt;
+&amp;lt;subflow-state id="login" subflow="login"&amp;gt;
+    &amp;lt!-- This is where we go when the subflow returns. productAdded is
+         the name of an end-state. --&amp;gt;
+    &amp;lt;transition on="loginOk" to="paymentAndShipmentOptions"/&amp;gt;
+&amp;lt;/subflow-state&amp;gt;
+
+&amp;lt;!-- Payment and shipment options --&amp;gt;
+&amp;lt;view-state id="paymentAndShipmentOptions" view="options"&amp;gt;
+    &amp;lt;transition on="submit" to="confirmOrder"/&amp;gt;
+    &amp;lt;transition on="back" to="viewCart"/&amp;gt;
+&amp;lt;/view-state&amp;gt;
+
+&amp;lt;!-- Confirm order --&amp;gt;
+&amp;lt;view-state id="confirmOrder" view="confirmorder"&amp;gt;
+    &amp;lt;on-render&amp;gt;
+        &amp;lt;set name="requestScope.shoppingCart" value="shoppingCart"/&amp;gt;
+    &amp;lt;/on-render&amp;gt;
+    &amp;lt;transition on="continue" to="thankYou"&amp;gt;
+        &amp;lt;evaluate expression="cartService.submitOrderForPayment()"/&amp;gt;
+    &amp;lt;/transition&amp;gt;
+&amp;lt;/view-state&amp;gt;
+
+&amp;lt;!-- Thank you page --&amp;gt;
+&amp;lt;view-state id="thankYou" view="thanks"&amp;gt;
+    &amp;lt;transition on="continue" to="shop"/&amp;gt;
+&amp;lt;/view-state&amp;gt;
+
+&amp;lt;!-- Exit the flow, letting the user return to shopping --&amp;gt;
+&amp;lt;end-state id="shop" view="externalRedirect:contextRelative:/home.do"/&amp;gt;
+
+&amp;lt;global-transitions&amp;gt;
+    &amp;lt;transition on="cancelCheckout" to="shop"/&amp;gt;
+&amp;lt;/global-transitions&amp;gt;
+</code></pre>
+
+<p>&lt;/flow&gt;</pre>
+</div></p>
+
+<p>In the code above, we are using the <code>&lt;subflow-state&gt;</code> element to call a subflow from a parent flow.  The <code>subflow</code> attribute specifies one of the flows you registered with the flow registry in the Spring configuration.  The flow starts at the subflow&rsquo;s start state, and continues until the subflow hits an end state.  The end state IDs provide keys that you can reference from the calling flow to effect state transitions.  For example, in the flow above,<code>accountAdded</code> is one of the end states for the <code>register</code> flows, and so one of the <code>&lt;transition&gt;</code> elements references that end state.</p>
+
+<p>Recall from <code>register.xml</code> (see <a href="spring-web-flow-2.0-4.html">page 4</a>) that the end states specified a <code>view</code> attribute.  If the <code>register</code> flow is called directly, then SWF will use the <code>view</code> attribute to decide which view to show the user when the flow reaches a given end state.  If, however, the flow is called as part of a subflow (instead of being called directly), SWF will ignore the <code>view</code> attribute and instead follow whatever transition is defined in the calling <code>&lt;subflow-state&gt;</code>.</p>
+
+<p><h3>Using EL to call services</h3></p>
+
+<p>SWF allows you to make calls against service beans using an expression language (EL).  You can use either Unified EL or else OGNL for that, as mentioned earlier in the article.  We happen to be using OGNL though I understand that Unified EL and OGNL are mostly the same,at least where their core syntax is concerned.</p>
+
+<p>There are various places in your flow where you might want to invoke service beans, and SWF provides various mechanisms for doing that.  Here&rsquo;s a table showing how to call services from different locations in your flow definition file:</p>
+
+<p><div class="table-with-caption"></p>
+
+<pre><code>&lt;div class="table"&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Location&lt;/th&gt;
+            &lt;th&gt;How to call the service bean&lt;/th&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;On flow start&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/on-start&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;On state entry&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/view-state/on-entry&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Immediately before rendering a view&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/view-state/on-render&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;On state exit&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/view-state/on-exit&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;On state transition&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/view-state/transition/evaluate&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;On flow end&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/on-end&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/div&gt;
+&lt;div class="caption"&gt;Table 2. How to call service beans from different locations.&lt;/div&gt;
+</code></pre>
+
+<p></div></p>
+
+<p>Note that the above does not represent a 100% complete list of places where you can use EL, but it gives you most of the major cases and also the basic idea.</p>
+
+<p>In <code>checkout.xml</code> we&rsquo;ve used a number of the methods above.  For example, we use <code>&lt;on-start&gt;</code> to grab the product catalog and shipping options from the cart service and place them on the flow scope, which allows them to be used for the duration of the flow.  The <code>value</code> attribute on the <code>set</code> element is specified using EL.  (It looks a lot like JSP EL, if you are familiar with that.)  The <code>cartService</code> bean is available because we defined a Spring bean with that ID.</p>
+
+<p>We also use <code>&lt;on-render&gt;</code> to prepare the <code>viewCart</code> state for rendering.  In this case, we place the user&rsquo;s shopping cart on the request scope so the JSP can easily reference it, and we also pull some recommendations off of the cart service and place those on the request scope as well.  Once again the <code>value</code> attribute is specified using EL.</p>
+
+<p><h3>Global transitions</h3></p>
+
+<p>At the end of <code>checkout.xml</code>, you will see that I&rsquo;ve defined a <code>&lt;global-transitions&gt;</code> element.  This allows me to define a transition that applies to all states in the flow.  In this case, any time the user raises the <code>cancelCheckout</code> event, the global transition I&rsquo;ve defined will kick in and carry the user to the <code>shop</code> state. Pretty handy for transitions that occur in multiple places throughout the flow.</p>
+
+<p><h3>That&rsquo;s our whirlwind tour</h3></p>
+
+<p>That concludes this tutorial on Spring Web Flow 2.0.  We&rsquo;ve really only scratched the surface&mdash;for instance, we haven&rsquo;t even touched the new AJAX support that SWF 2.0 introduces&mdash;but this should give you an overall feel for how things work.  The SWF 2.0 distribution comes with a hotel booking sample application that shows you how to get SWF working with form validation and persistence as well (areas I&rsquo;ve suppressed in this article so that I could focus on flow definition).</p>
+
+<p>If you have suggestions and especially corrections to the article or the code, please leave them below.  SWF 2.0 is new so I have no doubt that you will be able to show me places where I could be doing something better.  Thanks!</p>
+
+<p><h3>Resources</h3></p>
+
+<p>A <a href="http://www.springhispano.org/?q=node/319">Maven version of the download</a> is available. The target link is in Spanish but there&rsquo;s a zip file at the bottom called <code>WebFlowExample.zip</code> that you can download. If you want to read the target link in English, you can use <a href="http://babelfish.yahoo.com/translate_txt">Alta Vista&rsquo;s free Babel Fish translation service</a>.</p>
+
+<p><div class="outro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
+</div></p>
+
+<p><div class="endnote">Post migrated from my Wheeler Software site.</div></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-07T10:51:39-07:00" pubdate data-updated="true">May 7<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-05-web-flow/'>Chapter 05 - Web Flow</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/" data-via="williewheeler" data-counturl="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/" title="Previous Post: Build a shopping cart with Spring Web Flow 2, part 2">&laquo; Build a shopping cart with Spring Web Flow 2, part 2</a>
+      
+      
+        <a class="basic-alignment right" href="/2008/05/07/session-scoped-beans-in-spring/" title="Next Post: Session-scoped beans in Spring">Session-scoped beans in Spring &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,720 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Chapter 08 - Communicating | Spring in Practice]]></title>
+  <link href="http://springinpractice.com/blog/categories/chapter-08-communicating/atom.xml" rel="self"/>
+  <link href="http://springinpractice.com/"/>
+  <updated>2013-09-18T23:53:48-07:00</updated>
+  <id>http://springinpractice.com/</id>
+  <author>
+    <name><![CDATA[Willie Wheeler]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Configuring Jetty to use Gmail as an SMTP provider]]></title>
+    <link href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/"/>
+    <updated>2012-04-29T09:13:34-07:00</updated>
+    <id>http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider</id>
+    <content type="html"><![CDATA[<p>In chapter 8 of <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, recipes 8.2 and 8.3 require a JNDI-exposed JavaMail session backed by an SMTP provider. Here I&rsquo;ll show how to set that up in Jetty 6. For SMTP we&rsquo;ll use Gmail, which provides a free SMTP service to anybody with a Gmail account.</p>
+
+<p>Here&rsquo;s the <code>jetty-env.xml</code> configuration supporting the goals above.</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd"&gt;
+&lt;Configure class="org.mortbay.jetty.webapp.WebAppContext"&gt;
+    &lt;New id="repository" class="org.mortbay.jetty.plus.naming.Resource"&gt;
+        &lt;Arg&gt;mail/Session&lt;/Arg&gt;
+        &lt;Arg&gt;
+            &lt;New class="org.mortbay.naming.factories.MailSessionReference"&gt;
+                &lt;Set name="user"&gt;[your_gmail_username]&lt;/Set&gt;
+                &lt;Set name="password"&gt;[your_gmail_password]&lt;/Set&gt;
+                &lt;Set name="properties"&gt;
+                    &lt;New class="java.util.Properties"&gt;
+                        &lt;Put name="mail.user"&gt;[your_gmail_username]&lt;/Put&gt;
+                        &lt;Put name="mail.password"&gt;[your_gmail_password]&lt;/Put&gt;
+                        &lt;Put name="mail.transport.protocol"&gt;smtp&lt;/Put&gt;
+                        &lt;Put name="mail.smtp.host"&gt;smtp.gmail.com&lt;/Put&gt;
+                        &lt;Put name="mail.smtp.port"&gt;587&lt;/Put&gt;
+                        &lt;Put name="mail.smtp.auth"&gt;true&lt;/Put&gt;
+                        &lt;Put name="mail.smtp.starttls.enable"&gt;true&lt;/Put&gt;
+                        &lt;Put name="mail.debug"&gt;true&lt;/Put&gt;
+                    &lt;/New&gt;
+                &lt;/Set&gt;
+            &lt;/New&gt;
+        &lt;/Arg&gt;
+    &lt;/New&gt;
+
+    ... other configuration (e.g. JDBC DataSource) ...
+&lt;/Configure&gt;</pre>
+
+
+<p>This configuration allows us to grab the mail session using the <code>mail/Session</code> name from the Spring configuration file:</p>
+
+<pre>&lt;jee:jndi-lookup id="mailSession" jndi-name="mail/Session" resource-ref="true" /&gt;</pre>
+
+
+
+
+<h3>Alternative configurations</h3>
+
+
+<p>For information about doing the same thing with Tomcat, or information on configuring your JavaMail session directly into the app (along with the SMTP provider details), see my post <a href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/">Send e-mail using Spring and JavaMail</a>.</p>
+
+<h3>Problems?</h3>
+
+
+<p>If you run into an error to the effect that there was a PKIX path building problem, then you need to import the remote certificate into your local truststore. See <a href="http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/">Fixing PKIX path building issues when using JavaMail and SMTP</a> for details on this issue and how to fix it.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Fixing PKIX path building issues when using JavaMail and SMTP]]></title>
+    <link href="http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/"/>
+    <updated>2012-04-29T06:08:01-07:00</updated>
+    <id>http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp</id>
+    <content type="html"><![CDATA[<p>I&rsquo;m writing this post in support of <a href="http://springinpractice.com/category/book/chapter-8/">chapter 8</a> in my book <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, which deals with <a href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/">Spring/JavaMail integration</a>, since it&rsquo;s not always straightforward to <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">configure an app to use SMTP</a>.</p>
+
+<h3>The problem</h3>
+
+
+<p>Suppose that you&rsquo;ve configured your JavaMail app to send e-mail via an SMTP server, but you get the following error:</p>
+
+<pre>HTTP ERROR 500
+
+Problem accessing /sip/contact.html. Reason:
+
+    Mail server connection failed; nested exception is javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target. Failed messages: javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+
+Caused by:
+
+org.springframework.mail.MailSendException: Mail server connection failed; nested exception is javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target. Failed messages: javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target; message exception details (1) are:
+Failed message 1:
+javax.mail.MessagingException: Can't send command to SMTP host;
+  nested exception is:
+    javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+    at com.sun.mail.smtp.SMTPTransport.sendCommand(SMTPTransport.java:1420)
+    at com.sun.mail.smtp.SMTPTransport.sendCommand(SMTPTransport.java:1408)
+    at com.sun.mail.smtp.SMTPTransport.ehlo(SMTPTransport.java:847)
+    at com.sun.mail.smtp.SMTPTransport.protocolConnect(SMTPTransport.java:384)
+    at javax.mail.Service.connect(Service.java:297)
+    at org.springframework.mail.javamail.JavaMailSenderImpl.doSend(JavaMailSenderImpl.java:389)
+    at org.springframework.mail.javamail.JavaMailSenderImpl.send(JavaMailSenderImpl.java:340)
+    at org.springframework.mail.javamail.JavaMailSenderImpl.send(JavaMailSenderImpl.java:336)
+
+        ... snip ...
+</pre>
+
+
+<p>What&rsquo;s going on, and how do you fix it?</p>
+
+<h3>What's going on</h3>
+
+
+<p>Your Java runtime doesn&rsquo;t trust the certificate.</p>
+
+<p>Normally Java verifies certificates through the standard <a href="http://en.wikipedia.org/wiki/Chain_of_trust">chain of trust</a> mechanism. But if that chain terminates with a certificate that Java doesn&rsquo;t trust, then Java will complain in the way described above.</p>
+
+<h3>How you fix it</h3>
+
+
+
+
+<h4>Step 1. Decide whether you want to "fix" it at all</h4>
+
+
+<p>Before you tell Java to trust the cert, make sure that that&rsquo;s actually the right thing to do. I don&rsquo;t have any guidance to offer on that particular point, but if you&rsquo;re trying to connect to a well-known service (say Google) and your Java runtime gives you the PKIX issue, that&rsquo;s a red flag.</p>
+
+<div class="alert warning">If for whatever reason you think Java ought to trust the certificate, then stop&mdash;you're done. Don't import the certificate into your truststore until you figure out why it (or one of the certs in the chain) isn't already there.</div>
+
+
+
+
+<h4>Step 2. Download the certificate from the remote SMTP server</h4>
+
+
+<p>You can use <code>openssl</code> to get the cert, at least on Unix/Linux and MacOS. I think Cygwin provides <code>openssl</code> on Windows too.</p>
+
+<p>Here&rsquo;s an example for mail.kattare.com, which is the SMTP server I happen to be using. Kattare uses STARTTLS so I&rsquo;m using the <code>-starttls smtp</code> flag:</p>
+
+<pre>openssl s_client -connect mail.kattare.com:2525 -starttls smtp > kattare-smtp.cer</pre>
+
+
+<p>The call will look like it&rsquo;s hung for a little while, but it hasn&rsquo;t. You can either wait it out or else just hit Ctrl-C, as the part of the response that we&rsquo;re actually interested in returns immediately.</p>
+
+<p>Now open the file with your favorite text editor and strip out everything other than the certificate itself. Here&rsquo;s what the result looks like for the mail.kattare.com cert:</p>
+
+<pre>-----BEGIN CERTIFICATE-----
+MIIDfjCCAuegAwIBAgIDFJoPMA0GCSqGSIb3DQEBBQUAME4xCzAJBgNVBAYTAlVT
+MRAwDgYDVQQKEwdFcXVpZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0
+aWZpY2F0ZSBBdXRob3JpdHkwHhcNMTAwOTE5MDEzMDUxWhcNMTIxMTIwMTQ0MjI4
+WjCB4TEpMCcGA1UEBRMgRFZxc0c5bkIxUGNleTNZVUFzY3otOFNWV0ZnL2Y1aU8x
+CzAJBgNVBAYTAlVTMRYwFAYDVQQKDA0qLmthdHRhcmUuY29tMRMwEQYDVQQLEwpH
+VDE3NDM3OTM5MTEwLwYDVQQLEyhTZWUgd3d3LnJhcGlkc3NsLmNvbS9yZXNvdXJj
+ZXMvY3BzIChjKTEwMS8wLQYDVQQLEyZEb21haW4gQ29udHJvbCBWYWxpZGF0ZWQg
+LSBSYXBpZFNTTChSKTEWMBQGA1UEAwwNKi5rYXR0YXJlLmNvbTCBnzANBgkqhkiG
+9w0BAQEFAAOBjQAwgYkCgYEA3E9EOUrXoPLgz/N1MFB4xtld2NyDJK5jzPk313VQ
+dldvYY8SOd6XqnO/WAmm/2FaFRjhEZ7HcNPAauVeMXW2YQVGSkimeWd8ZDbKU8o6
+vJuFJmnRpfxIIZxS1gzJanFrv7v+TtlIQRDP/YI5OnXkZ0sSLVBb2MK7wHLDbtej
+dhECAwEAAaOB1TCB0jAfBgNVHSMEGDAWgBRI5mj5K9KylddH2CMgEE8zmJCf1DAO
+BgNVHQ8BAf8EBAMCBPAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMCUG
+A1UdEQQeMByCDSoua2F0dGFyZS5jb22CC2thdHRhcmUuY29tMDoGA1UdHwQzMDEw
+L6AtoCuGKWh0dHA6Ly9jcmwuZ2VvdHJ1c3QuY29tL2NybHMvc2VjdXJlY2EuY3Js
+MB0GA1UdDgQWBBRCAb04OmdhLLLRIAtJGNgYnJKQcjANBgkqhkiG9w0BAQUFAAOB
+gQCZQVc8nNHGo5Sr1hh9ZMBK2bcivXqLeJkOVt2pQ0OoMWDsq7/ei4njcN5QJXf0
+mK3Qb4bUkdJUemS3QITRXVqNnBZaP0XUAKBxK5htwHJLuQ83q71Td6NkqSj4yS35
+jM3JXG7LRkr/G6M24RCxBKONckQy+3j1wdy/jZwfisilPg==
+-----END CERTIFICATE-----</pre>
+
+
+
+
+<h4>Step 3. Import the certificate into your local truststore</h4>
+
+
+<p>You&rsquo;ll want to import the cert into the truststore in your Java home directory. My Java home is at</p>
+
+<pre>/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home</pre>
+
+
+<p>but yours is probably somewhere else. Anyway, once you find it, the truststore is at <code>/lib/security/jssecacerts</code>, at least if you&rsquo;re using JSSE.</p>
+
+<pre>sudo keytool -import -alias [alias] -file [cert_file] -keystore [java_home]/lib/security/jssecacerts</pre>
+
+
+<p>For example, for me it&rsquo;s:</p>
+
+<pre>sudo keytool -import -alias mail.kattare.com -file kattare-smtp.cer -keystore /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/security/jssecacerts</pre>
+
+
+<p>Enter your <code>sudo</code> password and then your keystore password, and then answer yes when it asks you whether to trust the certificate. This will import the cert into the keystore (which doubles as a truststore).</p>
+
+<h4>Step 4. Restart your app and try again</h4>
+
+
+<p>Hopefully this time it works, or at least gets rid of the PKIX error.</p>
+
+<h3>References</h3>
+
+
+
+
+<ul>
+<li><a href="http://serverfault.com/questions/131627/how-to-inspect-remote-smtp-servers-tls-certificate">How to inspect remote SMTP server's TLS certificate? [serverfault]</a>: Explains how to get the remote certificate.</li>
+<li><a href="http://stackoverflow.com/questions/373295/digital-certificate-how-to-import-cer-file-in-to-truststore-file-using">Digital Certificate: How to import .cer file in to .truststore file using? [stackoverflow]</a>: Explains how to import the certificate into your truststore.</li>
+<li><a href="http://en.wikipedia.org/wiki/STARTTLS">STARTTLS [Wikipedia]</a>: Background material on STARTTLS.</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Publish an RSS feed with Spring 3.0]]></title>
+    <link href="http://springinpractice.com/2008/11/25/publish-an-rss-feed-with-spring-3-0/"/>
+    <updated>2008-11-25T06:27:00-08:00</updated>
+    <id>http://springinpractice.com/2008/11/25/publish-an-rss-feed-with-spring-3-0</id>
+    <content type="html"><![CDATA[<p>At the time of this writing, Spring 3.0 isn&rsquo;t out yet, but that doesn&rsquo;t mean we can&rsquo;t start goofing around with the <a href="http://static.springframework.org/downloads/nightly/snapshot-download.php?project=SPR">nightly snapshots</a>. I&rsquo;ve been doing just that, and in this article I&rsquo;ll show you how to publish an RSS feed using the new <code>AbstractRssFeedView</code> class from Spring 3.0.</p>
+
+<p>Those familiar with <a href="https://springmodules.dev.java.net/">Spring Modules</a> might recognize our view class. It began life as <code>AbstractRssView</code> in the Spring Modules project. But as of Spring 3.0, it&rsquo;s now a first-class member of the framework (though it&rsquo;s been renamed to <code>AbstractRssFeedView</code>), along with the <code>AbstractAtomFeedView</code> class for Atom feeds, and the <code>AbstractFeedView</code>, which serves as a base class for both. The new classes, like the old one, are based on Sun&rsquo;s <a href="https://rome.dev.java.net/">ROME API</a>.</p>
+
+<p>You&rsquo;ll need to know Spring Web MVC to get the most out of this article. In particular, you&rsquo;ll need to understand the relationship between controllers and views, which in a nutshell is this: when a controller is done processing a request, it returns a logical view name that a view resolver subsequently maps to a view.</p>
+
+<p>Without further ado, let&rsquo;s look at some code.</p>
+
+<h3>The controller</h3>
+
+
+<p>Let&rsquo;s start with the controller, since processing starts there, and since that&rsquo;s probably more familiar to more readers than implementing views. Here&rsquo;s a pretty basic controller for a news feed.</p>
+
+<pre>package rssdemo.web;
+
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import rssdemo.model.NewsItem;
+import rssdemo.service.NewsService;
+
+@Controller
+public final class NewsController {
+    private NewsService newsService;
+    private String rssNewsFeedView;
+    
+    @Required
+    public void setNewsService(NewsService newsService) {
+        this.newsService = newsService;
+    }
+    
+    @Required
+    public void setRssNewsFeedView(String rssNewsFeedView) {
+        this.rssNewsFeedView = rssNewsFeedView;
+    }
+    
+    @RequestMapping("/news.rss")
+    public String rss(HttpServletResponse res, Model model) {
+        List&lt;NewsItem&gt; newsItems = newsService.getAllNewsItems();
+        model.addAttribute(newsItems);                                     // 1
+        return rssNewsFeedView;                                            // 2
+    }
+}
+</pre>
+
+
+<p>As you can see, this controller really is as simple as I said it would be. Our <code>rss()</code> method grabs a list of <code>NewsItem</code>s from the <code>NewsService</code> <span class="cueball">1</span> and places it on the <code>Model</code> under a conventionally-generated key, which in this case would be <code>newsItemList</code>. Then we simply return an injected logical view name <span class="cueball">2</span>, which we&rsquo;re going to map to an actual view shortly. (We inject the view name to maintain the separation between the controller and the view.)</p>
+
+<p>Now let&rsquo;s check out the star of the show, which would be our view.</p>
+
+<h3>The view, via Spring 3.0's new AbstractRssFeedView</h3>
+
+
+<p>Now we come to the meat of the subject. Here we&rsquo;re going to implement a Spring Web MVC view by extending Spring 3.0&rsquo;s new <code>AbstractRssFeedView</code> class and by using ROME to model our news feed. Once we have the view in place, we&rsquo;ll be ready to configure the mapping from the logical view name we set in the controller to the view.</p>
+
+<p>The next listing what&rsquo;s involved in implementing a view for an RSS feed. If you&rsquo;re doing an Atom feed, the approach is entirely analogous, but you would just need to extend <code>AbstractAtomFeedView</code> instead of <code>AbstractRssFeedView</code>.</p>
+
+<pre>package rssdemo.web;
+
+import java.util.*;
+import javax.servlet.http.*;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.web.servlet.view.feed.AbstractRssFeedView;
+import com.sun.syndication.feed.rss.Channel;
+import com.sun.syndication.feed.rss.Description;
+import com.sun.syndication.feed.rss.Item;
+import rssdemo.model.NewsItem;
+
+public final class RssNewsFeedView extends AbstractRssFeedView {           // 1
+    private String feedTitle;                                              // 2
+    private String feedDesc;
+    private String feedLink;
+    
+    @Required
+    public void setFeedTitle(String feedTitle) {
+        this.feedTitle = feedTitle;
+    }
+    
+    @Required
+    public void setFeedDescription(String feedDesc) {
+        this.feedDesc = feedDesc;
+    }
+    
+    @Required
+    public void setFeedLink(String feedLink) {
+        this.feedLink = feedLink;
+    }
+
+    @Override
+    protected void buildFeedMetadata(
+            Map model, Channel feed, HttpServletRequest request) {         // 3
+        
+        feed.setTitle(feedTitle);
+        feed.setDescription(feedDesc);
+        feed.setLink(feedLink);
+    }
+    
+    @Override
+    protected List&lt;Item&gt; buildFeedItems(
+            Map model,
+            HttpServletRequest request,
+            HttpServletResponse response)
+        throws Exception {                                                 // 4
+        
+        @SuppressWarnings("unchecked")
+        List&lt;NewsItem&gt; newsItems =
+            (List&lt;NewsItem&gt;) model.get("newsItemList");                    // 5
+        
+        List&lt;Item&gt; feedItems = new ArrayList&lt;Item&gt;();
+        for (NewsItem newsItem : newsItems) {                              // 6
+            Item feedItem = new Item();
+            feedItem.setTitle(newsItem.getTitle());
+            feedItem.setAuthor(newsItem.getAuthor());
+            feedItem.setPubDate(newsItem.getDatePublished());
+            
+            Description desc = new Description();
+            desc.setType("text/html");
+            desc.setValue(newsItem.getDescription());
+            feedItem.setDescription(desc);
+            
+            feedItem.setLink(newsItem.getLink());
+            feedItems.add(feedItem);
+        }
+        
+        return feedItems;
+    }
+}</pre>
+
+
+<p>So what&rsquo;s going on here? Well, we begin by extending the <code>AbstractRssFeedView</code> class <span class="cueball">1</span>. Then we include some injected fields for feed metadata <span class="cueball">2</span>. We use these in the optional <code>buildFeedMetadata()</code> method <span class="cueball">3</span>. I say &ldquo;optional&rdquo; because the <code>AbstractRssFeedView</code> provides a dummy implementation (actually, its superclass <code>AbstractFeedView</code> provides it).</p>
+
+<p>The method we&rsquo;re required to implement is <code>buildFeedItems()</code> <span class="cueball">4</span>. Here&rsquo;s where we map our list of domain objects (here, a list of <code>NewsItem</code> objects that are just something we cooked up ourselves) to the ROME API, which provides a structure for modeling feeds. We begin by grabbing the <code>NewsItem</code> list off the model (recall from listing 1 that we placed the list on the model in the controller) <span class="cueball">5</span>. Then we iterate over the <code>NewsItem</code> list, mapping each one to a ROME <code>Item</code> <span class="cueball">6</span>.</p>
+
+<p>That should be pretty straightforward-looking. And we&rsquo;re almost done. There&rsquo;s just one part that remains, and that&rsquo;s establishing the mapping between the logical view name we return from the controller and the <code>RssNewsFeedView</code> that we just created. We do that in the application context.</p>
+
+<h3>Configure the view resolver for your RSS feed</h3>
+
+
+<p>The last thing we need to take care of is configuring up the right view resolver in our application context. We can&rsquo;t use the standard <code>InternalResourceViewResolver</code> here because we&rsquo;re not mapping to a URL; instead we want to map to a view (namely, the <code>RssNewsFeedView</code> that we just created) and we want that view to handle generating the output directly.</p>
+
+<p>The simplest approach here is to use something called the <code>BeanNameViewResolver</code>. The idea with this type of resolver is quite simple. Whenever a controller returns a logical view name, the <code>BeanNameViewResolver</code> will attempt to find a bean on the application context with the same name (or ID). If there&rsquo;s a match, then it interprets that bean as the mapped view. Otherwise, the other resolvers are given their shot at matching the view name.</p>
+
+<p>To add a <code>BeanNameViewResolver</code>, all we need to add is this:</p>
+
+<pre>&lt;bean class="org.springframework.web.servlet.view.BeanNameViewResolver"/&gt;</pre>
+
+
+<p>We also need to inject the view name into our controller, as we saw in listing 1. Here&rsquo;s how we can do that:</p>
+
+<pre>&lt;bean class="rssdemo.web.NewsController"
+    p:newsService-ref="newsService"
+    p:rssNewsFeedView="rssNewsFeedView"/&gt;</pre>
+
+
+<p>We just chose the name <code>rssNewsFeedView</code> more or less arbitrarily; we could have chosen anything. It&rsquo;s good to choose something accurate and descriptive just to keep things clear and the minimize the chance of a mapping conflict, since the name you choose is going to be a bean name. Speaking of which, we&rsquo;ll need to put our view on the app context too:</p>
+
+<pre>&lt;bean id="rssNewsFeedView"
+    class="rssdemo.web.RssNewsFeedView"
+    p:feedTitle="Ye Olde Cigar Shoppe"
+    p:feedDescription="Latest and greatest news about cigars"
+    p:feedLink="http://yeoldecigarshoppe.com/"/&gt;</pre>
+
+
+<p>And there you have it! When the <code>DispatcherServlet</code> gets a request for the RSS feed, it will run the controller method and then grab the resulting view name, which we&rsquo;ve configured to be <code>rssNewsFeedView</code>. Then the <code>BeanNameViewResolver</code> will find the corresponding view bean on the app context&mdash;in this case our <code>RssNewsFeedView</code>&mdash;and the view bean will finish up the request as required. All in all a nice, clean way of handling feed publication.</p>
+
+<p><span class="icon stickyNote">Post migrated from my Wheeler Software site.</span></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[AOP 101: Speeding up Spring's JavaMailSenderImpl with AOP]]></title>
+    <link href="http://springinpractice.com/2008/11/15/aop-101-speeding-up-springs-javamailsenderimpl-with-aop/"/>
+    <updated>2008-11-15T10:40:35-08:00</updated>
+    <id>http://springinpractice.com/2008/11/15/aop-101-speeding-up-springs-javamailsenderimpl-with-aop</id>
+    <content type="html"><![CDATA[<div class="alert info">This material is based on an earlier version of <a href="http://www.manning.com/wheeler/">Spring in Practice, chapter 8</a>&mdash;one that predates the <code>@Async</code> annotation. Nowadays I would recommend using <code>@Async</code> and the Spring Task Execution API for making JavaMail calls asynchonous. The book covers the newer approach. The material in this post is still useful for understanding what you can do with AOP though.</div>
+
+
+<p>In this article we&rsquo;ll learn how we can speed up Spring&rsquo;s <code>JavaMailSenderImpl</code> with some thread-forking AOP. Though we&rsquo;re using JavaMail as an example, this tutorial should be useful to people looking for a code-based introduction to Spring&rsquo;s support for AOP. Note at the outset that I don&rsquo;t really go into AOP concepts and terminology, but I do show some simple code that you should be able to follow if you already know the basic concepts and just want to see what the code looks like.</p>
+
+<p>There are lots of situations in which we want our application to send out an automated e-mail. You might for instance want to send a confirmation e-mail in response to new user registrations or mailing list subscriptions and unsubscriptions. In Spring this probably means that you would use one of the various <code>JavaMailSenderImpl.send()</code> methods. Here&rsquo;s a sample <code>applicationContext.xml</code> file.</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd&gt;
+    
+    &lt;jee:jndi-lookup id="mailSession" jndi-name="mail/Session" resource-ref="true"/&gt;
+    
+    &lt;bean id="mailSender"
+        class="org.springframework.mail.javamail.JavaMailSenderImpl"
+        p:session-ref="mailSession"/&gt;
+    
+    &lt;bean id="mailingListService"
+        class="app.service.MailingListServiceImpl"
+        p:mailSender-ref="mailSender"/&gt;
+        
+    ...
+    
+&lt;/beans&gt;</pre>
+
+
+<p>Here&rsquo;s how it looks from the Java side:</p>
+
+<pre>package app.service;
+
+... imports ...
+
+public class MailingListServiceImpl implements MailingListService {
+    private JavaMailSender mailSender;
+    
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+    
+    private void sendConfirmSubscriptionEmail(Subscriber subscriber) {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+        
+        String text = ...
+        
+        try {
+            helper.setSubject("Please confirm your subscription");
+            helper.setTo(subscriber.getEmail());
+            helper.setFrom(noReplyEmailAddress);
+            helper.setSentDate(subscriber.getDateCreated());
+            helper.setText(text, true);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+        
+        mailSender.send(message);
+    }
+    
+    ...
+}</pre>
+
+
+<p>(For more information on Spring/JavaMail integration, please see my article <a href="#">Send E-mail Using Spring and JavaMail</a>.)</p>
+
+<p>This works fine, but one thing your end users might notice is a fairly significant delay while <code>JavaMailSenderImpl.send()</code> does whatever it&rsquo;s doing to send your e-mail (presumably <a href="http://springinpractice.com/2008/05/05/smtp-and-smtp-auth/">negotiating with the SMTP server and sending the actual e-mail</a>). While the delay probably isn&rsquo;t large enough to provoke rioting in the streets, it&rsquo;s certainly noticeable, and in many use cases it&rsquo;s unnecessary. E-mail is itself an asynchronous communications medium, so unless there&rsquo;s an important reason to let the end user know about errors that may occur while trying to send the e-mail (and there may be), one option you might consider is making the <code>send()</code> call on a separate thread.</p>
+
+<p>Now let&rsquo;s look at a few different ways to do that.</p>
+
+<h3>Method 1: Spawn a new thread manually</h3>
+
+
+<p>One possibility would be to spawn a new thread manually whenever you want to call <code>JavaMailSenderImpl.send()</code>. In other words, you implement the <code>Runnable</code> interface with a call to <code>send()</code>, you pass it into a <code>Thread</code>, and then you start the thread.</p>
+
+<p>This technique has some advantages. It&rsquo;s conceptually straightforward. Also it&rsquo;s easy to be selective about the cases in which you do and don&rsquo;t want to fork. Again, there may well be times where you want the end user to know if the <code>send()</code> call generated an exception, and if that&rsquo;s true, then you simply refrain from forking the thread.</p>
+
+<p>If you&rsquo;re not careful, the approach can lead to widespread violation of the <a href="http://en.wikipedia.org/wiki/Don%27t_repeat_yourself">DRY principle</a>. You might end up rewriting the same thread-forking code every time you send an e-mail. You can of course control this by creating one or more utility methods to send an e-mail on a separate thread, and that is a good approach.</p>
+
+<p>One drawback with this approach, though, is that it may be either inconvenient or else a non-option. If you have an existing app with lots of calls to create e-mail, then you&rsquo;d need to update all the instances of that code with the new code. In most cases that&rsquo;s probably doable though it may be inconvenient. But it may be that you&rsquo;re not in a position to change the client code. (Maybe it&rsquo;s a third-party library, for instance.) The client code calls an injected <code>JavaMailSender</code> instance, say, and that&rsquo;s the way it is. In that event you&rsquo;ll want to consider one of the two following alternative methods.</p>
+
+<h3>Method 2: Create a JavaMailSender wrapper</h3>
+
+
+<p>Another method would be to implement a <code>JavaMailSender</code> wrapper. (<code>JavaMailSender</code> is of course the interface to which <code>JavaMailSenderImpl</code> conforms.) The <code>JavaMailSender</code> interface has six different <code>send()</code> methods (<a href="http://static.springframework.org/spring/docs/2.5.6/api/org/springframework/mail/javamail/JavaMailSender.html">here are the Javadocs</a>), and so you can just implement the thread-forking code for each of the six methods. (Probably each method would create a <code>Runnable</code> and then pass that to a thread-forking utility method.) Then you inject your wrapper into your service beans instead of injecting the <code>JavaMailSenderImpl</code> bean directly.</p>
+
+<p>This approach is pretty good. It&rsquo;s still straightforward, and it allows you to avoid violating DRY. Also, because it&rsquo;s entirely transparent to client code, it can deal with cases in which you either can&rsquo;t or else don&rsquo;t want to modify said client code.</p>
+
+<p>One possible challenge is that you may find it a little tough to exercise fine-grained control over the cases in which you use the wrapper and the cases in which you don&rsquo;t. If it&rsquo;s important for your code to exercise that kind of control, then arguably it would be reasonable to associate the forking/non-forking semantics injected <code>JavaMailSender</code> beans. You might for example inject two <code>JavaMailSender</code> instances into the service bean&mdash;one forking and one non-forking.</p>
+
+<p>A minor grumble about the wrapper method is that it ties the thread-forking behavior to specific interfaces, such as <code>JavaMailSender</code>. That&rsquo;s not too big a deal in this particular case, since it&rsquo;s not such a problem to spawn a new thread. But if you have other cases where you decide you want to create a new thread, you might decide that you&rsquo;d like to factor thread-forking out as a separate behavior and be able to apply that in multiple contexts.</p>
+
+<p>So let&rsquo;s see how to do that using Spring&rsquo;s support for AspectJ-flavored AOP.</p>
+
+<h3>Method 3: Use AOP to wrap JavaMailSenderImpl.send()</h3>
+
+
+<p>This is a fun and elegant method. Even though this article is called &ldquo;AOP 101&rdquo;, I&rsquo;m not planning to explain the concepts or weird terminology; rather I just want to show you the code and assume that you&rsquo;ll be able to see what&rsquo;s happening.</p>
+
+<p>First we need to create an &ldquo;advice&rdquo; class. This is the code that we&rsquo;re going to wrap around our <code>send()</code> invocations.</p>
+
+<pre>package app.aop;
+
+import org.apache.log4j.Logger;
+import org.aspectj.lang.ProceedingJoinPoint;
+
+public class ForkAdvice {
+    private static final Logger log = Logger.getLogger(ForkAdvice.class);
+    
+    public void fork(final ProceedingJoinPoint pjp) {
+        new Thread(new Runnable() {
+            public void run() {
+                log.info("Forking method execution: " + pjp);
+                try {
+                    pjp.proceed();
+                } catch (Throwable t) {
+                    // All we can do is log the error.
+                    log.error(t);
+                }
+            }
+        }).start();
+    }
+}</pre>
+
+
+<p>The fork method is &ldquo;around&rdquo; advice that we&rsquo;re going to use to advise our calls to <code>JavaMailSenderImpl.send()</code>. As you can see, it creates a new thread and starts it. In the <code>run()</code> body, we simply execute the advised method by calling <code>pjp.proceed()</code>.</p>
+
+<p>As an aside, the <code>ProceedingJoinPoint</code> class is provided by the AspectJ class library, but note that we&rsquo;re not using full-blown AspectJ here&mdash;we&rsquo;re in fact using Spring AOP. Full AspectJ involves a special aspect language and compiler to generate classes with the advice woven into the class bytecode itself. Spring AOP on the other hand uses dynamic proxies (either the interface variety that comes with Java, or else class proxies via CGLIB) to advise classes. While Spring AOP borrows classes and also the AspectJ pointcut language from AspectJ, its use of dynamic (runtime) proxies as opposed to bytecode-level advice integration distinguishes it from AspectJ.</p>
+
+<p>Now it&rsquo;s time to update our application context with our AOP configuration.</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd&gt;
+    
+    &lt;jee:jndi-lookup id="mailSession" jndi-name="mail/Session" resource-ref="true"/&gt;
+    
+    &lt;bean id="mailSender"
+        class="org.springframework.mail.javamail.JavaMailSenderImpl"
+        p:session-ref="mailSession"/&gt;
+    
+    &lt;bean id="mailingListService"
+        class="app.service.MailingListServiceImpl"
+        p:mailSender-ref="mailSender"/&gt;
+        
+    &lt;bean id="forkAdvice" class="app.aop.ForkAdvice"/&gt;
+    
+    &lt;aop:config&gt;
+        &lt;aop:aspect ref="forkAdvice"&gt;
+            &lt;aop:around method="fork"
+pointcut="execution(* org.springframework.mail.javamail.JavaMailSenderImpl.send(..))"/&gt;
+        &lt;/aop:aspect&gt;
+    &lt;/aop:config&gt;
+    
+    ...
+    
+&lt;/beans&gt;</pre>
+
+
+<p>This is similar to what we had before, but there are a couple of differences. First, note that we&rsquo;ve declared the <code>aop</code> namespace here. That of course allows us to use the namespace configuration feature that Spring 2.0 introduced. The other change is that we&rsquo;ve added a definition for our advice bean as well as some AOP configuration. In <code>aop:aspect</code> we point to our <code>forkAdvice</code> as the advising class to be applied, we indicate that it will be &ldquo;around&rdquo; advice, we specify the advising method, and finally we specify a pointcut that indicates which method calls will be advised/wrapped. We use the <a href="http://www.eclipse.org/aspectj/doc/released/progguide/semantics-pointcuts.html">AspectJ pointcut language</a> to specify a pointcut. Here we&rsquo;re indicating that we want all calls to any of the <code>JavaMailSenderImpl.send()</code> methods to be advised.</p>
+
+<p>As mentioned previously, this technique is like the wrapper technique in that you can use it to add the forking behavior in a way that&rsquo;s transparent to client code. Moreover you can use it not just for JavaMail but really for any method where you want to create a new thread before executing the method. You just add the appropriate <code>aop:around</code> definitions to the <code>aop:aspect</code> definition and you&rsquo;re in business.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Send e-mail using Spring and JavaMail]]></title>
+    <link href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/"/>
+    <updated>2008-05-15T14:18:08-07:00</updated>
+    <id>http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail</id>
+    <content type="html"><![CDATA[<p>This brief tutorial will show how to send e-mail using Spring and JavaMail. JavaMail can handle e-mail storage as well, but here we&rsquo;re just worrying about sending e-mail.</p>
+
+<p>I happen to be using Spring 2.5 but this ought to work for earlier versions of Spring as well (at least Spring 2.0 I think).</p>
+
+<p>Let&rsquo;s jump right in. You can configure your JavaMail session either in Spring itself or with JNDI. We&rsquo;ll look at both alternatives.</p>
+
+<h3>Alternative 1: Configuring JavaMail with Spring</h3>
+
+
+<p>You may be operating in an environment where you don&rsquo;t have a JNDI enterprise naming context (ENC) available. No problem; you can just configure JavaMail in the Spring application context configuration as shown below.</p>
+
+<pre>&lt;!-- Mail service --&gt;
+&lt;bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl"&gt;
+    &lt;property name="host" value="your.smtphost.com"/&gt;
+    &lt;property name="port" value="25"/&gt;
+    &lt;property name="username" value="yourusername"/&gt;
+    &lt;property name="password" value="yourpassword"/&gt;
+    &lt;property name="javaMailProperties"&gt;
+        &lt;props&gt;
+            &lt;!-- Use SMTP-AUTH to authenticate to SMTP server --&gt;
+            &lt;prop key="mail.smtp.auth"&gt;true&lt;/prop&gt;
+            &lt;!-- Use TLS to encrypt communication with SMTP server --&gt;
+            &lt;prop key="mail.smtp.starttls.enable"&gt;true&lt;/prop&gt;
+        &lt;/props&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>This bean is, as its name suggests, a mail sender. It is basically a wrapper around JavaMail SMTP, and the configuration reflects that. In the example I&rsquo;m showing how you would enable SMTP-AUTH (supports authentication to the SMTP server) and TLS (supports message encryption), assuming your SMTP server has those capabilities. For more information see my article <a href="http://springinpractice.com/2008/05/05/smtp-and-smtp-auth/">SMTP and SMTP-AUTH</a>.</p>
+
+<p><strong>IMPORTANT:</strong> You will need to inject <code>mailSender</code> into your mail-sending service bean.</p>
+
+<p>So that&rsquo;s how to configure JavaMail from Spring. Now here&rsquo;s how to do the same thing with JNDI, which you may want to do if you&rsquo;re running in an environment with a JNDI ENC (like an app server or a servlet container).</p>
+
+<h3>Alternative 2: Configuring JavaMail with JNDI</h3>
+
+
+
+
+<h4>Server JNDI configuration (using Tomcat 6 as an example)</h4>
+
+
+<p>(For a Jetty configuration using Gmail, see <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">Configuring Jetty to use Gmail as an SMTP provider</a>.)</p>
+
+<p>First you will need to expose a JavaMail session factory through JNDI in your server environment. This is environment-dependent, but let&rsquo;s look at an example.</p>
+
+<p>Say you&rsquo;re using Tomcat 6. There are a couple things you must do. First, move <code>mail.jar</code> and <code>activation.jar</code> to your <code>tomcat/lib</code> directory. I say &ldquo;move&rdquo; rather than &ldquo;copy&rdquo; because you will get an odd error if you leave the two JARs in your application classpath. The error is</p>
+
+<pre>java.lang.IllegalArgumentException: 
+    Cannot convert value of type [javax.mail.Session] to required type
+    [javax.mail.Session] for property 'session': no matching editors
+    or conversion strategy found</pre>
+
+
+<p>Second, define your Tomcat JNDI configuration, which might look like this (e.g. in your <code>context.xml</code> file):</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;Context path="/myapp" docBase="myapp" debug="5" crossContext="false"&gt;
+
+    &lt;!-- JavaMail session factory --&gt;
+    &lt;Resource name="mail/Session"
+              auth="Container"
+              type="javax.mail.Session"
+              username="yourusername"
+              password="yourpassword"
+              mail.debug="true"
+              mail.user="yourusername"
+              mail.password="yourpassword"
+              mail.transport.protocol="smtp"
+              mail.smtp.host="your.smtphost.com"
+              mail.smtp.auth="true"
+              mail.smtp.port="25"
+              mail.smtp.starttls.enable="true"/&gt;
+&lt;/Context&gt;</pre>
+
+
+<p>As with the non-JNDI example, I&rsquo;m configuring for SMTP-AUTH and TLS. If you are using SMTP-AUTH (authenticated SMTP sessions, which you activate using <code>mail.smtp.auth=&ldquo;true&rdquo;</code>), then you will need to specify the username and password twice, as shown above. Also, if your SMTP server supports it, you can tell JavaMail to encrypt sessions using TLS by setting <code>mail.smtp.starttls.enable=true</code>.</p>
+
+<p>The above discussion applies only to Tomcat 6 (see <a href="http://tomcat.apache.org/tomcat-6.0-doc/jndi-resources-howto.html">Apache Tomcat 6.0 JNDI Resources HOWTO</a> for detailed instructions); you&rsquo;ll need to consult your server docs to expose a JavaMail session factory through JNDI in your environment.</p>
+
+<h4>Spring configuration</h4>
+
+
+<p>We still need to create a mail sender, but the configuration is simpler since we did all the heavy lifting in <code>context.xml</code> (or whatever, depending on your server environment). So for the Spring application context, all we need is:</p>
+
+<pre>&lt;bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl"&gt;
+    &lt;property name="session" ref="mailSession"/&gt;
+&lt;/bean&gt;</pre>
+
+
+<p><strong>IMPORTANT:</strong> As before, you will need to inject <code>mailSender</code> into your mail-sending service bean.</p>
+
+<p>So that takes care of configuring the mail sender, and also the JavaMail session factory if you are using JNDI. Let&rsquo;s visit one more topic before we dive into the code itself.</p>
+
+<h3>Creating an e-mail template (optional)</h3>
+
+
+<p>Sometimes the e-mail you want to send fits inside a standard template (e.g., maybe it always has the same sender, or maybe the same recipient, or whatever). You can define a template using Spring. Here&rsquo;s an example:</p>
+
+<pre>&lt;!-- Mail message --&gt;
+&lt;bean id="mailMessage" class="org.springframework.mail.SimpleMailMessage"&gt;
+    &lt;property name="from"&gt;
+        &lt;value&gt;&lt;![CDATA[Simple Application Monitor &lt;noreply@somehost.com&gt;]]&gt;&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property name="to"&gt;
+        &lt;value&gt;&lt;![CDATA[System Administrator &lt;sysadmin@somehost.com&gt;]]&gt;&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property name="subject" value="SAM Alert"/&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>You can include as many e-mail templates in a Spring app context configuration, including none if you don&rsquo;t need a template. Here I&rsquo;ve defined a template that specifies a &ldquo;from&rdquo; field, a &ldquo;to&rdquo; field and a &ldquo;subject&rdquo; field. It doesn&rsquo;t specify the date or the body. That template works say for an application monitoring system but it wouldn&rsquo;t work for an e-commerce site&rsquo;s order confirmation e-mail,which would need to have a variable &ldquo;to&rdquo; field.</p>
+
+<p><strong>IMPORTANT:</strong> I didn&rsquo;t show it above, but you will need to inject any e-mail templates (i.e. mail messages) you create into your mail-sending service bean. Otherwise the service bean has no way to use the template.</p>
+
+<p>So that&rsquo;s that. Time for the Java code that actually sends the e-mail.</p>
+
+<h3>How to send the e-mail from your service bean</h3>
+
+
+<p>It turns out that the coding part is much simpler than the configuration (not that the config was too bad). Let&rsquo;s suppose for the sake of example that we want to send an e-mail based on the template that we defined above, and that you&rsquo;ve injected that template into your service bean as <code>mailMessage</code>. Then here&rsquo;s the service bean code that allows you to use the template to send an e-mail:</p>
+
+<pre>SimpleMailMessage message = new SimpleMailMessage(mailMessage);
+message.setSentDate(new Date());
+message.setText("Blah blah blah...");
+mailSender.send(message);</pre>
+
+
+<p>You can see we&rsquo;re creating a new message based on the <code>mailMessage</code> e-mail template and <code>mailSender</code> that we injected into said service bean.</p>
+
+<p>And that&rsquo;s it!</p>
+
+<p><span class="icon stickyNote">Post migrated from my Wheeler Software site.</span></p>
+]]></content>
+  </entry>
+  
+</feed>

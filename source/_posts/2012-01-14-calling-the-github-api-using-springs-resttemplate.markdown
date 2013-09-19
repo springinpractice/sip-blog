@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/
 layout: post
-title: Calling the GitHub API using Spring's RestTemplate
+title: "Calling the GitHub API using Spring's RestTemplate"
 date: 2012-01-14 15:15:59
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Tutorials]

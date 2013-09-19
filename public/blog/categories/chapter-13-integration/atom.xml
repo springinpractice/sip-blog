@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-16T02:13:12-07:00</updated>
+  <updated>2013-09-18T23:53:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -158,6 +158,509 @@ public class OptimisticLockChecker {
 <p>Now our entity is back to its original state, and we have both the submitted and the latest version numbers. So we compare and either throw an exception or else increment the version number.</p>
 
 <p>Perhaps the Spring Data REST guys will provide more direct support for <code>@Version</code> (or some suitable alternative) at some future point. Until then, I hope the approach above proves useful.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Sending cookies with RestTemplate]]></title>
+    <link href="http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate/"/>
+    <updated>2012-04-08T14:06:18-07:00</updated>
+    <id>http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate</id>
+    <content type="html"><![CDATA[<p>Sometimes it is necessary to send cookies along with requests to a RESTful API. One such example is the JIRA 4.3 API, which requires sending the <code>JSESSIONID</code> to JIRA for session management and authentication purposes. REST purists point out that such usages are not properly RESTful (see <a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/" target="_blank"><a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/">http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/</a></a> for a good discussion), and indeed the <code>RestTemplate</code> doesn&rsquo;t directly support sending cookies.</p>
+
+<p>But in the real world, we need to make things work, and so in this quick post I&rsquo;ll show how to send cookies with <code>RestTemplate</code>.</p>
+
+<p>The first thing to bear in mind is that we implement cookies as HTTP headers: the service uses a <code>Set-Cookie</code> response header to tell the client to set a cookie, and the client uses the <code>Cookie</code> request header for subsequent requests. And <code>RestTemplate</code> certainly supports setting request headers.</p>
+
+<p>Here&rsquo;s how I&rsquo;m pulling down an access-controlled RSS feed from JIRA 4.3:</p>
+
+<pre>HttpHeaders requestHeaders = new HttpHeaders();
+requestHeaders.add("Cookie", "JSESSIONID=" + session.getValue());
+HttpEntity requestEntity = new HttpEntity(null, requestHeaders);
+ResponseEntity rssResponse = restTemplate.exchange(
+    "https://jira.example.com/sr/jira.issueviews:searchrequest-xml/18107/SearchRequest-18107.xml?tempMax=1000",
+    HttpMethod.GET,
+    requestEntity,
+    Rss.class);
+Rss rss = rssResponse.getBody();</pre>
+
+
+<p>The trick here is to use the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> method, as this gives us more control over the request, including request headers. We just encode the cookie as a <code>JSESSIONID=[session ID]</code> request header and send it along.</p>
+
+<p>Have fun!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Using Spring Social GitHub to access secured GitHub data]]></title>
+    <link href="http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code/"/>
+    <updated>2012-03-05T16:40:28-08:00</updated>
+    <id>http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code</id>
+    <content type="html"><![CDATA[<p>At my <a title="Skydingo blog" href="http://skydingo.com/blog/">Skydingo blog</a> (a devops blog written in collaboration with Paul Jenson) I just wrote a <a href="http://skydingo.com/blog/2012/03/skybase-now-supports-authorized-access-to-github-via-spring-social-github/" title="Skybase now supports authorized access to GitHub via Spring Social GitHub">quick post</a> with some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+
+<p>[caption id=&ldquo;attachment_672&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;529&rdquo; caption=&ldquo;Authorize access to get GitHub repo hooks and other sensitive data&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png"><img src="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png" alt="" title="hooks" width="529" height="195" class="size-full wp-image-672" /></a>[/caption]</p>
+
+<h3>Spring application configuration</h3>
+
+
+<p>This goes in the app context. I lifted it more or less as-is from the Spring Social reference documentation, except that I&rsquo;m using GitHub as the provider instead of Facebook, Twitter or LinkedIn.</p>
+
+<pre>&lt;bean id="connectionFactoryLocator" class="org.springframework.social.connect.support.ConnectionFactoryRegistry"&gt;
+    &lt;property name="connectionFactories"&gt;
+        &lt;list&gt;
+            &lt;bean class="org.springframework.social.github.connect.GitHubConnectionFactory"&gt;
+                &lt;constructor-arg value="${gitHub.clientId}" /&gt;
+                &lt;constructor-arg value="${gitHub.clientSecret}" /&gt;
+            &lt;/bean&gt;
+        &lt;/list&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;bean id="textEncryptor" class="org.springframework.security.crypto.encrypt.Encryptors" factory-method="noOpText" /&gt;
+
+&lt;bean id="usersConnectionRepository" class="org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository"&gt;
+    &lt;constructor-arg ref="dataSource" /&gt;
+    &lt;constructor-arg ref="connectionFactoryLocator" /&gt;
+    &lt;constructor-arg ref="textEncryptor" /&gt;
+&lt;/bean&gt;
+
+&lt;!-- This requires authentication via Spring Security --&gt;
+&lt;bean id="connectionRepository"
+    factory-bean="usersConnectionRepository"
+    factory-method="createConnectionRepository" 
+    scope="request"&gt;
+    
+    &lt;constructor-arg value="#{request.userPrincipal.name}" /&gt;
+    &lt;aop:scoped-proxy proxy-target-class="false" /&gt;
+&lt;/bean&gt;</pre>
+
+
+
+
+<h3>Spring web configuration</h3>
+
+
+
+
+<pre>&lt;bean class="org.springframework.social.connect.web.ConnectController" /&gt;</pre>
+
+
+
+
+<h3>Service code for the user account page</h3>
+
+
+<p>Here&rsquo;s how I&rsquo;m looking up the GitHub user profile information:</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import javax.inject.Inject;
+
+import org.skydingo.skybase.model.UserAccount;
+import org.skydingo.skybase.repository.UserAccountRepository;
+import org.skydingo.skybase.service.UserAccountService;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubUserProfile;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class UserAccountServiceImpl extends AbstractCIService implements UserAccountService {
+    @Inject private ConnectionRepository connectionRepo;
+    
+    public GitHubUserProfile getCurrentUserProfile() {
+        if (gitHub().isAuthorized()) {
+            return gitHub().userOperations().getUserProfile();
+        } else {
+            return null;
+        }
+    }
+    
+    private GitHub gitHub() {
+        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
+        return (conn != null ? conn.getApi() : new GitHubTemplate());
+    }
+
+    ... other methods ...
+}</pre>
+
+
+<p>In the <code>gitHub()</code> method you can see that I return an existing <code>GitHub</code> object if the connection exists; otherwise I just create a new <code>GitHub</code> (in the form of the template, which implements <code>GitHub</code>) so that the app can at least perform non-sensitive read operations.</p>
+
+<h3>Service to get the GitHub service hooks</h3>
+
+
+<p>This one&rsquo;s pretty similar to the above.</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import java.util.List;
+import javax.inject.Inject;
+import org.skydingo.skybase.model.Application;
+import org.skydingo.skybase.service.ApplicationService;
+import org.springframework.social.connect.Connection;
+import org.springframework.social.connect.ConnectionRepository;
+import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubHook;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ApplicationServiceImpl extends AbstractCIService implements ApplicationService {
+    @Inject private ConnectionRepository connectionRepo;
+    
+    public List findHooks(String user, String repo) {
+        return gitHub().repoOperations().getHooks(user, repo);
+    }
+
+    private GitHub gitHub() {
+        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
+        return (conn != null ? conn.getApi() : new GitHubTemplate());
+    }
+
+    ... various other methods ...
+}</pre>
+
+
+<p>I should probably factor out that common <code>gitHub()</code> method. :&ndash;)</p>
+
+<h3>User account JSP</h3>
+
+
+<p>Here&rsquo;s the JSP code for rendering the connect/disconnect buttons. The CSS classes come from <a title="Twitter Bootstrap" href="http://twitter.github.com/bootstrap/">Bootstrap 2.0</a>, in case you were wondering.</p>
+
+<pre>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
+&lt;%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %&gt;
+&lt;%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %&gt;
+&lt;%@ taglib prefix="social" uri="http://www.springframework.org/spring-social/social/tags" %&gt;
+
+&lt;c:url var="connectUrl" value="/connect" /&gt;
+&lt;c:url var="githubUrl" value="/connect/github" /&gt;
+
+&lt;sec:authentication var="user" property="principal" /&gt;
+
+&lt;h1&gt;Account details&lt;/h1&gt;
+
+&lt;section class="first"&gt;
+    &lt;div class="well"&gt;
+        &lt;table class="grid"&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Username:&lt;/td&gt;
+                &lt;td&gt;&lt;c:out value="${user.username}" /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+    &lt;h2&gt;GitHub&lt;/h2&gt;
+
+    &lt;social:connected provider="github"&gt;
+        &lt;p&gt;Your Skybase and GitHub accounts are connected.&lt;/p&gt;
+        &lt;div class="well"&gt;
+            &lt;table class="grid"&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;Blog:&lt;/td&gt;
+                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.blog}" default="None" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;Location:&lt;/td&gt;
+                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.location}" default="None" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;form method="post" action="${githubUrl}"&gt;
+            &lt;input type="hidden" name="_method" value="delete" /&gt;
+            &lt;input class="btn btn-danger" type="submit" value="Disconnect from GitHub" /&gt;
+        &lt;/form&gt;
+    &lt;/social:connected&gt;
+
+    &lt;social:notConnected provider="github"&gt;
+        &lt;p&gt;Your Skybase and GitHub accounts are not yet connected. Connect them for additional Skybase features.&lt;/p&gt;
+        &lt;form method="post" action="${githubUrl}"&gt;
+            &lt;input type="hidden" name="scope" value="user, repo, gist" /&gt;
+            &lt;input class="btn btn-primary" type="submit" value="Connect to GitHub" /&gt;
+        &lt;/form&gt;
+    &lt;/social:notConnected&gt;
+&lt;/section&gt;</pre>
+
+
+<p>Note the use of the Spring Social <code>&lt;social:connected&gt;</code> and <code>&lt;social:notConnected&gt;</code> tags to show different content based on whether the user is or isn&rsquo;t connected to the provider in question.</p>
+
+<p>Notice also that the connect button sends a hidden <code>scope</code> parameter to the GitHub URL. This allows us to specify the kinds of operation we want the user to authorize.</p>
+
+<p>Anyway, there you have it. This post was a bit quick, so let me know if I left anything important out and I&rsquo;m happy to add it. Have fun.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Supporting XML and JSON web service endpoints in Spring 3.1 using @ResponseBody]]></title>
+    <link href="http://springinpractice.com/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/"/>
+    <updated>2012-02-21T18:21:32-08:00</updated>
+    <id>http://springinpractice.com/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody</id>
+    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2011/12/06/jackson-json-jaxb2-xml-spring/" title="Configuring Jackson to use JAXB2 annotations with Spring">an earlier post</a> I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the idea was to configure the Jackson <code>ObjectMapper</code> to understand JAXB2 annotations.</p>
+
+<h3>The problem</h3>
+
+
+<p>One of the things that was a little unsatisfactory about that post was that I was using views to generate the XML and JSON representations. We can do that, of course, but a more direct approach to generating the desired data payloads is to use <code>@ResponseBody</code> in conjunction with Spring&rsquo;s <code>HttpMessageConverter</code>s. The idea here is that handler methods simply return the object to be mapped (whether to XML or to JSON), and then HTTP message converters sitting on the app context map the object to XML or JSON. Correspondingly, there are HTTP message converters for both JAXB2 and Jackson (among several others). I say this is more direct because there&rsquo;s no need to involve a model or a view at all: the controller simply returns the object and the converters do the rest.</p>
+
+<p>In Spring 3.0 this was somewhat challenging to pull off, because both the JAXB2 message converter and the Jackson message converter are able to map the object, and so whichever message converter appears first in the list (the JAXB2 converter, it seems) would always map the object. So we ended up either having to treat JSON as a special case (invoke the <code>ObjectMapper</code> directly), or else just use views after all.</p>
+
+<p>In Spring 3.1 things are a lot better: we can use the <code>@ResponseBody</code> and HTTP message converter approach quite cleanly, owing to an enhancement to <code>@RequestMapping</code> and also to an enhancement to the <code>&lt;mvc:annotation-driven&gt;</code> configuration.</p>
+
+<p>Let&rsquo;s see how it works.</p>
+
+<h3>Implementing the controller</h3>
+
+
+<p>We&rsquo;ll look at the controller code first:</p>
+
+<pre>@RequestMapping(
+    value = "/{id}.json",
+    method = RequestMethod.GET,
+    produces = "application/json")
+@ResponseBody
+public Person getDetailsAsJson(@PathVariable Long id) {
+    return personRepo.findOne(id);
+}
+
+@RequestMapping(
+    value = "/{id}.xml",
+    method = RequestMethod.GET,
+    produces = "application/xml")
+@ResponseBody
+public Person getDetailsAsXml(@PathVariable Long id) {
+    return personRepo.findOne(id);
+}</pre>
+
+
+<p>To use the <code>@ResponseBody</code> approach, we obviously need to annotate the handler methods with that annotation, so that&rsquo;s what we&rsquo;ve done here. The other thing we do here is return the actual entity (in this case, a <code>Person</code>) from the method instead of returning a logical view name.</p>
+
+<p>We&rsquo;ve also specified the extension (either <code>.json</code> or <code>.xml</code>) in the value to route requests correctly.</p>
+
+<p>So far, everything we&#039;ve described was available in Spring 3.0. But notice the new <code>produces</code> element, introduced with Spring 3.1, in the <code>@RequestMapping</code> annotation. This element has two effects. First, it excludes requests with <code>Accepts</code> headers incompatible with the specified media type. Second, it ensures that the generated response is consistent with the specified media type. It&rsquo;s this second effect that we care about, because this is what allows Spring to figure out which HTTP message converter to use, even when we&rsquo;re using JAXB2 annotations for both XML and JSON mapping.</p>
+
+<h3>Configuration</h3>
+
+
+<p>We need some configuration too. Here are the relevant bits. Be sure you&rsquo;re using Spring 3.1, that you&rsquo;ve declared the <code>oxm</code> and <code>mvc</code> namespaces, etc.</p>
+
+<pre>&lt;oxm:jaxb2-marshaller id="marshaller"&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Person" /&gt;
+&lt;/oxm:jaxb2-marshaller&gt;
+    
+&lt;bean id="jaxbAnnIntrospector" class="org.codehaus.jackson.xc.JaxbAnnotationIntrospector" /&gt;
+&lt;bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper"&gt;
+    &lt;property name="serializationConfig.annotationIntrospector" ref="jaxbAnnIntrospector" /&gt;
+    &lt;property name="deserializationConfig.annotationIntrospector" ref="jaxbAnnIntrospector" /&gt;
+&lt;/bean&gt;
+
+&lt;mvc:annotation-driven&gt;
+    &lt;mvc:message-converters&gt;
+        &lt;bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"
+            p:objectMapper-ref="jacksonObjectMapper" /&gt;
+    &lt;/mvc:message-converters&gt;
+&lt;/mvc:annotation-driven&gt;</pre>
+
+
+<p>The JAXB2 marshaller and Jackson <code>ObjectMapper</code> are the same as they were in my earlier post. The thing that&rsquo;s different is the <code>&lt;mvc:annotation-driven&gt;</code> definition, and specifically, my inclusion of the new Spring 3.1 <code>&lt;mvc:message-converters&gt;</code> configuration. This allows us to define converters that override the defaults. Here I want to override the default Jackson converter with one that knows about my JAXB2-enabled <code>ObjectMapper</code>.</p>
+
+<p>You don&rsquo;t need to include XML or JSON views anymore. If you don&rsquo;t have anything other than the normal JSP view, you can probably get rid of the <code>ContentNegotiatingViewResolver</code> entirely.</p>
+
+<h3>The end result</h3>
+
+
+<p>The result is that we can now generate XML and JSON payloads in a simple and consistent fashion. There&rsquo;s no more need for models and views here (at least with respect to generating XML and JSON), and there&rsquo;s no need to invoke <code>ObjectMapper</code>s directly or anything like that.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Spring Social GitHub: revisiting GitHub integration]]></title>
+    <link href="http://springinpractice.com/2012/01/17/spring-social-github-revisiting-github-integration/"/>
+    <updated>2012-01-17T15:44:56-08:00</updated>
+    <id>http://springinpractice.com/2012/01/17/spring-social-github-revisiting-github-integration</id>
+    <content type="html"><![CDATA[<p>In my last post, <a title="Calling the GitHub API using Spring’s RestTemplate" href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/">Calling the GitHub API using Spring&rsquo;s RestTemplate</a>, I explained how to call a public endpoint that retrieves a repository&rsquo;s watchers on the <a href="http://developer.github.com/v3/">GitHub API</a> using Spring&rsquo;s RestTemplate.</p>
+
+<p>I was happy to receive a <a href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/#comment-230">comment</a> by <a title="Craig Walls' Twitter page" href="https://twitter.com/#!/habuma">Craig Walls</a> pointing out that <a title="Spring Social" href="http://www.springsource.org/spring-social">Spring Social</a> has a <a title="Spring Social GitHub's GitHub site" href="https://github.com/SpringSource/spring-social-github">GitHub binding</a>, which came with an invitation to contribute code to that binding. Sounded great&mdash;I forked the project on GitHub and dug in. I discovered two factoids:</p>
+
+<ol>
+    <li>The project is <a title="Gradle" href="http://gradle.org/">Gradle</a>-based. Excellent, because I'd been wanting to try it out for a couple of years since Craig first recommended it to me in at Spring One 2GX. I just never got around to it.</li>
+    <li>The Spring Social GitHub binding is nascent. (Understandably, Facebook, Twitter and LinkedIn get the lion's share of development attention.) Outstanding, because I could implement whatever I wanted.</li>
+</ol>
+
+
+<p>I ended up writing a handful of public endpoints for Spring Social GitHub. I focused on the public ones instead of the personal ones requiring OAuth (GitHub supports OAuth2 among others) since the <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase app</a> I&rsquo;m building probably doesn&rsquo;t need any of the personal endpoints. I&rsquo;ll show you some of what I did since it&rsquo;s fairly straightforward and since some of you might be interested in contributing further code. The Spring Social documentation has a <a title="Contributing code" href="http://static.springsource.org/spring-social/docs/1.0.x/reference/html/implementing.html">chapter on how to create or elaborate a binding</a>, and there are existing bindings for <a href="https://github.com/SpringSource/spring-social-facebook">Facebook</a>, <a href="https://github.com/SpringSource/spring-social-twitter">Twitter</a> and <a href="https://github.com/SpringSource/spring-social-linkedin">LinkedIn</a> that provide good guidance as to how to structure things. The GitHub site has <a title="Mechanics" href="https://github.com/SpringSource/spring-social/wiki/Contributing">useful information on the mechanics as well.</a> I was a little bit lazy and just shot Craig a few questions. He was <a href="https://github.com/SpringSource/spring-social-github/pull/1">good-natured</a> about it, and pointed me to the right examples.</p>
+
+<h3>Implementing support for repository watching in Spring Social GitHub</h3>
+
+
+<p><strong>Implementing a user class.</strong> In the last post I implemented a <code>User</code> class and then just called the GitHub URL with the RestTemplate, deserializing the JSON into my User. As it turns out, this isn&rsquo;t that different than what I added to Spring Social GitHub. In fact, the revised version is almost exactly the same:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import java.io.Serializable;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonProperty;
+
+@SuppressWarnings("serial")
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class GitHubUser implements Serializable {
+    private Long id;
+    private String url;
+    private String login;
+    private String avatarUrl;
+    private String gravatarId;
+
+    public Long getId() { return id; }
+
+    public void setId(Long id) { this.id = id; }
+
+    public String getUrl() { return url; }
+
+    public void setUrl(String url) { this.url = url; }
+
+    public String getLogin() { return login; }
+
+    public void setLogin(String login) { this.login = login; }
+
+    @JsonProperty("avatar_url")
+    public String getAvatarUrl() { return avatarUrl; }
+
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    @JsonProperty("gravatar_id")
+    public String getGravatarId() { return gravatarId; }
+
+    public void setGravatarId(String gravatarId) { this.gravatarId = gravatarId; }
+}</pre>
+
+
+<p>I added the <code>@JsonIgnoreProperties</code> annotation to try to future-proof the class a little, and I renamed it to <code>GitHubUser</code> since that was more in line with the Spring Social convention around naming data transfer objects.</p>
+
+<p><strong>Creating the client interfaces.</strong> Spring Social basically wraps <code>RestTemplate</code> with provider-specific methods and support for OAuth authorization. So instead of passing <code><a href="https://api.github.com/repos/williewheeler/skybase">https://api.github.com/repos/williewheeler/skybase</a> to RestTemplate.getForObject()</code>, we call a <code>getWatchers()</code> method on the Spring Social GitHub API.</p>
+
+<p>The general pattern is for there to be a top-level Java client interface, which is called <code>Facebook</code>, or <code>Twitter</code>, or <code>LinkedIn</code>, or <code>GitHub</code>, and then for this interface to have smaller sub-APIs to group related operations. This avoids having a monster interface with dozens and dozens of methods. Here, for example, is what the <code>GitHub</code> interface looks like so far:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import org.springframework.social.ApiBinding;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+
+public interface GitHub extends ApiBinding {
+
+    RepoOperations repoOperations();
+
+    UserOperations userOperations();
+}</pre>
+
+
+<p>GitHub has a lot more sets of operations than that (e.g. gists, issues, orgs, pull requests, etc.), but I was just getting my feet wet and so I only created a couple of <code>XxxOperations</code> interfaces here.</p>
+
+<p>Here&rsquo;s what <code>RepoOperations</code> looks like so far:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import java.util.List;
+
+public interface RepoOperations {
+    List getCollaborators(String user, String repo);
+    List getCommits(String user, String repo);
+    List getWatchers(String user, String repo);
+}</pre>
+
+
+<p>(As I mentioned, I implemented a few things beyond <code>getWatchers()</code>.)</p>
+
+<p><strong>Filling in the client implementations.</strong> With the interfaces in place, it was time to write their implementations. This looked pretty close to the code from my previous article, but a little more industrial-strength to handle API modularity and also personal endpoints. Here for instance is the <code>RepoTemplate</code>.</p>
+
+<pre>package org.springframework.social.github.api.impl;
+
+import static java.util.Arrays.asList;
+
+import java.util.List;
+import org.springframework.social.github.api.GitHubCommit;
+import org.springframework.social.github.api.GitHubUser;
+import org.springframework.social.github.api.RepoOperations;
+import org.springframework.web.client.RestTemplate;
+
+public class RepoTemplate extends AbstractGitHubOperations
+    implements RepoOperations {
+
+    private final RestTemplate restTemplate;
+
+    public RepoTemplate(RestTemplate restTemplate, boolean isAuthorizedForUser) {
+        super(isAuthorizedForUser);
+        this.restTemplate = restTemplate;
+    }
+
+    public List getCollaborators(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/collaborators"), GitHubUser[].class, user, repo));
+    }
+
+    public List getCommits(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/commits"), GitHubCommit[].class, user, repo));
+    }
+
+    public List getWatchers(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/watchers"), GitHubUser[].class, user, repo));
+    }
+
+    private String buildRepoUri(String path) {
+        return buildUri("repos/{user}/{repo}" + path);
+    }
+}</pre>
+
+
+<p><strong>Test cases.</strong> I wrote some test cases as well, using the test framework that the Spring guys put together. It is basically a mock server that serves up JSON files so you don&rsquo;t have to hit the real GitHub and put your rate limit in danger.</p>
+
+<h3>Using Spring Social GitHub</h3>
+
+
+<p>With all that in place, I was excited to try out my new code. Spring Social GitHub hasn&rsquo;t had an actual release yet (Spring Social Core has, but not the GitHub binding), so you&rsquo;ll need to hit a snapshot repository to get it:</p>
+
+<pre>&lt;repository&gt;
+    &lt;id&gt;spring-snapshot&lt;/id&gt;
+    &lt;name&gt;Spring Maven Snapshot Repository&lt;/name&gt;
+    &lt;url&gt;http://maven.springframework.org/snapshot&lt;/url&gt;
+&lt;/repository&gt;
+
+...
+
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.social&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-social-core&lt;/artifactId&gt;
+    &lt;version&gt;1.0.1.RELEASE&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.social&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-social-github&lt;/artifactId&gt;
+    &lt;version&gt;1.0.0.BUILD-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p>Here&rsquo;s the actual Java code:</p>
+
+<pre>import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubUser;
+
+...
+
+GitHub gitHub = ... injected or whatever ...
+List&lt;GitHubUser&gt; watchers =
+    gitHub.repoOperations().getWatchers("williewheeler", "skybase");</pre>
+
+
+<p>Couldn&rsquo;t be much easier.</p>
+
+<p>Here are some Skybase screenshots that show what sort of information I&rsquo;m pulling down from GitHub using Spring Social GitHub:</p>
+
+<p>[gallery columns=&ldquo;2&rdquo;]</p>
 ]]></content>
   </entry>
   

@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2012/05/05/combined-my-two-blogs/
 layout: post
-title: Combined my two blogs
+title: "Combined my two blogs"
 date: 2012-05-05 21:39:30
 comments: true
 categories: [News]

@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Acegi overview (now Spring Security) - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="I wrote this back when Spring Security was called Acegi. Now it&#8217;s out of date, but I&#8217;m leaving it in the archive. Acegi has been around &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2008/02/26/acegi-overview">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Acegi Overview (Now Spring Security)</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-26T05:24:16-08:00" pubdate data-updated="true">Feb 26<span>th</span>, 2008</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><div class="intro"><span class="icon stickyNote">I wrote this back when Spring Security was called Acegi. Now it&#8217;s out of date, but I&#8217;m leaving it in the archive.</span></div>
+
+
+<p>Acegi has been around for a while, but I just recently tried it out and am impressed with it so far. Upon first glance Acegi is slightly intimidating because there are lots of classes involved, and it may be hard to keep them straight. Fortunately Acegi is actually straightforward, despite appearances, to anybody who already understands servlet filters and the basics of Spring bean configuration.</p>
+
+<p>The overarching idea is that Acegi provides a suite of security services (mostly if not entirely around authentication and authorization) based on <a href="http://java.sun.com/products/servlet/Filters.html">servlet filters</a>. So for example there are filters for accepting user logins, enforcing access controls, catching security-related exceptions,handling logouts, handling &ldquo;remember me&rdquo; functionality for logins, switching from HTTP to HTTPS, etc. So using Acegi mostly involves deciding which of the filters you want (e.g., maybe you want &ldquo;remember me&rdquo;, maybe you don&rsquo;t) and then configuring those into the app.</p>
+
+<h3>Acegi involves dependency injection into servlet filters (say what?)</h3>
+
+
+<p>Acegi does get a little interesting though because the various filters rely upon Spring&rsquo;s dependency injection, but the standard way of configuring servlet filters into <code>web.xml</code> does not support Spring dependency injection. (The <code>web.xml</code> schema doesn&rsquo;t have anything for dependency injection, nor should it.) Acegi uses a pretty neat trick to give us injectable servlet filters. What it does is it provides a <code>Filter</code> implementation called <code>FilterToBeanProxy</code> that you configure in like this:</p>
+
+<pre>&lt;filter&gt;
+    &lt;filter-name&gt;security&lt;/filter-name&gt;
+    &lt;filter-class&gt;org.acegisecurity.util.FilterToBeanProxy&lt;/filter-class&gt;
+    &lt;init-param&gt;
+        &lt;param-name&gt;targetClass&lt;/param-name&gt;
+        &lt;param-value&gt;org.acegisecurity.util.FilterChainProxy&lt;/param-value&gt;
+    &lt;/init-param&gt;
+&lt;/filter&gt;
+ 
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;security&lt;/filter-name&gt;
+    &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+&lt;/filter-mapping&gt;</pre>
+
+
+<p>Pretty standard stuff. The idea behind <code>FilterToBeanProxy</code> is that it knows about your <code>[appname]-security.xml</code> bean configuration file, and so it can load in any beans that you define there. In <code>web.xml</code> we tell <code>FilterToBeanProxy</code> to load in a <code>FilterChainProxy</code> defined in <code>[appname]-security.xml</code>. <code>FilterChainProxy</code>,as its name suggests, is a <code>FilterChain</code> implementation. In turn, inside <code>[appname]-security.xml</code> we configure the various <code>Filter</code> beans mentioned above into the <code>FilterChainProxy</code>. Here&rsquo;s how it looks:</p>
+
+<pre>&lt;bean id="filterChainProxy" class="org.acegisecurity.util.FilterChainProxy"&gt;
+    &lt;property name="filterInvocationDefinitionSource"&gt;
+        &lt;!-- IMPORTANT: DON'T LINEBREAK THE FILTER LIST, OR ELSE BEAN LOOKUP BREAKS! --&gt;
+        &lt;!-- I'M JUST DOING IT HERE FOR DISPLAY PURPOSES --&gt;
+        &lt;value&gt;
+            CONVERT_URL_TO_LOWERCASE_BEFORE_COMPARISON
+            PATTERN_TYPE_APACHE_ANT
+            /**=httpSessionContextIntegrationFilter,logoutFilter,
+authenticationProcessingFilter,exceptionTranslationFilter,filterSecurityInterceptor
+        &lt;/value&gt;
+    &lt/property&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>The list of filter names is just a list of beans that you also configure in the same <code>[appname]-security.xml</code> config file. Here&rsquo;s an example:</p>
+
+<pre>&lt;bean id="httpSessionContextIntegrationFilter"
+    class="org.acegisecurity.context.HttpSessionContextIntegrationFilter"/&gt;</pre>
+
+
+<p>Voil&agrave;, injectable servlet filters! Very cool.</p>
+
+<h3>Be careful of the following gotchas</h3>
+
+
+<p>There are some points/gotchas worth mentioning:</p>
+
+<ol>
+<li>The servlet filters must be added in a specific order. If you get the order wrong, it won&#8217;t work, since the servlet filters make assumptions about what kind of processing has already taken place. Check the <a href="http://www.acegisecurity.org/guide/springsecurity.html#filters">Acegi docs</a> for details.</li>
+<li>If you&#8217;re using other servlet filters (such as Sitemesh), the Acegi filters need to come before the others.</li>
+<li>When configuring FilterChainProxy, you will need to map URL patterns to the list of filters that you want to service requests matching those patterns. For example, you might map <code>/**</code> (Ant syntax) to a list of four filters. The list is comma-delimited. It is important that you not include line breaks after the commas. I&#8217;m guessing you can&#8217;t include whitespace at all, but for sure you can&#8217;t include line breaks. Otherwise you will get <code>Bean not found: ''</code> exceptions, without any explanation as to what the actual problem is. I&#8217;m surprised they don&#8217;t allow the line breaks since I figure many people will naturally want to break up a long list of filters with long names,but my surprise notwithstanding, the line breaks aren&#8217;t allowed.</li>
+</ol>
+
+
+<p>Here&rsquo;s a <a href="http://www.javaworld.com/javaworld/jw-10-2007/jw-10-acegi2.html">JavaWorld article on getting started with Acegi</a>. Also, <a href="http://www.amazon.com/Spring-Action-Craig-Walls/dp/1933988134/ref=pd_bbs_sr_1?ie=UTF8&s=books&qid=1199391787&sr=8-1">Spring in Action</a> has some good instructions.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-26T05:24:16-08:00" pubdate data-updated="true">Feb 26<span>th</span>, 2008</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-06-authentication/'>Chapter 06 - Authentication</a>, <a class='category' href='/blog/categories/chapter-07-authorization/'>Chapter 07 - Authorization</a>, <a class='category' href='/blog/categories/tutorials/'>Tutorials</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2008/02/26/acegi-overview/" data-via="williewheeler" data-counturl="http://springinpractice.com/2008/02/26/acegi-overview/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+      
+        <a class="basic-alignment right" href="/2008/02/26/annotation-based-autowiring-in-spring-2-5/" title="Next Post: Annotation-based autowiring in Spring 2.5">Annotation-based autowiring in Spring 2.5 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

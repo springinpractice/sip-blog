@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2010/09/06/quick-tip-upgrade-a-legacy-password-storage-scheme/
 layout: post
-title: Quick tip: upgrade a legacy password storage scheme
+title: "Quick tip: upgrade a legacy password storage scheme"
 date: 2010-09-06 22:25:39
 comments: true
 categories: [Chapter 06 - Authentication, Quick Tips]

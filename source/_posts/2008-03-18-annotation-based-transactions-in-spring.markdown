@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2008/03/18/annotation-based-transactions-in-spring/
 layout: post
-title: Annotation-based transactions in Spring
+title: "Annotation-based transactions in Spring"
 date: 2008-03-18 22:52:55
 comments: true
 categories: [Chapter 02 - Data, Chapter 10 - Integration testing, Tutorials]

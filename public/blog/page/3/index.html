@@ -1,0 +1,1440 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="This one&rsquo;s another quick Zkybase screenshot post. Using Spring Social GitHub, it&rsquo;s easy to access public user and repo information via &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/blog/page/3">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">Zkybase Now Supports Authorized Access to GitHub via Spring Social GitHub</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-05T16:04:45-08:00" pubdate data-updated="true">Mar 5<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This one&rsquo;s another quick <a title="Zkybase" href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a title="Spring Social GitHub" href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the GitHubTemplate. But if we want to access private information, or write capabilities, we need to use the <a title="Spring Social" href="http://www.springsource.org/spring-social">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a title="Spring Security" href="http://static.springsource.org/spring-security/site/">Spring Security</a>), and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
+
+<h3>Screenshots</h3>
+
+
+<p>Here&rsquo;s what the GitHub section of the account page looks like before you connect to GitHub:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/disconnected.png"><img class="alignnone  wp-image-681" style="border: 1px solid #EEE;" title="disconnected" src="http://springinpractice.com/wp-content/uploads/2012/03/disconnected.png" alt="" width="565" height="96" /></a></p>
+
+<p>Once you&rsquo;ve done that, the display changes to the following:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/connected.png"><img class="alignnone size-medium wp-image-682" style="border: 1px solid #EEE;" title="connected" src="http://springinpractice.com/wp-content/uploads/2012/03/connected-300x195.png" alt="" width="300" height="195" /></a></p>
+
+<p>And now we can perform various secure operations on our GitHub objects, like viewing repo hooks:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks3.png"><img class="alignnone  wp-image-683" style="border: 1px solid #eeeeee;" title="hooks" src="http://springinpractice.com/wp-content/uploads/2012/03/hooks3.png" alt="" width="619" height="229" /></a></p>
+
+<p>I plan to use this integration to support autoprovisioning continuous integration servers, among other things.</p>
+
+<p>If you&rsquo;re interested in the code itself, please see my blog post entitled <a href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/">Using Spring Social GitHub to access secured GitHub data [code]</a>.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/">Supporting XML and JSON Web Service Endpoints in Spring 3.1 Using @ResponseBody</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-02-21T18:21:32-08:00" pubdate data-updated="true">Feb 21<span>st</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In <a href="http://springinpractice.com/2011/12/06/jackson-json-jaxb2-xml-spring/" title="Configuring Jackson to use JAXB2 annotations with Spring">an earlier post</a> I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the idea was to configure the Jackson <code>ObjectMapper</code> to understand JAXB2 annotations.</p>
+
+<h3>The problem</h3>
+
+
+<p>One of the things that was a little unsatisfactory about that post was that I was using views to generate the XML and JSON representations. We can do that, of course, but a more direct approach to generating the desired data payloads is to use <code>@ResponseBody</code> in conjunction with Spring&rsquo;s <code>HttpMessageConverter</code>s. The idea here is that handler methods simply return the object to be mapped (whether to XML or to JSON), and then HTTP message converters sitting on the app context map the object to XML or JSON. Correspondingly, there are HTTP message converters for both JAXB2 and Jackson (among several others). I say this is more direct because there&rsquo;s no need to involve a model or a view at all: the controller simply returns the object and the converters do the rest.</p>
+
+<p>In Spring 3.0 this was somewhat challenging to pull off, because both the JAXB2 message converter and the Jackson message converter are able to map the object, and so whichever message converter appears first in the list (the JAXB2 converter, it seems) would always map the object. So we ended up either having to treat JSON as a special case (invoke the <code>ObjectMapper</code> directly), or else just use views after all.</p>
+
+<p>In Spring 3.1 things are a lot better: we can use the <code>@ResponseBody</code> and HTTP message converter approach quite cleanly, owing to an enhancement to <code>@RequestMapping</code> and also to an enhancement to the <code>&lt;mvc:annotation-driven&gt;</code> configuration.</p>
+
+<p>Let&rsquo;s see how it works.</p>
+
+<h3>Implementing the controller</h3>
+
+
+<p>We&rsquo;ll look at the controller code first:</p>
+
+<pre>@RequestMapping(
+    value = "/{id}.json",
+    method = RequestMethod.GET,
+    produces = "application/json")
+@ResponseBody
+public Person getDetailsAsJson(@PathVariable Long id) {
+    return personRepo.findOne(id);
+}
+
+@RequestMapping(
+    value = "/{id}.xml",
+    method = RequestMethod.GET,
+    produces = "application/xml")
+@ResponseBody
+public Person getDetailsAsXml(@PathVariable Long id) {
+    return personRepo.findOne(id);
+}</pre>
+
+
+<p>To use the <code>@ResponseBody</code> approach, we obviously need to annotate the handler methods with that annotation, so that&rsquo;s what we&rsquo;ve done here. The other thing we do here is return the actual entity (in this case, a <code>Person</code>) from the method instead of returning a logical view name.</p>
+
+<p>We&rsquo;ve also specified the extension (either <code>.json</code> or <code>.xml</code>) in the value to route requests correctly.</p>
+
+<p>So far, everything we&#039;ve described was available in Spring 3.0. But notice the new <code>produces</code> element, introduced with Spring 3.1, in the <code>@RequestMapping</code> annotation. This element has two effects. First, it excludes requests with <code>Accepts</code> headers incompatible with the specified media type. Second, it ensures that the generated response is consistent with the specified media type. It&rsquo;s this second effect that we care about, because this is what allows Spring to figure out which HTTP message converter to use, even when we&rsquo;re using JAXB2 annotations for both XML and JSON mapping.</p>
+
+<h3>Configuration</h3>
+
+
+<p>We need some configuration too. Here are the relevant bits. Be sure you&rsquo;re using Spring 3.1, that you&rsquo;ve declared the <code>oxm</code> and <code>mvc</code> namespaces, etc.</p>
+
+<pre>&lt;oxm:jaxb2-marshaller id="marshaller"&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Person" /&gt;
+&lt;/oxm:jaxb2-marshaller&gt;
+    
+&lt;bean id="jaxbAnnIntrospector" class="org.codehaus.jackson.xc.JaxbAnnotationIntrospector" /&gt;
+&lt;bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper"&gt;
+    &lt;property name="serializationConfig.annotationIntrospector" ref="jaxbAnnIntrospector" /&gt;
+    &lt;property name="deserializationConfig.annotationIntrospector" ref="jaxbAnnIntrospector" /&gt;
+&lt;/bean&gt;
+
+&lt;mvc:annotation-driven&gt;
+    &lt;mvc:message-converters&gt;
+        &lt;bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"
+            p:objectMapper-ref="jacksonObjectMapper" /&gt;
+    &lt;/mvc:message-converters&gt;
+&lt;/mvc:annotation-driven&gt;</pre>
+
+
+<p>The JAXB2 marshaller and Jackson <code>ObjectMapper</code> are the same as they were in my earlier post. The thing that&rsquo;s different is the <code>&lt;mvc:annotation-driven&gt;</code> definition, and specifically, my inclusion of the new Spring 3.1 <code>&lt;mvc:message-converters&gt;</code> configuration. This allows us to define converters that override the defaults. Here I want to override the default Jackson converter with one that knows about my JAXB2-enabled <code>ObjectMapper</code>.</p>
+
+<p>You don&rsquo;t need to include XML or JSON views anymore. If you don&rsquo;t have anything other than the normal JSP view, you can probably get rid of the <code>ContentNegotiatingViewResolver</code> entirely.</p>
+
+<h3>The end result</h3>
+
+
+<p>The result is that we can now generate XML and JSON payloads in a simple and consistent fashion. There&rsquo;s no more need for models and views here (at least with respect to generating XML and JSON), and there&rsquo;s no need to invoke <code>ObjectMapper</code>s directly or anything like that.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/02/12/working-with-the-neo4j-shell/">Working With the Neo4j Shell</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-02-12T06:06:54-08:00" pubdate data-updated="true">Feb 12<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In this post we&rsquo;re going to learn how to work with a local Neo4j database using the <a href="http://neo4j.org/" title="Neo4j">Neo4j</a> shell. This isn&rsquo;t really a Spring post, but <a href="http://www.springsource.org/spring-data/neo4j" title="Spring Data Neo4j">Spring Data Neo4j</a> users will probably find it useful.</p>
+
+<p><strong>Set environment variable (optional).</strong> First, set the <code>NEO4J_HOME</code> environment variable to point to the top-level Neo4j directory, and put the <code>bin</code> directory on your path.</p>
+
+<p><strong>Start the Neo4j shell.</strong> Type</p>
+
+<p><code>neo4j-shell -path path/to/neo4j-db</code></p>
+
+<p>with the actual path to your database substituted in. If you want to run in read-only mode, you can do this instead:</p>
+
+<p><code>neo4j-shell -readonly -path path/to/neo4j-db</code></p>
+
+<p>If everything went well, you should see something that looks like this:</p>
+
+<pre>/lib/neo4j-community-1.5/bin$ neo4j-shell -path ~/projects/skydingo/skybase/neo4j/db
+NOTE: Local Neo4j graph database service at '/Users/williewheeler/projects/skydingo/skybase/neo4j/db'
+Welcome to the Neo4j Shell! Enter 'help' for a list of commands
+
+Welcome to the Neo4j Shell! Enter 'help' for a list of commands
+
+neo4j-sh (0)$</pre>
+
+
+<p>I&rsquo;m not sure why it welcomes me twice (friendly shell, I suppose), but that&rsquo;s what it does.</p>
+
+<p><strong>Try some commands.</strong> Now we&rsquo;re in the shell. The command set is bash-like, which is kind of nice if you&rsquo;re already familiar with bash. Let&rsquo;s play around with some commands.</p>
+
+<p>First, we&rsquo;ll set the current node to node 22:</p>
+
+<pre>neo4j-sh (0)$ cd -a 22
+neo4j-sh (willie,22)$</pre>
+
+
+<p>The <code>-a</code> flag stands for &ldquo;absolute path&rdquo;, and it just means that I can navigate to any node at all in the graph, instead of being limited to adjacent nodes.</p>
+
+<p>Now let&rsquo;s see what node 22 looks like:</p>
+
+<pre>neo4j-sh (willie,22)$ ls
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-111-2222]
+neo4j-sh (willie,22)$</pre>
+
+
+<p>Let&rsquo;s change the work phone:</p>
+
+<pre>neo4j-sh (willie,22)$ set workPhone "999-867-5309"
+neo4j-sh (willie,22)$ ls
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-867-5309]
+neo4j-sh (willie,22)$ </pre>
+
+
+<p>You can tell that I created the node above using Spring Data Neo4j since it has the <code><strong>type</strong></code> property that Spring Data Neo4j uses.</p>
+
+<p>Now let&rsquo;s create a new node. With Neo4j we create new nodes by relating them to existing nodes. Witness:</p>
+
+<pre>neo4j-sh (willie,22)$ mkrel -t HAS_HOBBY -d OUTGOING -c
+neo4j-sh (willie,22)$ ls    
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-867-5309]
+(me) --[HAS_HOBBY]-&gt; (48)
+neo4j-sh (willie,22)$</pre>
+
+
+<p>Notice that there&rsquo;s now a node 48. Let&rsquo;s navigate to that node and give it a title:</p>
+
+<pre>neo4j-sh (willie,22)$ cd 48
+neo4j-sh (48)$ ls
+(me) &lt;-[HAS_HOBBY]-- (willie,22)
+neo4j-sh (48)$ set name &quot;Playing guitar&quot;
+neo4j-sh (Playing guitar,48)$ ls
+*name =[Playing guitar]
+(me) &lt;-[HAS_HOBBY]-- (willie,22)
+neo4j-sh (Playing guitar,48)$</pre>
+
+
+<p>Alright, that was cool, but I don&rsquo;t want that node anymore. We&rsquo;re going to delete both the node and the relationship we created:</p>
+
+<pre>neo4j-sh (Playing guitar,48)$ rmnode 48
+(Playing guitar,48) cannot be deleted because it still has relationships. Use -f to force deletion of its relationships
+neo4j-sh (Playing guitar,48)$ rmnode -f 48
+Relationship [HAS_HOBBY,26] deleted
+neo4j-sh (?)$ cd -a 22
+neo4j-sh (willie,22)$ ls
+*__type__   =[org.skydingo.skybase.model.Person]
+*email      =[willie@example.com]
+*firstName  =[Willie]
+*gitHubUser =[williewheeler]
+*lastName   =[Wheeler]
+*title      =[Lead developer]
+*username   =[willie]
+*workPhone  =[999-867-5309]
+neo4j-sh (willie,22)$</pre>
+
+
+<p>We can do Cypher queries too. Here&rsquo;s a pretty basic one:</p>
+
+<pre>neo4j-sh (willie,22)$ start n=node(2) return n
++------------------------------------------------------------------------+
+| n                                                                      |
++------------------------------------------------------------------------+
+| Node[2]{name-&gt;"US West",__type__-&gt;"org.skydingo.skybase.model.Region"} |
++------------------------------------------------------------------------+
+1 rows, 0 ms
+neo4j-sh (willie,22)$</pre>
+
+
+<p>OK, it&rsquo;s quitting time:</p>
+
+<pre>neo4j-sh (willie,22)$ quit
+/lib/neo4j-community-1.5/bin$</pre>
+
+
+<p>There are other commands too, and for those, see the <a href="http://docs.neo4j.org/" title="Neo4j Reference Manual">Neo4j reference manual</a>. But now you should be able to perform basic operations inside the shell.</p>
+
+<p>Have fun!</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/17/spring-social-github-revisiting-github-integration/">Spring Social GitHub: Revisiting GitHub Integration</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-17T15:44:56-08:00" pubdate data-updated="true">Jan 17<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In my last post, <a title="Calling the GitHub API using Spring’s RestTemplate" href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/">Calling the GitHub API using Spring&rsquo;s RestTemplate</a>, I explained how to call a public endpoint that retrieves a repository&rsquo;s watchers on the <a href="http://developer.github.com/v3/">GitHub API</a> using Spring&rsquo;s RestTemplate.</p>
+
+<p>I was happy to receive a <a href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/#comment-230">comment</a> by <a title="Craig Walls' Twitter page" href="https://twitter.com/#!/habuma">Craig Walls</a> pointing out that <a title="Spring Social" href="http://www.springsource.org/spring-social">Spring Social</a> has a <a title="Spring Social GitHub's GitHub site" href="https://github.com/SpringSource/spring-social-github">GitHub binding</a>, which came with an invitation to contribute code to that binding. Sounded great&mdash;I forked the project on GitHub and dug in. I discovered two factoids:</p>
+
+<ol>
+    <li>The project is <a title="Gradle" href="http://gradle.org/">Gradle</a>-based. Excellent, because I&#8217;d been wanting to try it out for a couple of years since Craig first recommended it to me in at Spring One 2GX. I just never got around to it.</li>
+    <li>The Spring Social GitHub binding is nascent. (Understandably, Facebook, Twitter and LinkedIn get the lion&#8217;s share of development attention.) Outstanding, because I could implement whatever I wanted.</li>
+</ol>
+
+
+<p>I ended up writing a handful of public endpoints for Spring Social GitHub. I focused on the public ones instead of the personal ones requiring OAuth (GitHub supports OAuth2 among others) since the <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase app</a> I&rsquo;m building probably doesn&rsquo;t need any of the personal endpoints. I&rsquo;ll show you some of what I did since it&rsquo;s fairly straightforward and since some of you might be interested in contributing further code. The Spring Social documentation has a <a title="Contributing code" href="http://static.springsource.org/spring-social/docs/1.0.x/reference/html/implementing.html">chapter on how to create or elaborate a binding</a>, and there are existing bindings for <a href="https://github.com/SpringSource/spring-social-facebook">Facebook</a>, <a href="https://github.com/SpringSource/spring-social-twitter">Twitter</a> and <a href="https://github.com/SpringSource/spring-social-linkedin">LinkedIn</a> that provide good guidance as to how to structure things. The GitHub site has <a title="Mechanics" href="https://github.com/SpringSource/spring-social/wiki/Contributing">useful information on the mechanics as well.</a> I was a little bit lazy and just shot Craig a few questions. He was <a href="https://github.com/SpringSource/spring-social-github/pull/1">good-natured</a> about it, and pointed me to the right examples.</p>
+
+<h3>Implementing support for repository watching in Spring Social GitHub</h3>
+
+
+<p><strong>Implementing a user class.</strong> In the last post I implemented a <code>User</code> class and then just called the GitHub URL with the RestTemplate, deserializing the JSON into my User. As it turns out, this isn&rsquo;t that different than what I added to Spring Social GitHub. In fact, the revised version is almost exactly the same:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import java.io.Serializable;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonProperty;
+
+@SuppressWarnings("serial")
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class GitHubUser implements Serializable {
+    private Long id;
+    private String url;
+    private String login;
+    private String avatarUrl;
+    private String gravatarId;
+
+    public Long getId() { return id; }
+
+    public void setId(Long id) { this.id = id; }
+
+    public String getUrl() { return url; }
+
+    public void setUrl(String url) { this.url = url; }
+
+    public String getLogin() { return login; }
+
+    public void setLogin(String login) { this.login = login; }
+
+    @JsonProperty("avatar_url")
+    public String getAvatarUrl() { return avatarUrl; }
+
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    @JsonProperty("gravatar_id")
+    public String getGravatarId() { return gravatarId; }
+
+    public void setGravatarId(String gravatarId) { this.gravatarId = gravatarId; }
+}</pre>
+
+
+<p>I added the <code>@JsonIgnoreProperties</code> annotation to try to future-proof the class a little, and I renamed it to <code>GitHubUser</code> since that was more in line with the Spring Social convention around naming data transfer objects.</p>
+
+<p><strong>Creating the client interfaces.</strong> Spring Social basically wraps <code>RestTemplate</code> with provider-specific methods and support for OAuth authorization. So instead of passing <code><a href="https://api.github.com/repos/williewheeler/skybase">https://api.github.com/repos/williewheeler/skybase</a> to RestTemplate.getForObject()</code>, we call a <code>getWatchers()</code> method on the Spring Social GitHub API.</p>
+
+<p>The general pattern is for there to be a top-level Java client interface, which is called <code>Facebook</code>, or <code>Twitter</code>, or <code>LinkedIn</code>, or <code>GitHub</code>, and then for this interface to have smaller sub-APIs to group related operations. This avoids having a monster interface with dozens and dozens of methods. Here, for example, is what the <code>GitHub</code> interface looks like so far:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import org.springframework.social.ApiBinding;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+
+public interface GitHub extends ApiBinding {
+
+    RepoOperations repoOperations();
+
+    UserOperations userOperations();
+}</pre>
+
+
+<p>GitHub has a lot more sets of operations than that (e.g. gists, issues, orgs, pull requests, etc.), but I was just getting my feet wet and so I only created a couple of <code>XxxOperations</code> interfaces here.</p>
+
+<p>Here&rsquo;s what <code>RepoOperations</code> looks like so far:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import java.util.List;
+
+public interface RepoOperations {
+    List getCollaborators(String user, String repo);
+    List getCommits(String user, String repo);
+    List getWatchers(String user, String repo);
+}</pre>
+
+
+<p>(As I mentioned, I implemented a few things beyond <code>getWatchers()</code>.)</p>
+
+<p><strong>Filling in the client implementations.</strong> With the interfaces in place, it was time to write their implementations. This looked pretty close to the code from my previous article, but a little more industrial-strength to handle API modularity and also personal endpoints. Here for instance is the <code>RepoTemplate</code>.</p>
+
+<pre>package org.springframework.social.github.api.impl;
+
+import static java.util.Arrays.asList;
+
+import java.util.List;
+import org.springframework.social.github.api.GitHubCommit;
+import org.springframework.social.github.api.GitHubUser;
+import org.springframework.social.github.api.RepoOperations;
+import org.springframework.web.client.RestTemplate;
+
+public class RepoTemplate extends AbstractGitHubOperations
+    implements RepoOperations {
+
+    private final RestTemplate restTemplate;
+
+    public RepoTemplate(RestTemplate restTemplate, boolean isAuthorizedForUser) {
+        super(isAuthorizedForUser);
+        this.restTemplate = restTemplate;
+    }
+
+    public List getCollaborators(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/collaborators"), GitHubUser[].class, user, repo));
+    }
+
+    public List getCommits(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/commits"), GitHubCommit[].class, user, repo));
+    }
+
+    public List getWatchers(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/watchers"), GitHubUser[].class, user, repo));
+    }
+
+    private String buildRepoUri(String path) {
+        return buildUri("repos/{user}/{repo}" + path);
+    }
+}</pre>
+
+
+<p><strong>Test cases.</strong> I wrote some test cases as well, using the test framework that the Spring guys put together. It is basically a mock server that serves up JSON files so you don&rsquo;t have to hit the real GitHub and put your rate limit in danger.</p>
+
+<h3>Using Spring Social GitHub</h3>
+
+
+<p>With all that in place, I was excited to try out my new code. Spring Social GitHub hasn&rsquo;t had an actual release yet (Spring Social Core has, but not the GitHub binding), so you&rsquo;ll need to hit a snapshot repository to get it:</p>
+
+<pre>&lt;repository&gt;
+    &lt;id&gt;spring-snapshot&lt;/id&gt;
+    &lt;name&gt;Spring Maven Snapshot Repository&lt;/name&gt;
+    &lt;url&gt;http://maven.springframework.org/snapshot&lt;/url&gt;
+&lt;/repository&gt;
+
+...
+
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.social&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-social-core&lt;/artifactId&gt;
+    &lt;version&gt;1.0.1.RELEASE&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.social&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-social-github&lt;/artifactId&gt;
+    &lt;version&gt;1.0.0.BUILD-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p>Here&rsquo;s the actual Java code:</p>
+
+<pre>import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubUser;
+
+...
+
+GitHub gitHub = ... injected or whatever ...
+List&lt;GitHubUser&gt; watchers =
+    gitHub.repoOperations().getWatchers("williewheeler", "skybase");</pre>
+
+
+<p>Couldn&rsquo;t be much easier.</p>
+
+<p>Here are some Skybase screenshots that show what sort of information I&rsquo;m pulling down from GitHub using Spring Social GitHub:</p>
+
+<p>[gallery columns=&ldquo;2&rdquo;]</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/17/more-skybase-screenshots/">More Skybase Screenshots</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-17T13:30:03-08:00" pubdate data-updated="true">Jan 17<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Hey Internet people, Willie here. It&rsquo;s been a little while since I&rsquo;ve posted <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a> screenshots, so here&rsquo;s the work in progress. I explain how to implement this stuff (<a title="Spring Data Neo4j" href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a>, <a title="Spring/GitHub integration" href="https://github.com/SpringSource/spring-social">Spring/GitHub integration</a>, <a title="JavaScript InfoVis Toolkit" href="http://thejit.org/">JavaScript InfoVis Toolkit</a>, etc.) in chapter 11 of my book <a title="Spring in Practice" href="http://manning.com/wheeler/">Spring in Practice</a> (Manning).</p>
+
+<h3>App overview page</h3>
+
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/app_overview.png"><img class="alignnone size-medium wp-image-587" title="app_overview" src="http://springinpractice.com/wp-content/uploads/2012/01/app_overview-300x258.png" alt="" width="300" height="258" /></a></p>
+
+<p>Applications are a central concept in Skybase. This is how the app overview page looks so far. (It&rsquo;s just a start.) The concept behind it is that if you want a 360-degree view of an app (dev view, test view, release view and ops view), you come to the app details page and then you can start looking at different views.</p>
+
+<h3>App repository commits page</h3>
+
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/commits.png"><img class="alignnone size-medium wp-image-590" title="commits" src="http://springinpractice.com/wp-content/uploads/2012/01/commits-300x280.png" alt="" width="300" height="280" /></a></p>
+
+<p>Here&rsquo;s a repo commit history for a given app. Right now it&rsquo;s just integrated with GitHub, but the idea is to provide integrations with other providers too (e.g. BitBucket).</p>
+
+<h3>App repository watchers page</h3>
+
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/watchers.png"><img class="alignnone size-medium wp-image-591" title="watchers" src="http://springinpractice.com/wp-content/uploads/2012/01/watchers-300x226.png" alt="" width="300" height="226" /></a></p>
+
+<p>Again, an app details view. This time it&rsquo;s GitHub watchers for a given app repo.</p>
+
+<h3>Region details page</h3>
+
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/region.png"><img class="alignnone size-medium wp-image-592" title="region" src="http://springinpractice.com/wp-content/uploads/2012/01/region-300x278.png" alt="" width="300" height="278" /></a></p>
+
+<p>Visualizations are one of the more exciting features that a CMDB can offer. One of the huge advantages of putting your configuration management data in a database is that you can move away from Visio documents and Gliffy diagrams, and move instead toward data modeling and automatically generating views. Here I&rsquo;m using the <a title="JavaScript InfoVis Toolkit" href="http://thejit.org/">JavaScript InfoVis Toolkit </a>library to generate an interactive graph visualization. It is a great complement to the underlying <a title="Neo4j" href="http://neo4j.org/">Neo4j</a> graph database.</p>
+
+<h3>Automation view</h3>
+
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/xml.png"><img class="alignnone size-full wp-image-601" title="Automation view" src="http://springinpractice.com/wp-content/uploads/2012/01/xml.png" alt="" width="235" height="254" /></a></p>
+
+<p>This might strike you as a strange screenshot, but in reality it&rsquo;s an example of the most important view&mdash;the automation view. The main reason we want to manage configuration data in a database is that we can build web services (Skybase supports both JSON and XML views) that simultaneously drive automation and human-consumable views of the sort that a support team would use. And the data is accurate because it&rsquo;s what brings the environment into being&mdash;<a title="Closed loops" href="http://skydingo.com/blog/?p=311">no more chasing your environment around trying to document it.</a></p>
+
+<p>If you&rsquo;re interested in checking it out or even getting involved in development, see the <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase GitHub site</a>.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/14/skybasegithub-integration/">Skybase/GitHub Integration</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-14T07:55:43-08:00" pubdate data-updated="true">Jan 14<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A major goal for <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a> is to tie together the activities of developers, testers, release engineers and operations. A few major benefits are:</p>
+
+<ul>
+    <li><strong>Tool integration:</strong> We can single source app lists and more across development, build, test, deployment, monitoring, knowledge management and other tools.</li>
+    <li><strong>Process streamlining:</strong> Outputs from the dev process feed into the test and deployment processes, which in turn feed into operational processes</li>
+    <li><strong>Communications across teams:</strong> All the teams work from the same concepts and data, facilitating communication.</li>
+</ul>
+
+
+<p>One of the first things I want to tackle in Skybase, then, is supporting some developer-centric concerns. An important one is source control. Obviously Skybase isn&rsquo;t itself a source control management system, but it makes sense to pull in useful information from the source code repos just to provide a &ldquo;single pane of glass&rdquo; where developers and other users can get a holistic view of what an app is all about.</p>
+
+<p>Since I&rsquo;m using GitHub, Github integration is a logical starting point for Skybase/SCM integration. GitHub has a <a title="GitHub REST API" href="http://developer.github.com/v3/">REST API</a> that makes this integration easy. I wrote a <a title="Calling the GitHub API using Spring’s RestTemplate" href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/">blog post on Spring in Practice</a> that explains the technical approach. Here&rsquo;s the end result:</p>
+
+<p>[caption id=&ldquo;attachment_447&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;560&rdquo; caption=&ldquo;Skybase SCM page&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2012/01/skybase_scm4.png"><img class="size-full wp-image-447 " title="Skybase SCM page" src="http://springinpractice.com/wp-content/uploads/2012/01/skybase_scm4.png" alt="" width="560" /></a>[/caption]</p>
+
+<p>I suspect that such integrations will be a large part of the value that Skybase delivers. They will help realize the process, tool and communications benefits I highlighted above.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/14/calling-the-github-api-using-springs-resttemplate/">Calling the GitHub API Using Spring&#8217;s RestTemplate</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-14T07:15:59-08:00" pubdate data-updated="true">Jan 14<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>GitHub has an <a title="GitHub API" href="http://developer.github.com/">RESTful JSON API</a> that we can call from our apps. In this post I&rsquo;ll show how I&rsquo;m grabbing a GitHub repo&rsquo;s watchers and pull them into my own app using Spring&rsquo;s RestTemplate.</p>
+
+<h3>Meet the GitHub API</h3>
+
+
+<p>First, take a quick look at the <a title="GitHub Repo Watching API" href="http://developer.github.com/v3/repos/watching/">GitHub Repo Watching API</a>. It&rsquo;s pretty simple, and it doesn&rsquo;t require credentials to call. The URL for my <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a> project, for example, is <a title="Skybase watchers" href="https://api.github.com/repos/williewheeler/skybase/watchers"><a href="https://api.github.com/repos/williewheeler/skybase/watchers">https://api.github.com/repos/williewheeler/skybase/watchers</a></a>.</p>
+
+<p>Go ahead and click the watcher link above. You&rsquo;ll see that the response is a JSON array of watcher objects.</p>
+
+<p>Note that since the GitHub API is HTTPS-based, you will need to download the GitHub API certificate (using, e.g., openssl) and then import it into your Java keystore (using keytool) so your Java programs can call the API without running into certificate errors.</p>
+
+<h3>Create a User class for object/JSON mapping</h3>
+
+
+<p>We&rsquo;re going to use <a title="Jackson JSON processor" href="http://jackson.codehaus.org/">Jackson</a> to map the GitHub JSON to Java objects. We&rsquo;ll need a <code>User</code> class for that. Here it is:</p>
+
+<pre>package org.skydingo.skybase.integrations.github.model;
+
+import org.codehaus.jackson.annotate.JsonProperty;
+
+public class User {
+    private Long id;
+    private String url, login, avatarUrl, gravatarId;
+
+    public Long getId() { return id; }
+
+    public void setId(Long id) { this.id = id; }
+
+    public String getUrl() { return url; }
+
+    public void setUrl(String url) { this.url = url; }
+
+    public String getLogin() { return login; }
+
+    public void setLogin(String login) { this.login = login; }
+
+    @JsonProperty("avatar_url")
+    public String getAvatarUrl() { return avatarUrl; }
+
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    @JsonProperty("gravatar_id")
+    public String getGravatarId() { return gravatarId; }
+
+    public void setGravatarId(String gravatarId) { this.gravatarId = gravatarId; }
+}</pre>
+
+
+<p>Nothing too amazing here. Note that I&rsquo;m using <code>@JsonProperty</code> to clarify the mapping from the <code>avatar_url</code> and <code>gravatar_id</code> JSON fields to the <code>avatarUrl</code> and <code>gravatarId</code> Java properties, since Jackson doesn&rsquo;t automatically handle underscores or anything like that.</p>
+
+<p>The Maven dependency for the <code>@JsonProperty</code> annotation is</p>
+
+<pre>&lt;dependency&gt;
+    &lt;groupId&gt;org.codehaus.jackson&lt;/groupId&gt;
+    &lt;artifactId&gt;jackson-mapper-asl&lt;/artifactId&gt;
+    &lt;version&gt;1.9.3&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+
+<h3>Get the data using RestTemplate</h3>
+
+
+<p>Now that we have <code>User</code>, all we need to do is grab the data using <code>RestTemplate</code>. Easy:</p>
+
+<pre>package org.skydingo.skybase.service;
+
+import javax.inject.Inject;
+import org.skydingo.skybase.integrations.github.model.User;
+import org.skydingo.skybase.model.Application;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+public class ApplicationService {
+    private static final String GITHUB_WATCHER_URI =
+        "https://api.github.com/repos/{user}/{repo}/watchers";
+
+    @Inject private RestTemplate restTemplate;
+
+    public User[] getGithubRepoWatchers(String user, String repo) {
+        return restTemplate.getForObject(GITHUB_WATCHER_URI, User[].class, user, repo);
+    }
+}</pre>
+
+
+<p>Recall that GitHub returns an array of watchers. That&rsquo;s why we&rsquo;re using <code>User[].class</code> in the call. <code>RestTemplate</code> substitutes the <code>user</code> and <code>repo</code> values into the <code>GITHUB_WATCHER_URI</code> string for us.</p>
+
+<h3>Spring configuration</h3>
+
+
+<p>All we need to do is put a <code>RestTemplate</code> instance on the app context:</p>
+
+<p><code>&lt;bean class=&ldquo;org.springframework.web.client.RestTemplate&rdquo; /&gt;</code></p>
+
+<h3>Success!</h3>
+
+
+<p>After a little hacking at the UI:</p>
+
+<p>[caption id=&ldquo;attachment_570&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;529&rdquo; caption=&ldquo;Skybase SCM page&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2012/01/skybase_scm3.png"><img class="size-full wp-image-570" title="skybase_scm" src="http://springinpractice.com/wp-content/uploads/2012/01/skybase_scm3.png" alt="" width="529" height="296" /></a>[/caption]</p>
+
+<p>[See my post <a href="http://skydingo.com/blog/?p=445">Skybase/GitHub integration</a> on the <a href="http://skydingo.com/blog/">Skydingo blog</a> for more context as to why we&rsquo;d want to integrate our CMDB with GitHub.]</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/06/making-formselect-work-nicely-using-spring-3-formatters/">Making Form:select Work Nicely Using Spring 3 Formatters</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-06T18:51:10-08:00" pubdate data-updated="true">Jan 6<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>When you&rsquo;re creating a web form, it&rsquo;s often the case that you want to give the user a way to connect one entity up to another entity. This post explains how to do this in a nice, clean way using Spring Formatters.</p>
+
+<h3>A real-life example</h3>
+
+
+<p>To make things concrete, let&rsquo;s use a real-life example. I&rsquo;m working on an open source CMDB called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> that has entities such as farms, environments and data centers. When the user creates or edits a farm, he needs to specify the environment in which the farm lives (e.g., Development, Test, Production, etc.) and also the data center (e.g., US West DC 1, US West DC 2, etc.). We want the user to select an environment and a data center using dropdowns, like so:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/new_farm2.png"><img class="alignnone size-full wp-image-515" title="New farm form" src="http://springinpractice.com/wp-content/uploads/2012/01/new_farm2.png" alt="" width="526" height="312" /></a></p>
+
+<p>For edits, we obviously want the dropdowns to be preset to their current values. We want validation: in our example, all three fields are required. For both edits and creates, when the user submits an invalid farm (e.g., missing name), we want the environment and data center to be preset to whatever value the user just submitted. Standard stuff.</p>
+
+<p>Let&rsquo;s look at three different approaches to solving this in Spring. The first two are ugly and the last one is clean. (If you&rsquo;re impatient, feel free to skip right to the third approach.)</p>
+
+<h3>Approach #1 (ugly): ad hoc ID fields</h3>
+
+
+<p>One approach is to create special fields on the <code>Farm</code> entity to hold the environment and data center IDs, and then write custom code in the controller to map these to <code>Environment</code> and <code>DataCenter</code> instances. Here&rsquo;s how such a <code>Farm</code> might look:</p>
+
+<pre>public class Farm {
+    private Long id;
+    private String name;
+    private Environment environment;
+    private DataCenter dataCenter;
+    private Long environmentId;
+    private Long dataCenterId;
+
+    ... getters and setters for id, name, environment and dataCenter ...
+
+    @NotNull
+    @Transient
+    @XmlTransient
+    public Long getEnvironmentId() { return environmentId; }
+
+    public void setEnvironmentId(Long id) { this.environmentId = id; }
+
+    @NotNull
+    @Transient
+    @XmlTransient
+    public Long getDataCenterId() { return dataCenterId; }
+
+    public void setDataCenterId(Long id) { this.dataCenterId = id; }
+}</pre>
+
+
+<p>And the form code looks something like this (I&rsquo;m suppressing some details just for clarity&rsquo;s sake):</p>
+
+<pre>&lt;form:select path="environmentId"&gt;
+    &lt;form:option value="" label="-- Choose one--" /&gt;
+    &lt;form:options items="${environmentList}" itemValue="id" itemLabel="name" /&gt;
+&lt;/form:select&gt;
+&lt;form:errors path="environmentId"&gt;
+    &lt;span class="help-inline"&gt;&lt;form:errors path="environmentId" /&gt;&lt;/span&gt;
+&lt;/form:errors&gt;</pre>
+
+
+<p>The approach works, but it&rsquo;s stinky for at least a couple of reasons:</p>
+
+<ul>
+    <li>It dirties up the <code>Farm</code> entity. We already have <code>Environment</code> and <code>DataCenter</code> properties, and each of those has an ID, so it&#8217;s redundant and annoying to have to include extra getters and setters to handle the IDs. If we&#8217;re doing ORM or OXM, it becomes very clear from the <code>@Transient</code> and <code>@XmlTransient</code> annotations that these extra ID properties aren&#8217;t really part of the entity at all; they&#8217;re purely supporting data transfer.</li>
+    <li>It forces us to write custom code in the controller to map the IDs to an <code>Environment</code> and a <code>DataCenter</code> so we can, e.g., save it in the database using Hibernate or whatever.</li>
+</ul>
+
+
+<p>Now let&rsquo;s see a closely related approach that&rsquo;s a step in the right direction, but still stinky.</p>
+
+<h3>Approach #2 (still ugly): use the referenced entities&#8217; ID properties</h3>
+
+
+<p>Instead of using redundant ID properties, we can just leave the <code>Farm</code> alone (meaning it has an ID, a name, an environment and a data center, and no extra ID properties) and just point the form at the environment&rsquo;s and data center&rsquo;s IDs:</p>
+
+<pre>&lt;form:select path="environment.id"&gt;
+    &lt;form:option value="" label="-- Choose one--" /&gt;
+    &lt;form:options items="${environmentList}" itemValue="id" itemLabel="name" /&gt;
+&lt;/form:select&gt;
+&lt;form:errors path="environment.id"&gt;
+    &lt;span class="help-inline"&gt;&lt;form:errors path="environment.id" /&gt;&lt;/span&gt;
+&lt;/form:errors&gt;</pre>
+
+
+<p>Spring is fine with complex properties like this. And so this almost works. But there are once again a couple of issues:</p>
+
+<ul>
+    <li>Stylistically, it&#8217;s a bit inelegant to treat reference-backed properties in a special way. It would be cleaner to deal with <code>environment</code> and <code>dataCenter</code> instead of <code>environment.id</code> and <code>dataCenter.id</code>. Minor issue, but still worth considering.</li>
+    <li>More seriously, validation (at least JSR-303 validation) doesn&#8217;t work properly anymore. Referencing <code>environment.id</code> in the form causes Spring to create an <code>Environment</code> instance automatically, even if the user picks &#8220;&#8211; Choose one &#8211;&#8221; with ID = &#8220;&#8221;. So the <code>environment</code> and <code>dataCenter</code> properties won&#8217;t ever be null. And we can&#8217;t put <code>@NotNull</code> on the environment and data center IDs, because they&#8217;re allowed (indeed, expected) to be null when creating new ones. So you end up having to write custom code to make sure that the IDs are whatever you want to see. Blech.</li>
+</ul>
+
+
+<p>OK, those are some approaches that aren&rsquo;t very clean. Fortunately Spring 3 has some features that clean things up.</p>
+
+<h3>Approach #3 (good approach): use Formatters</h3>
+
+
+<p>The best practice approach in Spring 3 is to use so-called <code>Formatters</code>. As this blog post is already pretty long, let&rsquo;s just jump right into the code. If you want to see more code details, check out the actual code at the <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase Github site</a>.</p>
+
+<p>First, our entities don&rsquo;t have any ad hoc ID properties like we saw in approach #1 above. <strong>But you do need to implement <code>equals()</code> for your entities, or else form prepopulation won&rsquo;t happen.</strong></p>
+
+<p>Next, here&rsquo;s what the form looks like:</p>
+
+<pre>&lt;form:select path="environment"&gt;
+    &lt;form:option value="" label="-- Choose one--" /&gt;
+    &lt;form:options items="${environmentList}" itemValue="id" itemLabel="name" /&gt;
+&lt;/form:select&gt;
+&lt;form:errors path="environment"&gt;
+    &lt;span class="help-inline"&gt;&lt;form:errors path="environment" /&gt;&lt;/span&gt;
+&lt;/form:errors&gt;</pre>
+
+
+<p>(Same thing for the <code>dataCenter</code> property.) Notice that we&rsquo;re not messing around with IDs at all, other than where we&rsquo;re telling the <code>&lt;form:options&gt;</code> tag which property to use for the option value, which is perfectly fine and legitimate.</p>
+
+<p>Next we need to look at the controller. In earlier versions of Spring we would have had to register some JavaBeans <code>PropertyEditor</code>s in an <code>@InitBinder</code> method, but we don&rsquo;t have to do that anymore. All we have to do is make sure we&rsquo;re prepared to accept a <code>Farm</code> in our handler method, that we annotate it with <code>@Valid</code>, etc.:</p>
+
+<pre>@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+public String putEditForm(
+        @PathVariable Long id,
+        @ModelAttribute("formData") @Valid Farm formData,
+        BindingResult result,
+        Model model) {
+
+    ...
+}</pre>
+
+
+<p>The method body doesn&rsquo;t matter so much for our current purpose&mdash;we can check for validity using <code>result.hasErrors()</code>, save the data if it&rsquo;s valid, return the invalid form if it&rsquo;s not, or whatever. The main thing is that the <code>Farm</code> will come populated with an <code>Environment</code> and a <code>DataCenter</code> (both having the right IDs set) if the user chose them, and they&rsquo;ll be null if the user didn&rsquo;t:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/farm_errors2.png"><img class="alignnone size-full wp-image-539" title="Farm with validation errors" src="http://springinpractice.com/wp-content/uploads/2012/01/farm_errors2.png" alt="" width="520" height="304" /></a></p>
+
+<p>To make the magic work, we need to implement <code>Formatter</code>s to convert our environments and data centers back and forth to IDs. Regarding <code>Formatter</code>s, I&rsquo;ll let you read about them in the <a href="http://static.springsource.org/spring/docs/current/spring-framework-reference/html/validation.html#format">Spring Reference Documentation</a>; here I&rsquo;ll give some code examples. Here&rsquo;s the <code>EnvironmentFormatter</code>:</p>
+
+<pre>package org.zkybase.formatter;
+
+import java.text.ParseException;
+import java.util.Locale;
+import org.zkybase.model.Environment;
+import org.springframework.format.Formatter;
+import org.springframework.stereotype.Component;
+
+@Component
+public class EnvironmentFormatter implements Formatter&lt;Environment&gt; {
+
+    @Override
+    public String print(Environment environment, Locale locale) {
+        return environment.getId().toString();
+    }
+
+    @Override
+    public Environment parse(String id, Locale locale) throws ParseException {
+
+        // IMPORTANT: This approach works only if your equals() method doesn't compare fields
+        // beyond the ID. If it does, then you'll need those fields set too. Consider simply
+        // loading the entity from the database.
+        Environment environment = new Environment();
+        environment.setId(Long.parseLong(id));
+        return environment;
+    }
+}</pre>
+
+
+<p>One more thing we have to do is configure the formatters in our Spring configuration. Here&rsquo;s what that looks like (Spring 3.0.6+; I&rsquo;m suppressing the namespace declarations):</p>
+
+<pre>&lt;context:component-scan base-package="org.zkybase.formatter" /&gt;
+
+&lt;bean id="conversionService"
+    class="org.springframework.format.support.FormattingConversionServiceFactoryBean"&gt;
+    &lt;property name="formatters"&gt;
+        &lt;set&gt;
+            &lt;ref bean="dataCenterFormatter" /&gt;
+            &lt;ref bean="environmentFormatter" /&gt;
+        &lt;/set&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;mvc:annotation-driven conversion-service="conversionService" /&gt;</pre>
+
+
+<p>This tells Spring Web MVC to use the conversion service both when rendering the form and when processing submitted form data. We won&rsquo;t go into all the gory details here since they&rsquo;re not necessarily important to making the whole thing work, but the formatter&rsquo;s <code>print()</code> method is the one that handles form rendering, and the formatter&rsquo;s <code>parse()</code> method handles turning the IDs in the HTML into entities in the Java controller.</p>
+
+<p><strong>Quick tip regarding Firefox.</strong> Before I close, I wanted to offer a quick tip. When you&rsquo;re implementing and troubleshooting this stuff, be aware that <a href="http://stackoverflow.com/questions/4862606/when-using-html-select-tag-changed-selected-value-not-displayed-in-firefox">Firefox has a feature where it remembers your most recently submitted form values when you hit the refresh button</a> instead of resetting the form to its default settings. The feature helps users avoid data loss, but for developers it&rsquo;s a pain because you have to reload the page from the actual address bar (click in there and hit Enter) instead of refreshing the page. I didn&rsquo;t know this and the form was not responding to my code changes in the way I expected.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/02/closed-loops-the-secret-to-collecting-configuration-management-data/">Closed Loops: The Secret to Collecting Configuration Management Data</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-02T18:45:19-08:00" pubdate data-updated="true">Jan 2<span>nd</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Hi all, Willie here. Happy New Year!</p>
+
+<p>In my last post, <a title="Devops: How NOT to collect configuration management data" href="http://skydingo.com/blog/?p=229">How NOT to collect configuration management data</a>, I gave a quick rundown of some losing CM data approaches that I and others have attempted in the past. Most of these approaches were variants of asking people for information, putting their answers in documents somewhere and never looking at the documents again.</p>
+
+<p>This time around I&rsquo;m going to describe a key breakthough that our team finally made&mdash;one that made it a lot easier to collect and update the data in question.</p>
+
+<p>That breakthrough was the concept of a <em>closed loop</em> and how it relates to configuration management.</p>
+
+<p>[As it happens, the concept is well-known in configuration management circles, but at the time it wasn&rsquo;t well-known to us. So we discovered something that other people already knew. It&rsquo;s in that limited sense I say we made a breakthrough.]</p>
+
+<p>We&rsquo;re going to have to build up to the closed loop concept. Let&rsquo;s start by looking at who has the best CM data in the org.</p>
+
+<h3>Who has the best CM data?</h3>
+
+
+<p>Different orgs are different, so it&rsquo;s tough to make blanket statements about who has the best CM data. But what I can do is give the answer for my workplace, and hopefully the principles will make sense even if the reality is different where you work. But I&rsquo;ll bet for a lot of orgs it&rsquo;s quite similar.</p>
+
+<p>To avoid keeping you in suspense, the answer is&hellip;</p>
+
+<p><strong>Winner: the release team.</strong> Where I work, the release team has the best CM data, where &ldquo;best&rdquo; means something like comprehensive, accurate and actively managed. The release team knows which apps go on which servers, which service accounts to launch Tomcat or JBoss under, which alerts to suppress during a deployment, and so on. They know these things across the entire range of apps they support. It&rsquo;s all documented (in YAML files, databases, scripts, etc.) and it&rsquo;s all maintained in real time.</p>
+
+<p>Let&rsquo;s look at some other teams though.</p>
+
+<ul class="square">
+    <li><strong>App teams have nonsystematic data.</strong> The app teams typically know the URLs for their apps, which servers their apps are on (or at least the VIPs), the interdependencies between their apps and other adjacent systems (web services, databases). But the knowledge is less systematic. It&#8217;s more like browser bookmarks, tribal knowledge and not-quite-up-to-date wiki pages. And any given developer knows his own app and maybe the last app or two he worked on, but not all apps.<strong></strong></li>
+    <li><strong>Ops teams have to depend on busy developers for info.</strong> The ops teams have better or worse information depending on how close to the app teams they are. The team in the NOC is almost entirely at the mercy of the app teams to write and update knowledge base articles. As you might imagine, it can be a challenge to ensure that developers up against a deadline are writing solid KB articles and maintaining older ones. For the NOC it&#8217;s very important to know who the app SMEs are, given such challenges. Even this is not always readily clear as org changes occur, new apps appear, old apps get new names and so on.</li>
+    <li><strong>App support teams are more expertise-driven than data-driven.</strong> The app support teams (they handle escalations out of the NOC) are generally more familiar with the apps themselves and so build up stronger knowledge about the apps, but this knowledge tends to be stronger with &#8220;problem child&#8221; apps. Also, different people tend to develop expertise with specific apps.</li>
+</ul>
+
+
+
+
+<h3>Why does the release team have the best CM data?</h3>
+
+
+<p>The release team has the best CM data because properly maintained CM data is fundamental to their job in a way that it&rsquo;s not for other teams.</p>
+
+<blockquote>First, a quick aside. If your company isn&#8217;t regulated by <a title="SOX" href="http://en.wikipedia.org/wiki/Sarbanes%E2%80%93Oxley_Act">SOX</a>, you may be wondering about what a release team is and why we have one. Among many other things, SOX requires a separation of duties between people who write software and people who deploy/support it in the production environment. The release team&#8217;s primary responsibility is to release software into production. We actually have a couple of release teams, and each of them services many apps. It would not be feasible from a cost and utilization perspective for each app team to have its own dedicated release engineer. The release teams release software at low-volume times, generally during the wee hours.</blockquote>
+
+
+<p>Back to this idea that the release team needs proper CM data more than the other teams do. Why am I saying that?</p>
+
+<p><a href="http://www.flickr.com/photos/ajabogado/4409800577/"><img class="alignright size-full wp-image-349" title="scrum" src="http://springinpractice.com/wp-content/uploads/2012/01/scrum.jpg" alt="" width="240" height="180" /></a><strong>Here&rsquo;s why.</strong> The software development team is highly motivated to release software at a regular cadence. A fairly limited number of release engineers must service hundreds of applications (generally not all at once, though), so &ldquo;tribal knowledge&rdquo; isn&rsquo;t a viable strategy when it comes to knowing what to deploy where. It must be thoroughly and accurately documented. Releases happen every week, and late at night, so it&rsquo;s not reasonable for the release team to call up his buddy on the app team and ask for the list of app servers. The release team needs this information at their fingertips. If they don&rsquo;t have it, the software organization fails to realize the value of its development investment.</p>
+
+<p>Indeed, &ldquo;documented&rdquo; is the wrong word here, because deployment automation drives the deployments. The CM data must be properly &ldquo;operationalized&rdquo;, meaning that it must be consumable by automation. No Word docs, no Excel spreadsheets, no wiki pages. More like YAML files, XML files, web service calls against a CMDB, etc.</p>
+
+<p>Importantly, when the data is wrong, the deployment fails. People really care about deployments not failing, so if there are data problems, people will definitely discover and fix them.</p>
+
+<p>Let&rsquo;s look at the app and ops teams again.</p>
+
+<ul class="square">
+    <li><strong>App teams can make do without great CM data.</strong> The dependency of app developers on their CM data is softer. Yes, a developer needs to know which web services his app calls, but someone just explains that when he joins the project, and that&#8217;s really all there is to it. If he has a question about a transitive dependency, he might ask a teammate. If he needs to get to the app in the test environment, he probably has the URL bookmarked and the credentials recorded somewhere, but if not, he can easily ask somebody. 99% of the time, the developer can do what he needs to do without reference to specific CM data points. The developer may or may not automate against the CM data.<strong></strong></li>
+    <li><strong>Ops/support teams need good CM data, but expertise is cheaper in the short- to medium-term.</strong> Except in cases involving very aggressive SLAs, even ops often has a softer dependency on CM data than the release team does. Since (hopefully) app outages occur much less frequently than app deployments, the return on knowledge base investments is more sporadic than that on deployment automation. If the app in question isn&#8217;t particularly important, investments in KB articles may be very limited indeed. In most cases, investing in serious support firepower (when something breaks, bring significant subject matter expertise to bear on the problem) yields a better short- to medium-term return. (Of course, in the longer term this strategy fails, because eventually there will be the very costly outage that takes the business out for several days. That&#8217;s a subject for a different day.)</li>
+</ul>
+
+
+<p>Now we&rsquo;re in a good place to understand closed loops and why they&rsquo;re so important for configuration management data.</p>
+
+<h3>Closed loops and why they matter</h3>
+
+
+<p>I think of closed loops like this. There&rsquo;s a &ldquo;steady state&rdquo; that we want to establish and maintain with respect to our CM data. We want it to be comprehensive, accurate and relevant. When the state of our CM data diverges from that desired steady state, we want feedback loops to alert us to the situation so we can address it. That&rsquo;s a closed loop.</p>
+
+<p><strong>Example 1: deployment automation.</strong> The best example is the one that we already described: deployment data. Deployment data drives the deployment process, and when the data is wrong, the deployment process fails. Because the deployment process is extremely important to the organization, some level of urgency attaches to fixing wrong data. But it&rsquo;s not just wrong data. If we need to deploy an app and there&rsquo;s missing data in the CMDB, then sorry, there&rsquo;s no deployment! Rest assured that if the deployment matters, the missing data is only a temporary issue.</p>
+
+<p><strong>Example 2: fine-grained access controls.</strong> Here&rsquo;s another example: team membership data. We&rsquo;ve already noted that for operational reasons it&rsquo;s very important to know who is on which development team. This isn&rsquo;t something that&rsquo;s going to be in the HR system, and people have better things to do than to update team membership data. But what happens when that team membership data drives ACLs for something you care about being able to do, like deploying your app to your dev environment? Now you&rsquo;re going to see better team membership data.</p>
+
+<p>The basic concept is to find something that people really, really care about, and then make it strongly dependent on having good CM data:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/closed_loop.png"><img class="alignnone size-full wp-image-344" title="Closed loop" src="http://springinpractice.com/wp-content/uploads/2012/01/closed_loop.png" alt="" width="365" height="124" /></a></p>
+
+<p>Ideally it&rsquo;s best if the CM data drives an automated process that people care about, but that&rsquo;s not strictly necessary. In my org, for instance, there&rsquo;s a fairly robust but manual goal planning and goal tracking process. Every quarter the whole department goes through a goal planning process (my goals roll up into my boss&#8217; goals and so on), and then we track progress against those goals every couple of weeks. The goal planning and tracking app requires correct information about who&rsquo;s on which team, and so this serves to establish yet another closed loop on the team membership data. It also illustrates the point that you can hit the same type of data with multiple loops.</p>
+
+<h3>Design your CM strategy holistically</h3>
+
+
+<p>There are several areas in technology where it pays to take a holistic view of design: security, user experience and system testing come immediately to mind. In each case you consider a given technical system in its wider organizational context. (Super-duper-strong password requirements don&rsquo;t help if people have to write them down on Post-Its.)</p>
+
+<p>Configuration management is another place where it makes lots of sense to take a holistic approach to design. For any given type of data (there&rsquo;s no one-size-fits-all answer here), try to figure out something important that depends on it, and then figure out how to tie that something to your data so that wheels just start falling off if the data is wrong, incomplete and so on. Again, data-driven automated processes are superior here, but any important process (automated or not) will help.</p>
+
+<h3>Fewer meetings?</h3>
+
+
+<p>Almost forgot. In the last post, I mentioned that I&rsquo;ll equip you to get out of some pointless meetings. The meetings in question are the ones where somebody wants to get together with you to collect CM data from you so they can post it to their Sharepoint site. Decline those&mdash;they&rsquo;re just a waste of time. Insist that people be able to articulate the closed loops that they will be creating to make sure that someone discovers gaps and errors in the data. I&rsquo;ve been in plenty of such meetings, and in some cases they&rsquo;re set up as half- or full-day meetings. I don&rsquo;t do those anymore.</p>
+
+<p><em>I&rsquo;m working on an open source CMDB, called Zkybase, that can help you establish closed loop configuration management. See the <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase GitHub site</a>.</em></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2011/12/29/its-back-the-classpathscanningjaxb2marshaller/">ClasspathScanningJaxb2Marshaller</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-12-29T13:03:00-08:00" pubdate data-updated="true">Dec 29<span>th</span>, 2011</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>By default, Spring&rsquo;s <code>&lt;oxm:jaxb2-marshaller&gt;</code> tag uses the <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/oxm/jaxb/Jaxb2Marshaller.html">Jaxb2Marshaller</a> class. It&rsquo;s painful to use, though, if you have a lot of classes, because you have to enumerate them all individually. There are a couple of options here:</p>
+
+<ul>
+<li>You can use one of the JAXB2 mechanisms (an <code>ObjectFactory</code> or an <code>jaxb.index</code> file; see <a href="http://docs.oracle.com/javase/6/docs/api/javax/xml/bind/JAXBContext.html">JAXBContext</a>).</li>
+<li>You can use the marshaller&#8217;s <code>classesToBeBound</code> property.</li>
+</ul>
+
+
+<p>Both of these options require more work than they ought to. Here, for example, is what the <code>classesToBeBound</code> approach looks like:</p>
+
+<pre>&lt;oxm:jaxb2-marshaller id="marshaller"&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Database" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.DataCenter" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Environment" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Farm" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Instance" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Package" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Package$MyListWrapper" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Person" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Project" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Region" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.relationship.ProjectMembership" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.web.jit.JitNode" /&gt;
+
+    ... and so forth ...
+
+&lt;/oxm:jaxb2-marshaller&gt;</pre>
+
+
+<p>Every time we add a new entity to the system, we have to go back to the list and add a corresponding entry. Blech.</p>
+
+<p>About a year back I discovered a gem by <a href="https://twitter.com/#!/jwalgemoed">Jarno Walgemoed</a> called <code>ClasspathScanningJaxb2Marshaller</code>. Actually, I don&rsquo;t remember if that&rsquo;s its exact name, because his blog post no longer exists, but that&rsquo;s pretty close if not exactly it. At any rate, it uses Spring&rsquo;s classpath scanning mechanism (you know, the one that finds <code>@Component</code> and <code>@Repository</code> and so forth) to find classes annotated with <code>@XmlRootElement</code>, and then JAXB-binds them.</p>
+
+<p>[EDIT: I found <a href="http://www.walgemoed.org/2010/12/jaxb2-spring-ws/">the original blog post</a> after all. &mdash; WLW]</p>
+
+<p>Here&rsquo;s a slightly modified version of Jarno&rsquo;s class, reposted with his kind permission. (Thanks Jarno!) I&rsquo;ve used it on multiple projects and it works great.</p>
+
+<pre>import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+
+public class ClasspathScanningJaxb2Marshaller extends Jaxb2Marshaller {
+    private static final Logger log = LoggerFactory.getLogger(ClasspathScanningJaxb2Marshaller.class);
+    
+    private List basePackages;
+    
+    public List getBasePackages() { return basePackages; }
+    
+    public void setBasePackages(List basePackages) { this.basePackages = basePackages; }
+    
+    @PostConstruct
+    public void init() throws Exception {
+        setClassesToBeBound(getXmlRootElementClasses());
+    }
+    
+    private Class[] getXmlRootElementClasses() throws Exception {
+        ClassPathScanningCandidateComponentProvider scanner =
+            new ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new AnnotationTypeFilter(XmlRootElement.class));
+        
+        List&lt;Class&gt; classes = new ArrayList&lt;Class&gt;();
+        for (String basePackage : basePackages) {
+            Set definitions = scanner.findCandidateComponents(basePackage);
+            for (BeanDefinition definition : definitions) {
+                String className = definition.getBeanClassName();
+                log.info("Found class: {}", className);
+                classes.add(Class.forName(className));
+            }
+        }
+        
+        return classes.toArray(new Class[0]);
+    }
+}</pre>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/4/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/2/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

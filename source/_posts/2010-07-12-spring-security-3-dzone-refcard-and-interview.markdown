@@ -1,7 +1,6 @@
 ---
-link: http://springinpractice.com/2010/07/12/spring-security-3-dzone-refcard-and-interview/
 layout: post
-title: Spring Security 3 DZone Refcard and interview
+title: "Spring Security 3 DZone Refcard and interview"
 date: 2010-07-12 01:23:20
 comments: true
 categories: [Chapter 07 - Authorization, News]
