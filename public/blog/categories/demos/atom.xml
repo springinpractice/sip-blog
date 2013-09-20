@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Demos | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/demos/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-20T01:24:32-07:00</updated>
+  <updated>2013-09-20T01:30:16-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -70,15 +70,15 @@
 
 <p>First, the dashboard:</p>
 
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/dashboard1-300x261.png" alt="Dashboard" /></p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/dashboard1.png" alt="Dashboard" /></p>
 
 <p>Here&rsquo;s the project details page:</p>
 
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/project_details-300x224.png" alt="Project details page" /></p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/project_details.png" alt="Project details page" /></p>
 
 <p>And here&rsquo;s the page that allows you to create a new project:</p>
 
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/new_project_form-300x230.png" alt="New project form" /></p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/new_project_form.png" alt="New project form" /></p>
 ]]></content>
   </entry>
   

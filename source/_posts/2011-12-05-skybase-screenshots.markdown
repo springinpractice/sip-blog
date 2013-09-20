@@ -11,12 +11,12 @@ Anyway here are the screenshots.
 
 First, the dashboard:
 
-![Dashboard](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/dashboard1-300x261.png)
+![Dashboard](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/dashboard1.png)
 
 Here's the project details page:
 
-![Project details page](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/project_details-300x224.png)
+![Project details page](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/project_details.png)
 
 And here's the page that allows you to create a new project:
 
-![New project form](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/new_project_form-300x230.png)
+![New project form](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/new_project_form.png)
