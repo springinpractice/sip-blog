@@ -4,7 +4,7 @@
   <title><![CDATA[Category: News | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/news/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-19T22:38:45-07:00</updated>
+  <updated>2013-09-19T23:28:51-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -21,6 +21,8 @@
     <content type="html"><![CDATA[<p>I&rsquo;m in the process of migrating the blog from Wordpress to <a href="http://octopress.org/">Octopress</a>. Octopress is a lot easier to hack and in fact was designed for the hacker crowd. Plus I like being able to manage my posts in source control instead of in a database. Makes sense for all kinds of reasons.</p>
 
 <p>It might take a bit for the dust to settle, but that&rsquo;s what&rsquo;s going on.</p>
+
+<p>If you&rsquo;re interested in the XSLT script I wrote to migrate the posts, please see <a href="https://github.com/williewheeler/wordpress2octopress">wordpress2octopress</a>.</p>
 ]]></content>
   </entry>
   
