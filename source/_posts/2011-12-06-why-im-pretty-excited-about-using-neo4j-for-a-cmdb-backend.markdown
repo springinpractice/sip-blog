@@ -11,7 +11,7 @@ categories: [Architecture, Chapter 11 - CMDB]
 
 So far deathBURRITO has worked out well for us. Some of its features--namely, those that directly support deployment automation--have proven more useful than others. But the general consensus seems to be that deathBURRITO addresses an important configuration management (CM) gap, where previously we were "managing" CM data on a department wiki, in spreadsheets, in XML files and in Visio diagrams. While there's more work to do, what we've done so far has been reasonably right-headed, and we've been able to evolve it as our needs have evolved.
 
-That's not to say that there's nothing I would change. I think there's an opportunity to do something better on the backend. That was indeed the impetus for Skybase.
+That's not to say that there's nothing I would change. I think there's an opportunity to do something better on the backend. That was indeed the impetus for Zkybase.
 
 <h3>Revisiting the backend with Spring Data</h3>
 
@@ -50,10 +50,10 @@ Since Spring Data tends to gravitate toward the NoSQL stores, I finally got arou
 
 Remember how I mentioned that Spring Data generates repository implementations automatically based on interfaces? Here's what that looks like with Spring Data Neo4j:
 
-    package org.skydingo.skybase.repository;
+    package org.skydingo.zkybase.repository;
     
-    import org.skydingo.skybase.model.Person;
-    import org.skydingo.skybase.model.Project;
+    import org.skydingo.zkybase.model.Person;
+    import org.skydingo.zkybase.model.Project;
     import org.springframework.data.neo4j.annotation.Query;
     import org.springframework.data.neo4j.repository.GraphRepository;
     
@@ -67,11 +67,11 @@ Remember how I mentioned that Spring Data generates repository implementations a
 
 Let me repeat that I <em>don't</em> have to write the repository implementation myself. <code>GraphRepository</code> comes with various CRUD operations. Methods like <code>findProjectByKey()</code> and <code>findProjectByName()</code> obey a naming convention that allows Spring Data to produce the backing query automatically. And in the <code>findProjectsByPerson()</code> case, I provided a query using Neo4j's Cypher query language (it uses ASCII art to define queries--how ridiculously cool is that?).
 
-<h3>Exploring the ideas above with Skybase</h3>
+<h3>Exploring the ideas above with Zkybase</h3>
 
 ![Zkybase dashboard](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/dashboard1.png)
 
-The point of Skybase is to see whether we can build a better mousetrap based on the ideas above. I'm using Neo4j and Spring Data Neo4j to build it out. I haven't decided yet whether Skybase will focus on the CMDB piece or whether it's a frontend to configuration management more generally (delegating on the backend to something like <a href="http://www.opscode.com/chef/">Chef</a> or <a href="http://puppetlabs.com/">Puppet</a>, say), but the CMDB will certainly be in there. That will include a representation of the as-is (current) configuration as well as representations for desired configurations as might be defined during a deployment planning activity.
+The point of Zkybase is to see whether we can build a better mousetrap based on the ideas above. I'm using Neo4j and Spring Data Neo4j to build it out. I haven't decided yet whether Zkybase will focus on the CMDB piece or whether it's a frontend to configuration management more generally (delegating on the backend to something like <a href="http://www.opscode.com/chef/">Chef</a> or <a href="http://puppetlabs.com/">Puppet</a>, say), but the CMDB will certainly be in there. That will include a representation of the as-is (current) configuration as well as representations for desired configurations as might be defined during a deployment planning activity.
 
 So far I'm finding it a lot easier to work with the graph database than with a relational database, and I'm finding Spring Data Neo4j to be a big help in terms of repository building and defining app-level schemas. The code is a lot smaller than it was when I did this with a relational database. But it's still early days, so the jury is out.
 
