@@ -21,12 +21,21 @@ Nothing yet.
 Chapter 2
 ---------
 
+In listing 2.14, the `entityManagerFactory` definition should have a JPA vendor adapter:
+
+    <bean id="entityManagerFactory" ...>
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+        </property>
+        ...
+    </bean>
+
 Nothing yet.
 
 Chapter 3
 ---------
 
-Nothing yet.
+Section 3.5.6 incorrectly says that we will discuss `MultipartResolver` in chapter 11 (purportedly about product catalogs, but in fact about CMDBs), and also says that we'll discuss `LocaleResolver` and `ThemeResolver` in chapter 7 (claimed to be about user interfaces; actually about ACLs).
 
 Chapter 4
 ---------
@@ -71,12 +80,12 @@ Nothing yet.
 Chapter 12
 ----------
 
-Nothing yet.
+The summary introduces Chapter 13 as being about product catalogs, but Chapter 13 is really about enterprise integration.
 
 Chapter 13
 ----------
 
-Nothing yet.
+`/sip13/portal/sample_conf/classes/spring/portal.properties` is missing from the code distribution. You can get it at [the GitHub site](https://github.com/springinpractice/sip13/tree/02/portal/sample_conf/classes/spring).
 
 Chapter 14
 ----------
