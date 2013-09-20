@@ -34,7 +34,7 @@ But that's not the only backend change I'm looking at.
 
 <h3>Revisiting the backend, part 2: Neo4j + Spring Data Neo4j</h3>
 
-![Example of a graph in Neo4j](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/neo4j-graph-300x257.png)
+![Example of a graph in Neo4j](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/neo4j-graph.png)
 
 Since Spring Data tends to gravitate toward the NoSQL stores, I finally got around to reading up on Neo4j and some other stuff that I probably ought to have read up on a long time ago. Better late than never I guess. It struck me that Neo4j could be a very interesting way to implement a CM backend, and that Spring Data Neo4j could help me keep the DAO layer thin. Here's the thinking:
 
@@ -69,7 +69,7 @@ Let me repeat that I <em>don't</em> have to write the repository implementation 
 
 <h3>Exploring the ideas above with Skybase</h3>
 
-[Zkybase dashboard](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/dashboard1-300x261.png)
+![Zkybase dashboard](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/dashboard1.png)
 
 The point of Skybase is to see whether we can build a better mousetrap based on the ideas above. I'm using Neo4j and Spring Data Neo4j to build it out. I haven't decided yet whether Skybase will focus on the CMDB piece or whether it's a frontend to configuration management more generally (delegating on the backend to something like <a href="http://www.opscode.com/chef/">Chef</a> or <a href="http://puppetlabs.com/">Puppet</a>, say), but the CMDB will certainly be in there. That will include a representation of the as-is (current) configuration as well as representations for desired configurations as might be defined during a deployment planning activity.
 
