@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Architecture | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/architecture/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-20T01:30:16-07:00</updated>
+  <updated>2013-09-20T01:37:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -201,7 +201,9 @@
     <link href="http://springinpractice.com/2011/12/05/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/"/>
     <updated>2011-12-05T19:14:44-08:00</updated>
     <id>http://springinpractice.com/2011/12/05/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend</id>
-    <content type="html"><![CDATA[<p><a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase"><img class="size-medium wp-image-46 alignright" style="margin-left: 10px; margin-right: 10px;" title="deathburro" src="http://springinpractice.com/wp-content/uploads/2011/12/deathburro-200x300.jpg" alt="" width="200" height="300" />Skybase</a> is my first <em>open source</em> configuration management database (CMDB) effort, but it&rsquo;s not the first time I&rsquo;ve built a CMDB. At work a bunch of us built&mdash;and continue to build&mdash;a proprietary, internal system CMDB called deathBURRITO as part of our deployment automation effort. We built deathBURRITO using Java, Spring, Hibernate and MySQL. deathBURRITO even has a <a href="http://theksmith.com/tagged/deathburro/">robotic donkey</a> (really) whose purpose we haven&rsquo;t quite yet identified.</p>
+    <content type="html"><![CDATA[<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/deathburro-200x300.jpg" alt="deathburro" /></p>
+
+<p><a href="https://github.com/williewheeler/zkybase">Zkybase</a> is my first <em>open source</em> configuration management database (CMDB) effort, but it&rsquo;s not the first time I&rsquo;ve built a CMDB. At work a bunch of us built&mdash;and continue to build&mdash;a proprietary, internal system CMDB called deathBURRITO as part of our deployment automation effort. We built deathBURRITO using Java, Spring, Hibernate and MySQL. deathBURRITO even has a <a href="http://theksmith.com/tagged/deathburro/">robotic donkey</a> (really) whose purpose we haven&rsquo;t quite yet identified.</p>
 
 <p>So far deathBURRITO has worked out well for us. Some of its features&mdash;namely, those that directly support deployment automation&mdash;have proven more useful than others. But the general consensus seems to be that deathBURRITO addresses an important configuration management (CM) gap, where previously we were &ldquo;managing&rdquo; CM data on a department wiki, in spreadsheets, in XML files and in Visio diagrams. While there&rsquo;s more work to do, what we&rsquo;ve done so far has been reasonably right-headed, and we&rsquo;ve been able to evolve it as our needs have evolved.</p>
 
@@ -232,7 +234,7 @@
 <h3>Revisiting the backend, part 2: Neo4j + Spring Data Neo4j</h3>
 
 
-<p>[caption id=&ldquo;attachment_38&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;300&rdquo; caption=&ldquo;Example of a graph in Neo4j&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2011/12/neo4j-graph.png"><img class="size-medium wp-image-38  " title="neo4j-graph" src="http://springinpractice.com/wp-content/uploads/2011/12/neo4j-graph-300x257.png" alt="" width="300" height="257" /></a>[/caption]</p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/neo4j-graph-300x257.png" alt="Example of a graph in Neo4j" /></p>
 
 <p>Since Spring Data tends to gravitate toward the NoSQL stores, I finally got around to reading up on Neo4j and some other stuff that I probably ought to have read up on a long time ago. Better late than never I guess. It struck me that Neo4j could be a very interesting way to implement a CM backend, and that Spring Data Neo4j could help me keep the DAO layer thin. Here&rsquo;s the thinking:</p>
 
@@ -249,7 +251,7 @@
 
 <p>Remember how I mentioned that Spring Data generates repository implementations automatically based on interfaces? Here&rsquo;s what that looks like with Spring Data Neo4j:</p>
 
-<pre>package org.skydingo.skybase.repository;
+<pre><code>package org.skydingo.skybase.repository;
 
 import org.skydingo.skybase.model.Person;
 import org.skydingo.skybase.model.Project;
@@ -257,20 +259,20 @@ import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
 public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
-    Project findProjectByKey(String key);
-    Project findProjectByName(String name);
+    Project findProjectByKey(String key);
+    Project findProjectByName(String name);
 
-    @Query("start person=node({0}) match person--&gt;project return project")
-    Iterable&lt;Project&gt; findProjectsByPerson(Person person);
-}</pre>
-
+    @Query("start person=node({0}) match person--&gt;project return project")
+    Iterable&lt;Project&gt; findProjectsByPerson(Person person);
+}
+</code></pre>
 
 <p>Let me repeat that I <em>don&rsquo;t</em> have to write the repository implementation myself. <code>GraphRepository</code> comes with various CRUD operations. Methods like <code>findProjectByKey()</code> and <code>findProjectByName()</code> obey a naming convention that allows Spring Data to produce the backing query automatically. And in the <code>findProjectsByPerson()</code> case, I provided a query using Neo4j&rsquo;s Cypher query language (it uses ASCII art to define queries&mdash;how ridiculously cool is that?).</p>
 
 <h3>Exploring the ideas above with Skybase</h3>
 
 
-<p>[caption id=&ldquo;attachment_19&rdquo; align=&ldquo;alignright&rdquo; width=&ldquo;300&rdquo; caption=&ldquo;Skybase dashboard&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2011/12/dashboard1.png"><img class="size-medium wp-image-19" title="Dashboard" src="http://springinpractice.com/wp-content/uploads/2011/12/dashboard1-300x261.png" alt="" width="300" height="261" /></a>[/caption]</p>
+<p><a href="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/dashboard1-300x261.png">Zkybase dashboard</a></p>
 
 <p>The point of Skybase is to see whether we can build a better mousetrap based on the ideas above. I&rsquo;m using Neo4j and Spring Data Neo4j to build it out. I haven&rsquo;t decided yet whether Skybase will focus on the CMDB piece or whether it&rsquo;s a frontend to configuration management more generally (delegating on the backend to something like <a href="http://www.opscode.com/chef/">Chef</a> or <a href="http://puppetlabs.com/">Puppet</a>, say), but the CMDB will certainly be in there. That will include a representation of the as-is (current) configuration as well as representations for desired configurations as might be defined during a deployment planning activity.</p>
 
