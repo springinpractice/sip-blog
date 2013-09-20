@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Why I'm pretty excited about using Neo4j for a CMDB backend"
-date: 2011-12-06 03:14:44
+date: 2011-12-06 13:14:44
 comments: true
 categories: [Architecture, Chapter 11 - CMDB]
 ---

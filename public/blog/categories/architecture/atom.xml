@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Architecture | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/architecture/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-20T01:47:49-07:00</updated>
+  <updated>2013-09-20T01:54:07-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -198,9 +198,9 @@
   
   <entry>
     <title type="html"><![CDATA[Why I'm pretty excited about using Neo4j for a CMDB backend]]></title>
-    <link href="http://springinpractice.com/2011/12/05/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/"/>
-    <updated>2011-12-05T19:14:44-08:00</updated>
-    <id>http://springinpractice.com/2011/12/05/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend</id>
+    <link href="http://springinpractice.com/2011/12/06/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/"/>
+    <updated>2011-12-06T05:14:44-08:00</updated>
+    <id>http://springinpractice.com/2011/12/06/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend</id>
     <content type="html"><![CDATA[<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/deathburro-200x300.jpg" alt="deathburro" /></p>
 
 <p><a href="https://github.com/williewheeler/zkybase">Zkybase</a> is my first <em>open source</em> configuration management database (CMDB) effort, but it&rsquo;s not the first time I&rsquo;ve built a CMDB. At work a bunch of us built&mdash;and continue to build&mdash;a proprietary, internal system CMDB called deathBURRITO as part of our deployment automation effort. We built deathBURRITO using Java, Spring, Hibernate and MySQL. deathBURRITO even has a <a href="http://theksmith.com/tagged/deathburro/">robotic donkey</a> (really) whose purpose we haven&rsquo;t quite yet identified.</p>
