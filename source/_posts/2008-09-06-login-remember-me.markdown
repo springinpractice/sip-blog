@@ -5,11 +5,12 @@ date: 2008-09-06 15:37:16
 comments: true
 categories: [Chapter 06 - Authentication, News]
 ---
-[caption id="attachment_85" align="alignright" width="240" caption="A healthy human retina. Our book doesn&#039;t go into biometric authentication but this is a cool photo anyway."]<a href="http://www.flickr.com/photos/bike/2635107055/"><img class="size-full wp-image-85" title="Human retina" src="http://springinpractice.com/wp-content/uploads/2008/09/retina2.jpg" alt="" width="240" height="160" /></a>[/caption]
+![Human retina](http://springinpractice.s3.amazonaws.com/blog/images/2008-09-06-login-remember-me/retina2.jpg)
 
 <em><a href="http://www.manning.com/wheeler/">Spring in Practice</a></em> centers on using Spring to implement technical solutions to common problems, but it's also important for developers to understand the problem they're trying to solve before implementing a solution. In the book we work pretty hard to provide that understanding.
 
 Here's an except from the discussion section for a recipe on implementing login forms and remember-me authentication using Spring Security. While discussion sections might treat the problem, the solution or both, this particular discussion digs a little deeper some security/usability tradeoffs to consider when implementing username/password and remember-me authentication.
+
 <blockquote>
 <h3>Discussion</h3>
 In the background we briefly mentioned that username/password logins are only one approach to authentication. While other authentication mechanisms are commercially available—for example, there are laptops with thumbprint scanners—for most web-based applications, username/password combinations are the most practical approach. It's simply unrealistic to assume that general web users will have card readers, key fobs, biometric scanners and so forth. Such assumptions may be more plausible in controlled environments.
