@@ -5,11 +5,12 @@ date: 2008-08-31 05:20:06
 comments: true
 categories: [News]
 ---
-<a href="http://www.flickr.com/photos/seeks2dream/2213191214/"><img class="size-full wp-image-49 alignnone" src="http://springinpractice.com/wp-content/uploads/2008/08/2213191214_8db8aba33c2.jpg" alt="" width="500" height="222" /></a>
+![Tools](http://springinpractice.s3.amazonaws.com/blog/images/2008-08-31-about-our-book/2213191214_8db8aba33c2.jpg)
 
 <strong>In a nutshell:</strong> <em>Spring in Practice</em> is an applied book on the Spring Framework. It's not theoretical, and it's not a reference manual.
 
 Let's look at that statement in more detail, since we'd like you to know what you're buying before you buy it. And maybe we can even pique your interest in what we're doing.
+
 <h3>We assume you already have your reasons for using Spring</h3>
 While it's true that we like Spring, we assume that you already have your reasons for using it - maybe you heard it was a good framework and you want to try a few things out, or maybe you've just joined a development team where it's already been decided by the powers that be that you're going to be using Spring.
 
@@ -28,6 +29,7 @@ Reference manuals are optimized for people who already have a reasonable underst
 <em>Spring in Practice</em> takes a completely different approach.  We wanted to contribute something optimized for people who are newer to Spring and who, despite their novice status, are required to solve realistic problems, and quickly.
 
 Except for the first few introductory chapters, the book is organized not around Spring Framework technologies, but instead around <em>problems</em> that you might want or need to solve using Spring.  For instance, you won't find anything in the table of contents that says "Integrating Hibernate and Spring" or "Using Spring Web MVC to do such-and-such;" rather we treat problems that can be stated in the language of application domains.  Some of the problems are highly general in that they show up in multiple application categories; examples include the following:
+
 <ul>
 	<li>Display a user registration form</li>
 	<li>Store user passwords securely</li>
@@ -35,17 +37,22 @@ Except for the first few introductory chapters, the book is organized not around
 	<li>Use CAPTCHAs to prevent comment spam</li>
 	<li>Create a business process monitor (BPM)</li>
 </ul>
+
 Other problems are more category-specific (but not tied to any particular industry). Again, here are some examples:
+
 <ul>
 	<li><strong>Marketing:</strong> Create HTML e-mail templates for e-mail marketing campaigns</li>
 	<li><strong>Lead generation:</strong> Submit leads to a web service</li>
 	<li><strong>E-commerce:</strong> Implement a simple shopping cart</li>
 	<li><strong>CRM:</strong> Implement contact history</li>
 </ul>
+
 Because we focus on domain problems instead of technologies, we can do a few things that are harder for reference manuals to do:
+
 <ul>
 	<li><strong>We can treat problems more realistically.</strong> Instead of including only those pieces of the problem that scaffold the technical discussion, we can include other concerns that are often neglected in reference-type treatments, including issues around usability, security, search engine friendliness, and so on.  Often the concerns in these non-functional areas give rise to requirements that further drive the technical discussion.  Our hope is that readers - novices and veterans alike - will find this aspect of our book to be of great value.</li>
 	<li><strong>We can focus the solution on those pieces that are directly relevant to the problem.</strong> If user registration forms deal with hashes and salts but not ACLs, then you'll read about hashes and salts and you won't read about ACLs.</li>
 	<li><strong>We can integrate all aspects of the solution in a single place.</strong> You won't have to "put it all together;" we've already done that for you.</li>
 </ul>
+
 Hopefully that gives you a good understanding of the book we're writing.  If you have thoughts or suggestions please do let us know.
