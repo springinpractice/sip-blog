@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Errata""
+title: "Errata"
 date: 2013-09-19 20:00
 comments: true
 sharing: true
