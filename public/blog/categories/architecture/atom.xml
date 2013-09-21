@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Architecture | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/architecture/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-20T21:05:24-07:00</updated>
+  <updated>2013-09-20T21:13:51-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -60,7 +60,9 @@
 
 <p>Back to this idea that the release team needs proper CM data more than the other teams do. Why am I saying that?</p>
 
-<p><a href="http://www.flickr.com/photos/ajabogado/4409800577/"><img class="alignright size-full wp-image-349" title="scrum" src="http://springinpractice.com/wp-content/uploads/2012/01/scrum.jpg" alt="" width="240" height="180" /></a><strong>Here&rsquo;s why.</strong> The software development team is highly motivated to release software at a regular cadence. A fairly limited number of release engineers must service hundreds of applications (generally not all at once, though), so &ldquo;tribal knowledge&rdquo; isn&rsquo;t a viable strategy when it comes to knowing what to deploy where. It must be thoroughly and accurately documented. Releases happen every week, and late at night, so it&rsquo;s not reasonable for the release team to call up his buddy on the app team and ask for the list of app servers. The release team needs this information at their fingertips. If they don&rsquo;t have it, the software organization fails to realize the value of its development investment.</p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-03-closed-loops-the-secret-to-collecting-configuration-management-data/scrum.jpg" alt="Scrum" /></p>
+
+<p><strong>Here&rsquo;s why.</strong> The software development team is highly motivated to release software at a regular cadence. A fairly limited number of release engineers must service hundreds of applications (generally not all at once, though), so &ldquo;tribal knowledge&rdquo; isn&rsquo;t a viable strategy when it comes to knowing what to deploy where. It must be thoroughly and accurately documented. Releases happen every week, and late at night, so it&rsquo;s not reasonable for the release team to call up his buddy on the app team and ask for the list of app servers. The release team needs this information at their fingertips. If they don&rsquo;t have it, the software organization fails to realize the value of its development investment.</p>
 
 <p>Indeed, &ldquo;documented&rdquo; is the wrong word here, because deployment automation drives the deployments. The CM data must be properly &ldquo;operationalized&rdquo;, meaning that it must be consumable by automation. No Word docs, no Excel spreadsheets, no wiki pages. More like YAML files, XML files, web service calls against a CMDB, etc.</p>
 
@@ -87,7 +89,7 @@
 
 <p>The basic concept is to find something that people really, really care about, and then make it strongly dependent on having good CM data:</p>
 
-<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/closed_loop.png"><img class="alignnone size-full wp-image-344" title="Closed loop" src="http://springinpractice.com/wp-content/uploads/2012/01/closed_loop.png" alt="" width="365" height="124" /></a></p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-03-closed-loops-the-secret-to-collecting-configuration-management-data/closed_loop.png" alt="Closed loop" /></p>
 
 <p>Ideally it&rsquo;s best if the CM data drives an automated process that people care about, but that&rsquo;s not strictly necessary. In my org, for instance, there&rsquo;s a fairly robust but manual goal planning and goal tracking process. Every quarter the whole department goes through a goal planning process (my goals roll up into my boss' goals and so on), and then we track progress against those goals every couple of weeks. The goal planning and tracking app requires correct information about who&rsquo;s on which team, and so this serves to establish yet another closed loop on the team membership data. It also illustrates the point that you can hit the same type of data with multiple loops.</p>
 
