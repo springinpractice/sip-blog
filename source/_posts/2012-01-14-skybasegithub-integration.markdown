@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Skybase/GitHub integration"
+title: "Zkybase/GitHub integration"
 date: 2012-01-14 15:55:43
 comments: true
 categories: [Chapter 11 - CMDB, News]
