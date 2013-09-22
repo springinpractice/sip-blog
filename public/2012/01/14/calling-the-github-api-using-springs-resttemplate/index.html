@@ -97,21 +97,19 @@
 
 <div class="entry-content"><p>GitHub has an <a title="GitHub API" href="http://developer.github.com/">RESTful JSON API</a> that we can call from our apps. In this post I&rsquo;ll show how I&rsquo;m grabbing a GitHub repo&rsquo;s watchers and pull them into my own app using Spring&rsquo;s RestTemplate.</p>
 
-<h3>Meet the GitHub API</h3>
+<h2>Meet the GitHub API</h2>
 
-
-<p>First, take a quick look at the <a title="GitHub Repo Watching API" href="http://developer.github.com/v3/repos/watching/">GitHub Repo Watching API</a>. It&rsquo;s pretty simple, and it doesn&rsquo;t require credentials to call. The URL for my <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a> project, for example, is <a title="Skybase watchers" href="https://api.github.com/repos/williewheeler/skybase/watchers"><a href="https://api.github.com/repos/williewheeler/skybase/watchers">https://api.github.com/repos/williewheeler/skybase/watchers</a></a>.</p>
+<p>First, take a quick look at the <a title="GitHub Repo Watching API" href="http://developer.github.com/v3/repos/watching/">GitHub Repo Watching API</a>. It&rsquo;s pretty simple, and it doesn&rsquo;t require credentials to call. The URL for my <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> project, for example, is <a title="Zkybase watchers" href="https://api.github.com/repos/williewheeler/zkybase/watchers"><a href="https://api.github.com/repos/williewheeler/zkybase/watchers">https://api.github.com/repos/williewheeler/zkybase/watchers</a></a>.</p>
 
 <p>Go ahead and click the watcher link above. You&rsquo;ll see that the response is a JSON array of watcher objects.</p>
 
 <p>Note that since the GitHub API is HTTPS-based, you will need to download the GitHub API certificate (using, e.g., openssl) and then import it into your Java keystore (using keytool) so your Java programs can call the API without running into certificate errors.</p>
 
-<h3>Create a User class for object/JSON mapping</h3>
-
+<h2>Create a User class for object/JSON mapping</h2>
 
 <p>We&rsquo;re going to use <a title="Jackson JSON processor" href="http://jackson.codehaus.org/">Jackson</a> to map the GitHub JSON to Java objects. We&rsquo;ll need a <code>User</code> class for that. Here it is:</p>
 
-<pre>package org.skydingo.skybase.integrations.github.model;
+<pre><code>package org.skydingo.zkybase.integrations.github.model;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -140,30 +138,29 @@ public class User {
     public String getGravatarId() { return gravatarId; }
 
     public void setGravatarId(String gravatarId) { this.gravatarId = gravatarId; }
-}</pre>
-
+}
+</code></pre>
 
 <p>Nothing too amazing here. Note that I&rsquo;m using <code>@JsonProperty</code> to clarify the mapping from the <code>avatar_url</code> and <code>gravatar_id</code> JSON fields to the <code>avatarUrl</code> and <code>gravatarId</code> Java properties, since Jackson doesn&rsquo;t automatically handle underscores or anything like that.</p>
 
 <p>The Maven dependency for the <code>@JsonProperty</code> annotation is</p>
 
-<pre>&lt;dependency&gt;
+<pre><code>&lt;dependency&gt;
     &lt;groupId&gt;org.codehaus.jackson&lt;/groupId&gt;
     &lt;artifactId&gt;jackson-mapper-asl&lt;/artifactId&gt;
     &lt;version&gt;1.9.3&lt;/version&gt;
-&lt;/dependency&gt;</pre>
+&lt;/dependency&gt;
+</code></pre>
 
-
-<h3>Get the data using RestTemplate</h3>
-
+<h2>Get the data using RestTemplate</h2>
 
 <p>Now that we have <code>User</code>, all we need to do is grab the data using <code>RestTemplate</code>. Easy:</p>
 
-<pre>package org.skydingo.skybase.service;
+<pre><code>package org.skydingo.zkybase.service;
 
 import javax.inject.Inject;
-import org.skydingo.skybase.integrations.github.model.User;
-import org.skydingo.skybase.model.Application;
+import org.skydingo.zkybase.integrations.github.model.User;
+import org.skydingo.zkybase.model.Application;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -177,26 +174,25 @@ public class ApplicationService {
     public User[] getGithubRepoWatchers(String user, String repo) {
         return restTemplate.getForObject(GITHUB_WATCHER_URI, User[].class, user, repo);
     }
-}</pre>
-
+}
+</code></pre>
 
 <p>Recall that GitHub returns an array of watchers. That&rsquo;s why we&rsquo;re using <code>User[].class</code> in the call. <code>RestTemplate</code> substitutes the <code>user</code> and <code>repo</code> values into the <code>GITHUB_WATCHER_URI</code> string for us.</p>
 
-<h3>Spring configuration</h3>
-
+<h2>Spring configuration</h2>
 
 <p>All we need to do is put a <code>RestTemplate</code> instance on the app context:</p>
 
-<p><code>&lt;bean class=&ldquo;org.springframework.web.client.RestTemplate&rdquo; /&gt;</code></p>
+<pre><code>&lt;bean class="org.springframework.web.client.RestTemplate" /&gt;
+</code></pre>
 
-<h3>Success!</h3>
-
+<h2>Success!</h2>
 
 <p>After a little hacking at the UI:</p>
 
-<p>[caption id=&ldquo;attachment_570&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;529&rdquo; caption=&ldquo;Skybase SCM page&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2012/01/skybase_scm3.png"><img class="size-full wp-image-570" title="skybase_scm" src="http://springinpractice.com/wp-content/uploads/2012/01/skybase_scm3.png" alt="" width="529" height="296" /></a>[/caption]</p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-14-calling-the-github-api-using-springs-resttemplate/skybase_scm3.png" alt="Zkybase SCM page" /></p>
 
-<p>[See my post <a href="http://skydingo.com/blog/?p=445">Skybase/GitHub integration</a> on the <a href="http://skydingo.com/blog/">Skydingo blog</a> for more context as to why we&rsquo;d want to integrate our CMDB with GitHub.]</p>
+<p>See <a href="http://springinpractice.com/2012/01/14/skybasegithub-integration/">Zkybase/GitHub integration</a> for more context as to why we&rsquo;d want to integrate our CMDB with GitHub.</p>
 </div>
 
 
