@@ -9,8 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="I&rsquo;ll be at SpringOne Americas 2008 this week. Check this space for information about the conference as it unfolds.
-">
+  <meta name="description" content="At the time of this writing, Spring 3.0 isn&rsquo;t out yet, but that doesn&rsquo;t mean we can&rsquo;t start goofing around with the nightly &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -82,44 +81,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/11/27/springone-americas-2008/">SpringOne Americas 2008</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-11-27T15:37:58-08:00" pubdate data-updated="true">Nov 27<span>th</span>, 2008</time>
-        
-         | <a href="/2008/11/27/springone-americas-2008/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I&rsquo;ll be at <a href="http://americas.springone.com/conference/hollywood/2008/12/index.html">SpringOne Americas 2008</a> this week. Check this space for information about the conference as it unfolds.</p>
-</div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -1784,6 +1745,60 @@ public class UserDetailsAdapter extends User { // 1
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/09/06/login-remember-me/">Excerpt: Login and Remember-me Discussion</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-06T08:37:16-07:00" pubdate data-updated="true">Sep 6<span>th</span>, 2008</time>
+        
+         | <a href="/2008/09/06/login-remember-me/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2008-09-06-login-remember-me/retina2.jpg" alt="Human retina" /></p>
+
+<p><em><a href="http://www.manning.com/wheeler/">Spring in Practice</a></em> centers on using Spring to implement technical solutions to common problems, but it&rsquo;s also important for developers to understand the problem they&rsquo;re trying to solve before implementing a solution. In the book we work pretty hard to provide that understanding.</p>
+
+<p>Here&rsquo;s an except from the discussion section for a recipe on implementing login forms and remember-me authentication using Spring Security. While discussion sections might treat the problem, the solution or both, this particular discussion digs a little deeper some security/usability tradeoffs to consider when implementing username/password and remember-me authentication.</p>
+
+<blockquote><p>In the background we briefly mentioned that username/password logins are only one approach to authentication. While other authentication mechanisms are commercially available—for example, there are laptops with thumbprint scanners—for most web-based applications, username/password combinations are the most practical approach. It&rsquo;s simply unrealistic to assume that general web users will have card readers, key fobs, biometric scanners and so forth. Such assumptions may be more plausible in controlled environments.</p>
+
+<p>It&rsquo;s useful to understand some of the drawbacks of username/password authentication. The main drawback is that in general, the stronger a user&rsquo;s password is, the harder it is to remember. That in turn increases the chance that the user will either write it down somewhere or else use it for multiple websites, both of which increase the chance that the password will be compromised. Password reuse is problematic partly because a shared password is distributed across many systems (which can be dangerous if that password is not properly managed; see recipes 4.3 and 4.5), and partly because the damage is not limited in the event that the shared password is compromised.</p>
+
+<p>People have devised different approaches to dealing with parts of this problem. One approach is called single sign-on (SSO), and it works nicely in homogeneous computing environments such as corporate intranets. The idea is that the environment (rather than the application) provides for centralized authentication and then that authentication is shared with the applications in that environment. Another approach is the relatively recent OpenID standard, which differs from SSO in being decentralized. With OpenID, a user picks a participating site to be an authentication provider, and then other participating sites use that provider to authenticate the user. This is different than SSO in that with OpenID, different sites require separate logins. While neither SSO nor OpenID does much to limit the damage when a password is compromised (though a password could be reset from a single location), they do have the benefit that they prevent password fatigue without distributing the password across multiple systems.</p>
+
+<p>Remember-me authentication also highlights the tradeoff between security and usability. It&rsquo;s important to recognize that we&rsquo;re really authenticating the browser rather than the user. Because there are various scenarios in which there&rsquo;s a many-to-one relationship between users and browsers (for example, a shared public machine, the family computer, a computer in somebody&rsquo;s unlocked office), we should treat remember-me authentication as not-entirely-convincing. One good approach is to give a remember-me user access to low-risk functionality, but to force a login if the user tries to access higher-risk functionality. Amazon uses exactly this technique: remember-me users can see product recommendations, but to buy something they have to log in.</p>
+
+<p>The upshot is this: add login forms and remember-me to your app only if it makes sense to do so. In some cases it would make even more sense to use SSO, auto-provision the accounts, externalize your authentication with OpenID, and so on. Just because Spring Security makes it easy to add a login form and remember-me doesn&rsquo;t mean that you should. If you include remember-me in particular, keep in mind the design issues we just discussed.</p>
+
+<p>Now that we&rsquo;ve seen how to create a basic, unstyled login form, it&rsquo;s time to get to work on making it look better. The next recipe will show you how.</p></blockquote>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/7/">&larr; Older</a>
@@ -1801,10 +1816,6 @@ public class UserDetailsAdapter extends User { // 1
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
-      </li>
-    
-      <li class="post">
         <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
@@ -1818,6 +1829,10 @@ public class UserDetailsAdapter extends User { // 1
     
       <li class="post">
         <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/05/13/how-to-run-javascript-from-java/">How to run JavaScript from Java</a>
       </li>
     
   </ul>

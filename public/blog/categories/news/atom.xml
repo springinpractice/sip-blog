@@ -4,7 +4,7 @@
   <title><![CDATA[Category: News | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/news/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-22T07:50:30-07:00</updated>
+  <updated>2013-09-22T07:52:47-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,19 +12,6 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[Octopress migration]]></title>
-    <link href="http://springinpractice.com/2013/09/07/octopress-migration/"/>
-    <updated>2013-09-07T19:32:00-07:00</updated>
-    <id>http://springinpractice.com/2013/09/07/octopress-migration</id>
-    <content type="html"><![CDATA[<p>I&rsquo;m in the process of migrating the blog from Wordpress to <a href="http://octopress.org/">Octopress</a>. Octopress is a lot easier to hack and in fact was designed for the hacker crowd. Plus I like being able to manage my posts in source control instead of in a database. Makes sense for all kinds of reasons.</p>
-
-<p>It might take a bit for the dust to settle, but that&rsquo;s what&rsquo;s going on.</p>
-
-<p>If you&rsquo;re interested in the XSLT script I wrote to migrate the posts, please see <a href="https://github.com/williewheeler/wordpress2octopress">wordpress2octopress</a>.</p>
-]]></content>
-  </entry>
   
   <entry>
     <title type="html"><![CDATA[Spring in Practice now available]]></title>
@@ -113,6 +100,30 @@
 <p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-17-more-skybase-screenshots/xml.png" alt="XML" /></p>
 
 <p>This might strike you as a strange screenshot, but in reality it&rsquo;s an example of the most important view&mdash;the automation view. The main reason we want to manage configuration data in a database is that we can build web services (Zkybase supports both JSON and XML views) that simultaneously drive automation and human-consumable views of the sort that a support team would use.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Zkybase/GitHub integration]]></title>
+    <link href="http://springinpractice.com/2012/01/14/skybasegithub-integration/"/>
+    <updated>2012-01-14T07:55:43-08:00</updated>
+    <id>http://springinpractice.com/2012/01/14/skybasegithub-integration</id>
+    <content type="html"><![CDATA[<p>A major goal for <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> is to tie together the activities of developers, testers, release engineers and operations. A few major benefits are:</p>
+
+<ul>
+<li><strong>Tool integration:</strong> We can single source app lists and more across development, build, test, deployment, monitoring, knowledge management and other tools.</li>
+<li><strong>Process streamlining:</strong> Outputs from the dev process feed into the test and deployment processes, which in turn feed into operational processes.</li>
+<li><strong>Communications across teams:</strong> All the teams work from the same concepts and data, facilitating communication.</li>
+</ul>
+
+
+<p>One of the first things I want to tackle in Zkybase, then, is supporting some developer-centric concerns. An important one is source control. Obviously Zkybase isn&rsquo;t itself a source control management system, but it makes sense to pull in useful information from the source code repos just to provide a &ldquo;single pane of glass&rdquo; where developers and other users can get a holistic view of what an app is all about.</p>
+
+<p>Since I&rsquo;m using GitHub, Github integration is a logical starting point for Zkybase/SCM integration. GitHub has a <a title="GitHub REST API" href="http://developer.github.com/v3/">REST API</a> that makes this integration easy. I wrote a <a title="Calling the GitHub API using Spring’s RestTemplate" href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/">post</a> that explains the technical approach. Here&rsquo;s the end result:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-14-skybasegithub-integration/skybase_scm4.png" alt="Zkybase SCM page" /></p>
+
+<p>I suspect that such integrations will be a large part of the value that Zkybase delivers. They will help realize the process, tool and communications benefits I highlighted above.</p>
 ]]></content>
   </entry>
   

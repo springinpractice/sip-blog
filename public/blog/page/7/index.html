@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Spring in Practice centers on using Spring to implement technical solutions to common problems, but it&rsquo;s also important for developers to &hellip;">
+  <meta name="description" content="Manning just sent us the book cover &ndash; we love it! I&rsquo;m pretty sure we will have a lot more than fifty problems solved (we&rsquo;re &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,60 +81,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/09/06/login-remember-me/">Excerpt: Login and Remember-me Discussion</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-09-06T08:37:16-07:00" pubdate data-updated="true">Sep 6<span>th</span>, 2008</time>
-        
-         | <a href="/2008/09/06/login-remember-me/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2008-09-06-login-remember-me/retina2.jpg" alt="Human retina" /></p>
-
-<p><em><a href="http://www.manning.com/wheeler/">Spring in Practice</a></em> centers on using Spring to implement technical solutions to common problems, but it&rsquo;s also important for developers to understand the problem they&rsquo;re trying to solve before implementing a solution. In the book we work pretty hard to provide that understanding.</p>
-
-<p>Here&rsquo;s an except from the discussion section for a recipe on implementing login forms and remember-me authentication using Spring Security. While discussion sections might treat the problem, the solution or both, this particular discussion digs a little deeper some security/usability tradeoffs to consider when implementing username/password and remember-me authentication.</p>
-
-<blockquote><p>In the background we briefly mentioned that username/password logins are only one approach to authentication. While other authentication mechanisms are commercially available—for example, there are laptops with thumbprint scanners—for most web-based applications, username/password combinations are the most practical approach. It&rsquo;s simply unrealistic to assume that general web users will have card readers, key fobs, biometric scanners and so forth. Such assumptions may be more plausible in controlled environments.</p>
-
-<p>It&rsquo;s useful to understand some of the drawbacks of username/password authentication. The main drawback is that in general, the stronger a user&rsquo;s password is, the harder it is to remember. That in turn increases the chance that the user will either write it down somewhere or else use it for multiple websites, both of which increase the chance that the password will be compromised. Password reuse is problematic partly because a shared password is distributed across many systems (which can be dangerous if that password is not properly managed; see recipes 4.3 and 4.5), and partly because the damage is not limited in the event that the shared password is compromised.</p>
-
-<p>People have devised different approaches to dealing with parts of this problem. One approach is called single sign-on (SSO), and it works nicely in homogeneous computing environments such as corporate intranets. The idea is that the environment (rather than the application) provides for centralized authentication and then that authentication is shared with the applications in that environment. Another approach is the relatively recent OpenID standard, which differs from SSO in being decentralized. With OpenID, a user picks a participating site to be an authentication provider, and then other participating sites use that provider to authenticate the user. This is different than SSO in that with OpenID, different sites require separate logins. While neither SSO nor OpenID does much to limit the damage when a password is compromised (though a password could be reset from a single location), they do have the benefit that they prevent password fatigue without distributing the password across multiple systems.</p>
-
-<p>Remember-me authentication also highlights the tradeoff between security and usability. It&rsquo;s important to recognize that we&rsquo;re really authenticating the browser rather than the user. Because there are various scenarios in which there&rsquo;s a many-to-one relationship between users and browsers (for example, a shared public machine, the family computer, a computer in somebody&rsquo;s unlocked office), we should treat remember-me authentication as not-entirely-convincing. One good approach is to give a remember-me user access to low-risk functionality, but to force a login if the user tries to access higher-risk functionality. Amazon uses exactly this technique: remember-me users can see product recommendations, but to buy something they have to log in.</p>
-
-<p>The upshot is this: add login forms and remember-me to your app only if it makes sense to do so. In some cases it would make even more sense to use SSO, auto-provision the accounts, externalize your authentication with OpenID, and so on. Just because Spring Security makes it easy to add a login form and remember-me doesn&rsquo;t mean that you should. If you include remember-me in particular, keep in mind the design issues we just discussed.</p>
-
-<p>Now that we&rsquo;ve seen how to create a basic, unstyled login form, it&rsquo;s time to get to work on making it look better. The next recipe will show you how.</p></blockquote>
-</div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -2264,6 +2210,227 @@ public class CartController {
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/05/smtp-and-smtp-auth/">SMTP and SMTP-AUTH</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-05T05:31:39-07:00" pubdate data-updated="true">May 5<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/05/smtp-and-smtp-auth/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This article explains the basics of the Simple Mail Transport Protocol (SMTP) and its extension, SMTP-AUTH. SMTP is the <i>de facto</i> standard application layer protocol for sending e-mail across the Internet, and SMTP-AUTH augments SMTP by supporting client authentication, which allows clients to use an SMTP server as an e-mail relay.</p>
+
+<p>If you haven&rsquo;t played with SMTP over telnet before, it&rsquo;s entertaining and possibly even eye-opening. You&rsquo;ll learn how spammers use SMTP and SMTP-AUTH to achieve their nefarious ends. Hopefully you won&rsquo;t use it for that but this article explains enough of SMTP that you&rsquo;ll understand how to use and abuse it.</p>
+
+<div class="alert warning"><strong>WARNING: OUR TELNET SESSION IS NOT ENCRYPTED.</strong> Even though we use base64 encoding to send the username/password pair to the server, base64 is not encryption. It prevents casual observers from seeing your password, but it can easily be reversed and hence you are basically sending your password in the clear. If you manually start a telnet session such as the one below (and do so only if you are comfortable that you understand the risks involved), I strongly suggest changing your password on the SMTP server immediately afterward.</div>
+
+
+
+
+<h3>Send yourself an e-mail from &lt;insert_sith_lord_here&gt;</h3>
+
+
+<p>Have you ever wanted to receive an e-mail from your favorite Sith Lord? Let&rsquo;s open up a telnet session that does just that. To do that you will need an SMTP server, which as mentioned above allows you to send e-mail over the Internet. You will also need to know your username and password for the SMTP server as most SMTP servers require that. You can get the SMTP server&rsquo;s host and port from your ISP, and presumably you set the username and password up with your ISP as well.</p>
+
+<pre>$ telnet smtp.example.com 25
+
+S: 220 smtp.example.com ESMTP Sendmail 8.13.8/8.13.6; Thu, 27 Mar 2008 23:14:59 -0700
+
+C: EHLO wheelersoftware.com
+
+S: 250-smtp.example.com Hello wheelersoftware.com [204.13.10.15], pleased to meet you
+S: 250-ENHANCEDSTATUSCODES
+S: 250-PIPELINING
+S: 250-EXPN
+S: 250-VERB
+S: 250-8BITMIME
+S: 250-SIZE 20000000
+S: 250-DSN
+S: 250-ETRN
+S: 250-AUTH LOGIN PLAIN
+S: 250-STARTTLS
+S: 250-DELIVERBY
+S: 250 HELP
+
+C: AUTH LOGIN
+
+S: 334 VXNlcm5hbWU6
+
+C: d2lsbGll
+
+S: 334 UGFzc3dvcmQ6
+
+C: ZnVuc210cA==
+
+S: 235 2.0.0 OK Authenticated
+
+C: MAIL FROM:&lt;darth.vader@deathstar.com&gt;
+
+S: 250 2.1.0 &lt;darth.vader@deathstar.com&gt;... Sender ok
+
+C: RCPT TO:&lt;willie@example.com&gt;
+
+S: 250 2.1.5 &lt;willie@example.com&gt;... Recipient ok
+
+C: DATA
+
+S: 354 Enter mail, end with "." on a line by itself
+
+C: Date: Thu, 27 Mar 2008 23:12:49 -0700 (MST)
+C: From: darth.vader@deathstar.com
+C: To: willie@example.com
+C: Subject: Great article
+C: 
+C: Hi Willie,
+C: I enjoyed your article on TCP/IP-based application protocols.
+C: Join me, and together we can rule the galaxy as father and son.
+C: Darth Vader
+C: .
+
+S: 250 2.0.0 m2S6ExD6029743 Message accepted for delivery
+
+C: QUIT
+
+S: 221 2.0.0 smtp.example.com closing connection
+
+[The server closes the connection]</pre>
+
+
+
+
+<h3>Session analysis</h3>
+
+
+
+
+<pre>$ telnet smtp.example.com 25
+
+S: 220 smtp.example.com ESMTP Sendmail 8.13.8/8.13.6; Thu, 27 Mar 2008 23:14:59 -0700</pre>
+
+
+<p>The session begins with me telnetting to an SMTP server using port 25, which is the default SMTP port. If you don&rsquo;t know the location of an SMTP server on your network, you&rsquo;ll need to talk to your local sysadmin or else your ISP.</p>
+
+<p>The server issues a 220 reply code (indicating that the service is ready) and identifies itself as being an ESMTP (Extended SMTP) server.</p>
+
+<pre>C: EHLO wheelersoftware.com
+
+S: 250-smtp.example.com Hello wheelersoftware.com [204.13.10.15], pleased to meet you
+S: 250-ENHANCEDSTATUSCODES
+S: 250-PIPELINING
+S: 250-EXPN
+S: 250-VERB
+S: 250-8BITMIME
+S: 250-SIZE 20000000
+S: 250-DSN
+S: 250-ETRN
+S: 250-AUTH LOGIN PLAIN
+S: 250-STARTTLS
+S: 250-DELIVERBY
+S: 250 HELP</pre>
+
+
+<p>SMTP has a <code>HELO</code> command that one uses to communicate the client host to the SMTP server, but ESMTP servers support <code>EHLO</code> (which stands for &ldquo;Extended HELLO&rdquo;), which returns a list of extensions (commands and keywords) that the ESMTP server supports. For example, the <code>STARTTLS</code> command allows the client to start a TLS (Transport Layer Security) session with the server so that the communication will be encrypted.</p>
+
+<pre>C: AUTH LOGIN
+
+S: 334 VXNlcm5hbWU6
+
+C: d2lsbGll
+
+S: 334 UGFzc3dvcmQ6
+
+C: ZnVuc210cA==
+
+S: 235 2.0.0 OK Authenticated</pre>
+
+
+<p>This is the SMTP-AUTH part. SMTP-AUTH adds to SMTP support for client authentication, and so now I tell the server that I want to log in. The server responds with the humorous (to me, anyway) response &ldquo;VXNlcm5hbWU6&rdquo;, which is the base64 encoding of &ldquo;Username:&rdquo;. (You can encode and decode these using <a href="http://www.motobit.com/util/base64-decoder-encoder.asp">this base64 encoder/decoder</a>; now you can see why I said above that base64 doesn&rsquo;t provide you any real protection.) I provide the base64-encoded version of my username (willie &rarr; d2lsbGll). Then the server asks me for my password; &ldquo;UGFzc3dvcmQ6&rdquo; is the base64 encoding of &ldquo;Password:&rdquo;. So I provide it (funsmtp &rarr; ZnVuc210cA==). Server checks the password and gives me the A-OK.</p>
+
+<pre>C: MAIL FROM:&lt;darth.vader@deathstar.com&gt;
+
+S: 250 2.1.0 &lt;darth.vader@deathstar.com&gt;... Sender ok
+
+C: RCPT TO:&lt;willie@example.com&gt;
+
+S: 250 2.1.5 &lt;willie@example.com&gt;... Recipient ok
+
+C: DATA
+
+S: 354 Enter mail, end with "." on a line by itself
+
+C: Date: Thu, 27 Mar 2008 23:12:49 -0700 (MST)
+C: From: darth.vader@deathstar.com
+C: To: willie@example.com
+C: Subject: Great article
+C: 
+C: Hi Willie,
+C: I enjoyed your article on TCP/IP-based application protocols.
+C: Join me, and together we can rule the galaxy as father and son.
+C: Darth Vader
+C: .
+
+S: 250 2.0.0 m2S6ExD6029743 Message accepted for delivery</pre>
+
+
+<p>Here I&rsquo;m just entering in the e-mail headers and body itself. When I&rsquo;m done, I just enter . on a line by itself, and the server accepts the message for delivery.</p>
+
+<pre>C: QUIT
+
+S: 221 2.0.0 smtp.example.com closing connection</pre>
+
+
+<p>Finally I log out.</p>
+
+<h3>Conclusion</h3>
+
+
+<p>That&rsquo;s it! Nothing new or earth-shattering here, but it&rsquo;s definitely useful to know how the SMTP protocol works and what you can do with it. Happy e-mailing!</p>
+
+<h3>Resources</h3>
+
+
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/Smtp">SMTP - Wikipedia</a>: Nice overview of SMTP, including a sample communications session over telnet.</li>
+<li><a href="http://en.wikipedia.org/wiki/SMTP-AUTH">SMTP-AUTH - Wikipedia</a>: Describes the SMTP-AUTH extension to SMTP, which adds client authentication to the SMTP protocol.</li>
+<li><a href="http://cr.yp.to/smtp.html">SMTP: Simple Mail Transfer Protocol</a></li>
+<li><a href="http://cr.yp.to/smtp/ehlo.html">The EHLO verb and SMTP extensions</a></li>
+<li><a href="http://www.greenend.org.uk/rjk/2000/05/21/smtp-replies.html">SMTP reply codes</a></li>
+</ul>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -2281,10 +2448,6 @@ public class CartController {
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
-      </li>
-    
-      <li class="post">
         <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
@@ -2298,6 +2461,10 @@ public class CartController {
     
       <li class="post">
         <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/05/13/how-to-run-javascript-from-java/">How to run JavaScript from Java</a>
       </li>
     
   </ul>

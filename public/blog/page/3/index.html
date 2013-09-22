@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="In an earlier post I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the &hellip;">
+  <meta name="description" content="In this post we&rsquo;re going to learn how to work with a local Neo4j database using the Neo4j shell. This isn&rsquo;t really a Spring post, but &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,117 +81,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/">Supporting XML and JSON Web Service Endpoints in Spring 3.1 Using @ResponseBody</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-02-22T04:21:32-08:00" pubdate data-updated="true">Feb 22<span>nd</span>, 2012</time>
-        
-         | <a href="/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>In <a href="http://springinpractice.com/2011/12/06/jackson-json-jaxb2-xml-spring/" title="Configuring Jackson to use JAXB2 annotations with Spring">an earlier post</a> I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the idea was to configure the Jackson <code>ObjectMapper</code> to understand JAXB2 annotations.</p>
-
-<h3>The problem</h3>
-
-
-<p>One of the things that was a little unsatisfactory about that post was that I was using views to generate the XML and JSON representations. We can do that, of course, but a more direct approach to generating the desired data payloads is to use <code>@ResponseBody</code> in conjunction with Spring&rsquo;s <code>HttpMessageConverter</code>s. The idea here is that handler methods simply return the object to be mapped (whether to XML or to JSON), and then HTTP message converters sitting on the app context map the object to XML or JSON. Correspondingly, there are HTTP message converters for both JAXB2 and Jackson (among several others). I say this is more direct because there&rsquo;s no need to involve a model or a view at all: the controller simply returns the object and the converters do the rest.</p>
-
-<p>In Spring 3.0 this was somewhat challenging to pull off, because both the JAXB2 message converter and the Jackson message converter are able to map the object, and so whichever message converter appears first in the list (the JAXB2 converter, it seems) would always map the object. So we ended up either having to treat JSON as a special case (invoke the <code>ObjectMapper</code> directly), or else just use views after all.</p>
-
-<p>In Spring 3.1 things are a lot better: we can use the <code>@ResponseBody</code> and HTTP message converter approach quite cleanly, owing to an enhancement to <code>@RequestMapping</code> and also to an enhancement to the <code>&lt;mvc:annotation-driven&gt;</code> configuration.</p>
-
-<p>Let&rsquo;s see how it works.</p>
-
-<h3>Implementing the controller</h3>
-
-
-<p>We&rsquo;ll look at the controller code first:</p>
-
-<pre>@RequestMapping(
-    value = "/{id}.json",
-    method = RequestMethod.GET,
-    produces = "application/json")
-@ResponseBody
-public Person getDetailsAsJson(@PathVariable Long id) {
-    return personRepo.findOne(id);
-}
-
-@RequestMapping(
-    value = "/{id}.xml",
-    method = RequestMethod.GET,
-    produces = "application/xml")
-@ResponseBody
-public Person getDetailsAsXml(@PathVariable Long id) {
-    return personRepo.findOne(id);
-}</pre>
-
-
-<p>To use the <code>@ResponseBody</code> approach, we obviously need to annotate the handler methods with that annotation, so that&rsquo;s what we&rsquo;ve done here. The other thing we do here is return the actual entity (in this case, a <code>Person</code>) from the method instead of returning a logical view name.</p>
-
-<p>We&rsquo;ve also specified the extension (either <code>.json</code> or <code>.xml</code>) in the value to route requests correctly.</p>
-
-<p>So far, everything we&#039;ve described was available in Spring 3.0. But notice the new <code>produces</code> element, introduced with Spring 3.1, in the <code>@RequestMapping</code> annotation. This element has two effects. First, it excludes requests with <code>Accepts</code> headers incompatible with the specified media type. Second, it ensures that the generated response is consistent with the specified media type. It&rsquo;s this second effect that we care about, because this is what allows Spring to figure out which HTTP message converter to use, even when we&rsquo;re using JAXB2 annotations for both XML and JSON mapping.</p>
-
-<h3>Configuration</h3>
-
-
-<p>We need some configuration too. Here are the relevant bits. Be sure you&rsquo;re using Spring 3.1, that you&rsquo;ve declared the <code>oxm</code> and <code>mvc</code> namespaces, etc.</p>
-
-<pre>&lt;oxm:jaxb2-marshaller id="marshaller"&gt;
-    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Person" /&gt;
-&lt;/oxm:jaxb2-marshaller&gt;
-    
-&lt;bean id="jaxbAnnIntrospector" class="org.codehaus.jackson.xc.JaxbAnnotationIntrospector" /&gt;
-&lt;bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper"&gt;
-    &lt;property name="serializationConfig.annotationIntrospector" ref="jaxbAnnIntrospector" /&gt;
-    &lt;property name="deserializationConfig.annotationIntrospector" ref="jaxbAnnIntrospector" /&gt;
-&lt;/bean&gt;
-
-&lt;mvc:annotation-driven&gt;
-    &lt;mvc:message-converters&gt;
-        &lt;bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"
-            p:objectMapper-ref="jacksonObjectMapper" /&gt;
-    &lt;/mvc:message-converters&gt;
-&lt;/mvc:annotation-driven&gt;</pre>
-
-
-<p>The JAXB2 marshaller and Jackson <code>ObjectMapper</code> are the same as they were in my earlier post. The thing that&rsquo;s different is the <code>&lt;mvc:annotation-driven&gt;</code> definition, and specifically, my inclusion of the new Spring 3.1 <code>&lt;mvc:message-converters&gt;</code> configuration. This allows us to define converters that override the defaults. Here I want to override the default Jackson converter with one that knows about my JAXB2-enabled <code>ObjectMapper</code>.</p>
-
-<p>You don&rsquo;t need to include XML or JSON views anymore. If you don&rsquo;t have anything other than the normal JSP view, you can probably get rid of the <code>ContentNegotiatingViewResolver</code> entirely.</p>
-
-<h3>The end result</h3>
-
-
-<p>The result is that we can now generate XML and JSON payloads in a simple and consistent fashion. There&rsquo;s no more need for models and views here (at least with respect to generating XML and JSON), and there&rsquo;s no need to invoke <code>ObjectMapper</code>s directly or anything like that.</p>
-</div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -1351,6 +1240,126 @@ public class PersonServiceImpl implements PersonService {
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2011/12/26/devops-how-not-to-collect-configuration-management-data/">Devops: How NOT to Collect Configuration Management Data</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-12-26T14:31:55-08:00" pubdate data-updated="true">Dec 26<span>th</span>, 2011</time>
+        
+         | <a href="/2011/12/26/devops-how-not-to-collect-configuration-management-data/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Hi all, Willie here. This time we&rsquo;re going to step away from the keyboard and get architectural. But no ivory towers here. In my next two blog posts, I&rsquo;m going to give you something that will get you out of lots of pointless meetings.</p>
+
+<p>Got your attention yet? Good!</p>
+
+<p>If you&rsquo;re in devops, one of the things that you have to figure out is how to collect up all the information that will allow you to manage your configuration and also keep your apps up and running. This isn&rsquo;t too hard when you have two apps sitting on a single server. It&rsquo;s much harder when you have 400 apps deployed to thousands of servers across multiple environments and data centers.</p>
+
+<p>So how do you do that? Let&rsquo;s start off by looking at some things that just don&rsquo;t work. In my next post I&rsquo;ll share with you an approach that <em>does</em> work.</p>
+
+<h3>Some quick background</h3>
+
+
+<p>Probably owing to some psychological glitch, I&rsquo;ve always been an information curator. Especially when I was in management, it was always important to me to understand exactly where my apps were deployed, which servers they were on, which services and databases they depended on, which servers <em>those</em> services and databases lived on, who are the SMEs for a given app, and so on.</p>
+
+<p>If you work in a small environment, you&rsquo;re probably thinking, &ldquo;what&rsquo;s the big deal?&rdquo;</p>
+
+<p>Well, I don&rsquo;t work in a small environment, but the first time I undertook this task, I probably would have said something like, &ldquo;no sweat.&rdquo; (That&rsquo;s the developer in me.) Anyway, for whatever reason, I decided that it was high time that somebody around the department could answer seemingly basic questions about our systems.</p>
+
+<h3>Attempt #1: Wiki Wheeler</h3>
+
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-26-devops-how-not-to-collect-configuration-management-data/bullwhip1.jpg" alt="Wiki Wheeler" /></p>
+
+<p>The first time I made the attempt (several years ago), I was a director over a dozen or so app teams. So I created a wiki template with all the information that I wanted, and I chased after my teams to fill it out. My zeal was such that, unbeknownst to me, I acquired the nickname &ldquo;Wiki Wheeler&rdquo;. (One of my managers shared this heartwarming bit of information with me a couple years later.) I guess other managers liked the approach, though, because they chased after their teams too.</p>
+
+<p>This approach started out decently well, since the teams involved could manage their own information, and since I was, well, Wiki Wheeler. But it didn&rsquo;t last. Through different system redesigns and department reorgs, wiki spaces came and went, some spaces atrophied from neglect, and there was redundant but contradictory information everywhere. The QA team had its own list, the release guys had their list, the app teams had their list. The UX guys might have even gotten in on the act. Anyway, after a year or so it was a big mess and to this day our wiki remains a big mess.</p>
+
+<h3>Attempt #2: My huge Visio</h3>
+
+
+<p><strong></strong>The second time, my approach was to collect the information from all the app development teams. We had hundreds of developers, so to make things efficient, I sent out a department-wide e-mail telling everybody that I was putting together a huge Visio document with all of our systems, and I&rsquo;d appreciate it if they could reply back with the requested information. And while I had to send out more nag e-mails than I would have liked, the end result was in fact a huge Visio diagram that had hundreds of boxes and lines going everywhere. I was very proud of this thing, and I printed out five or six copies on the department plotter and hung them on the walls.</p>
+
+<p>How long do you think it was before it was out of date?</p>
+
+<p>I have no idea. I seriously doubt that it was ever correct in the first place. Nobody (myself included) ever used the diagram to do actual work, and its chief utility was in making our workplace look somewhat more hardcore since there were huge color engineering plots on the walls.</p>
+
+<p>There was one additional effect of this diagram, though I hesitate to call it utility. I acquired the wholly undeserved reputation for knowing what all these apps were and how they related to one another. This went on for years through no fault of my own. I mention it because it&rsquo;s relevant for the next attempt.</p>
+
+<h3>Attempt #3: Disaster recovery</h3>
+
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-26-devops-how-not-to-collect-configuration-management-data/asteroid.jpg" alt="When asteroids strike..." /></p>
+
+<p>This one wasn&rsquo;t my attempt, but it&rsquo;s still worth describing since I have to imagine that we aren&rsquo;t the only ones who ever tried it.</p>
+
+<p>As a rapidly growing company, disaster recovery became an increasingly big deal for us several years back, and there was a mandate from up high to put a plan in place. This involved collecting up all the information that would allow us to keep the business running if our primary data center ever got cratered. The person in charge of the effort spent about two years meeting with app teams or else &ldquo;experts&rdquo; (me, along with others who, like me, had only the highest-level understanding of how things were connected up) and documenting it on a Sharepoint site where nobody could see it.</p>
+
+<p>This didn&rsquo;t work at all. Most people were too busy to meet with her, so the quality of the information was poor. Apps were misnamed, app suites were mistaken for apps, and to make a long story short, the result was not correct or maintainable.</p>
+
+<h3>Attempt #4: Our external consultants&#8217; even bigger Visio</h3>
+
+
+<p>Following a major reorg, we brought in some external consultants and they came up with their own Visio. By this time I had already figured out that interviewing teams and putting together huge Visios is a losing approach, so I was surprised that a bunch of highly-paid consultants would use it. Well, they did, and their diagram was, well, &ldquo;impressive&rdquo;. It was also (to put it gently) neither as helpful nor as maintainable as we would have liked.</p>
+
+<h3>Attempt #5: HP uCMDB autodiscovery</h3>
+
+
+<p>We have the HP uCMDB tool, and so our IT Services group ran some automated discovery agents to populate it with data. It loaded the uCMDB up with tons of fine-grained detail that nobody cared about, and we couldn&rsquo;t see the stuff that we actually did care about (like apps, web services, databases, etc.).</p>
+
+<h3>Attempt #6: Service catalog</h3>
+
+
+<p>Our IT Services group was pretty big on ITIL, so they went about putting together a service catalog. The person doing it collected service and app information into an Excel spreadsheet and posted it to a Sharepoint site. But this didn&rsquo;t really get into the details of configuration management. It was mostly around figuring out which business services we offered and which systems support which services.</p>
+
+<p>They ended up printing out a glossy, full-color service catalog for the business, but nobody was really asking for it, so it was more of a curiosity than anything else.</p>
+
+<p>There were other attempts too (Paul led a couple that I haven&rsquo;t even mentioned), but by now you get the picture.</p>
+
+<h3>So why did these attempts fail?</h3>
+
+
+<p>To understand why these attempts failed, it helps to look at what they had in common:</p>
+
+<ul>
+    <li>First, they generally involved trying to collect up information from SMEs and then putting it in some kind of document. This could be wiki pages, Visio diagrams, Word docs on Sharepoint or an Excel spreadsheet.</li>
+    <li>Once the information went there, nobody used it. So the information, if it was ever correct and/or complete in the first place, was before long outdated, and there wasn&#8217;t any mechanism in place to bring it up to date.</li>
+</ul>
+
+
+<p>In general, people saw the problem as a data <em>collection</em> problem rather than a data <em>management</em> problem. There needs to be a systematic, ongoing mechanism to discover and fix errors. None of the approaches took the management problem seriously at all&mdash;they all simply assumed that the organization would care about the data enough to keep it up to date.</p>
+
+<p>In the next installment, I&rsquo;ll tell you about the approach we eventually figured out. And as promised, that&rsquo;s also where I&rsquo;ll explain how to get rid of some of your meetings.</p>
+
+<p><span class="icon stickyNote"><em>Interested in configuration management? I&rsquo;m working on an open source CMDB called <a href="http://zkybase.org/">Zkybase</a>.</em></span></p>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -1368,10 +1377,6 @@ public class PersonServiceImpl implements PersonService {
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
-      </li>
-    
-      <li class="post">
         <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
@@ -1385,6 +1390,10 @@ public class PersonServiceImpl implements PersonService {
     
       <li class="post">
         <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/05/13/how-to-run-javascript-from-java/">How to run JavaScript from Java</a>
       </li>
     
   </ul>
