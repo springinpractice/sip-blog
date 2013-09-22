@@ -10,12 +10,7 @@ footer: true
 
 Hi, I'm Willie Wheeler. I offer Java/Spring consulting through my independent consulting business, Wheeler Software, LLC.
 
-Contact me
-----------
-
-Please contact me at <code>myfirstname.mylastname@gmail.com</code> to discuss potential engagements.
-
-Note that I don't offer e-mail support for blog posts. Please use the blog comments for that, which allows everybody to assist and benefit.
+Please contact me at `myfirstname.mylastname@gmail.com` to discuss potential engagements.
 
 Areas of expertise
 ------------------
@@ -26,7 +21,7 @@ Areas of expertise
 * Lead author of [Spring in Practice](http://www.manning.com/wheeler/) by Manning Publications.
 * Expert web developer with strong devops and user experience background.
 
-**Devops architecture:**
+**Continuous delivery and devops:**
 
 * **Current:** Principal Applications Engineer, working in devops on continuous delivery, operations automation and configuration management.
 * **Past:** Principal Solutions Architect for a large automation platform, responsible for automating hundreds of applications across thousands of servers in internal data center and cloud environments. 40,000 automated deployments (both half- and full-stack) into dev, test and production as of October 2012. Scope included continuous integration, SCM, CMDB, automation (build/test/deployment/operations), deployment pipeline, integration (process/tools/data).
@@ -34,7 +29,7 @@ Areas of expertise
 For more information on my background and experience, see [my LinkedIn profile](http://www.linkedin.com/in/williewheeler).
 
 Selected publications
-----------------------
+---------------------
 
 Here are some Spring-related publications I've done outside this blog:
 
