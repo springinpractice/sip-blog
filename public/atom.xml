@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-21T21:25:55-07:00</updated>
+  <updated>2013-09-21T21:42:54-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -1568,26 +1568,25 @@ public class ApplicationServiceImpl extends AbstractCIService implements Applica
     <link href="http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/"/>
     <updated>2012-03-06T04:04:45-08:00</updated>
     <id>http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github</id>
-    <content type="html"><![CDATA[<p>This one&rsquo;s another quick <a title="Zkybase" href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a title="Spring Social GitHub" href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the GitHubTemplate. But if we want to access private information, or write capabilities, we need to use the <a title="Spring Social" href="http://www.springsource.org/spring-social">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a title="Spring Security" href="http://static.springsource.org/spring-security/site/">Spring Security</a>), and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
+    <content type="html"><![CDATA[<p>This one&rsquo;s another quick <a href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the <code>GitHubTemplate</code>. But if we want to access private information, or write capabilities, we need to use the <a href="http://projects.spring.io/spring-social/">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a href="http://projects.spring.io/spring-security/">Spring Security</a>, and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
 
-<h3>Screenshots</h3>
-
+<h2>Screenshots</h2>
 
 <p>Here&rsquo;s what the GitHub section of the account page looks like before you connect to GitHub:</p>
 
-<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/disconnected.png"><img class="alignnone  wp-image-681" style="border: 1px solid #EEE;" title="disconnected" src="http://springinpractice.com/wp-content/uploads/2012/03/disconnected.png" alt="" width="565" height="96" /></a></p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/disconnected.png" alt="Disconnected screenshot" /></p>
 
 <p>Once you&rsquo;ve done that, the display changes to the following:</p>
 
-<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/connected.png"><img class="alignnone size-medium wp-image-682" style="border: 1px solid #EEE;" title="connected" src="http://springinpractice.com/wp-content/uploads/2012/03/connected-300x195.png" alt="" width="300" height="195" /></a></p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/connected.png" alt="Connected screenshot" /></p>
 
 <p>And now we can perform various secure operations on our GitHub objects, like viewing repo hooks:</p>
 
-<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks3.png"><img class="alignnone  wp-image-683" style="border: 1px solid #eeeeee;" title="hooks" src="http://springinpractice.com/wp-content/uploads/2012/03/hooks3.png" alt="" width="619" height="229" /></a></p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/hooks3.png" alt="Hooks screenshot" /></p>
 
 <p>I plan to use this integration to support autoprovisioning continuous integration servers, among other things.</p>
 
-<p>If you&rsquo;re interested in the code itself, please see my blog post entitled <a href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/">Using Spring Social GitHub to access secured GitHub data [code]</a>.</p>
+<p>If you&rsquo;re interested in the code itself, please see my blog post entitled <a href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/">Using Spring Social GitHub to access secured GitHub data</a></p>
 ]]></content>
   </entry>
   
