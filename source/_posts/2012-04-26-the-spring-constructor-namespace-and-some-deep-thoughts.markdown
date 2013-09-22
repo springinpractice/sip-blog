@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "The Spring constructor namespace"
-date: 2012-04-26 02:14:51
+date: 2012-04-26 12:14:51
 comments: true
 categories: [Chapter 01 - DI, Quick Tips]
 ---

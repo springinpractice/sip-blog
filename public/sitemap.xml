@@ -310,21 +310,21 @@
     </url>
     <url>
         <loc>
-            http://springinpractice.com/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/
+            http://springinpractice.com/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
-    </url>
-    <url>
-        <loc>
-            http://springinpractice.com/2012/03/05/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/
-        </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-09-22T02:55:54-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/
         </loc>
         <lastmod>2013-09-21T21:42:39-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://springinpractice.com/2012/03/06/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/
+        </loc>
+        <lastmod>2013-09-22T02:55:27-07:00</lastmod>
     </url>
     <url>
         <loc>
@@ -344,9 +344,9 @@
     </url>
     <url>
         <loc>
-            http://springinpractice.com/2012/04/25/the-spring-constructor-namespace-and-some-deep-thoughts/
+            http://springinpractice.com/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-09-22T02:53:59-07:00</lastmod>
     </url>
     <url>
         <loc>
@@ -362,9 +362,9 @@
     </url>
     <url>
         <loc>
-            http://springinpractice.com/2012/05/02/migrating-non-wordpress-blog-comments-into-wordpress/
+            http://springinpractice.com/2012/05/03/migrating-non-wordpress-blog-comments-into-wordpress/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-09-22T02:52:33-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2012/05/05/combined-my-two-blogs/</loc>
@@ -436,7 +436,7 @@
     </url>
     <url>
         <loc>http://springinpractice.com/archives/</loc>
-        <lastmod>2013-09-22T02:26:27-07:00</lastmod>
+        <lastmod>2013-09-22T02:55:54-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/code-and-setup/</loc>
@@ -452,7 +452,7 @@
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-09-22T02:26:27-07:00</lastmod>
+        <lastmod>2013-09-22T02:55:54-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>

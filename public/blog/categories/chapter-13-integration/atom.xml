@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-22T02:38:13-07:00</updated>
+  <updated>2013-09-22T02:56:03-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -397,9 +397,9 @@ public class ApplicationServiceImpl extends AbstractCIService implements Applica
   
   <entry>
     <title type="html"><![CDATA[Supporting XML and JSON web service endpoints in Spring 3.1 using @ResponseBody]]></title>
-    <link href="http://springinpractice.com/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/"/>
-    <updated>2012-02-21T18:21:32-08:00</updated>
-    <id>http://springinpractice.com/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody</id>
+    <link href="http://springinpractice.com/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/"/>
+    <updated>2012-02-22T04:21:32-08:00</updated>
+    <id>http://springinpractice.com/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody</id>
     <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2011/12/06/jackson-json-jaxb2-xml-spring/" title="Configuring Jackson to use JAXB2 annotations with Spring">an earlier post</a> I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the idea was to configure the Jackson <code>ObjectMapper</code> to understand JAXB2 annotations.</p>
 
 <h3>The problem</h3>

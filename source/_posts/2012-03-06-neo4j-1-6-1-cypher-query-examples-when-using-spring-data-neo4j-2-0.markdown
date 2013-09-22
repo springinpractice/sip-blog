@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Neo4j 1.6.1 Cypher query examples when using Spring Data Neo4j 2.0"
-date: 2012-03-06 01:36:56
+date: 2012-03-06 12:36:56
 comments: true
 categories: [Chapter 02 - Data, Chapter 11 - CMDB, Quick Tips]
 ---

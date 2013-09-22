@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="This post shows how to perform various sample Cypher queries when using Neo4j 1.6.1 and Spring Data Neo4j (SDN) 2.0. SDN 2.0 assumes Neo4j 1.6, and &hellip;">
+  <meta name="description" content="This one&rsquo;s another quick Zkybase screenshot post. Using Spring Social GitHub, it&rsquo;s easy to access public user and repo information via &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -75,7 +75,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/2012/03/05/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/">Neo4j 1.6.1 Cypher Query Examples When Using Spring Data Neo4j 2.0</a></h1>
+      <h1 class="entry-title"><a href="/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">Zkybase Now Supports Authorized Access to GitHub via Spring Social GitHub</a></h1>
     
     
       <p class="meta">
@@ -91,155 +91,34 @@
   
 
 
-<time datetime="2012-03-05T17:36:56-08:00" pubdate data-updated="true">Mar 5<span>th</span>, 2012</time>
+<time datetime="2012-03-06T04:04:45-08:00" pubdate data-updated="true">Mar 6<span>th</span>, 2012</time>
         
-         | <a href="/2012/03/05/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/#disqus_thread">Comments</a>
+         | <a href="/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>This post shows how to perform various sample Cypher queries when using Neo4j 1.6.1 and Spring Data Neo4j (SDN) 2.0.</p>
+  <div class="entry-content"><p>This one&rsquo;s another quick <a href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the <code>GitHubTemplate</code>. But if we want to access private information, or write capabilities, we need to use the <a href="http://projects.spring.io/spring-social/">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a href="http://projects.spring.io/spring-security/">Spring Security</a>, and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
 
-<p>SDN 2.0 assumes Neo4j 1.6, and it imposes specific structures on databases that it creates. For example, SDN uses the <code><strong>type</strong></code> property on nodes to store the associated Java class, and it names its indexes using the Java class&#8217; simple name.</p>
+<h2>Screenshots</h2>
 
-<p>In the examples below, I&rsquo;m using the Neo4j shell, though you can of course run Cypher queries outside of the shell (e.g., from within the app itself). See <a href="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/" title="Working with the Neo4j shell">my earlier blog post</a> if you&rsquo;re interested in learning how to use the shell.</p>
+<p>Here&rsquo;s what the GitHub section of the account page looks like before you connect to GitHub:</p>
 
-<p>I&rsquo;ll probably add more examples to this post from time to time.</p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/disconnected.png" alt="Disconnected screenshot" /></p>
 
-<h4>Return a single node with a given ID</h4>
+<p>Once you&rsquo;ve done that, the display changes to the following:</p>
 
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/connected.png" alt="Connected screenshot" /></p>
 
+<p>And now we can perform various secure operations on our GitHub objects, like viewing repo hooks:</p>
 
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/hooks3.png" alt="Hooks screenshot" /></p>
 
-<pre>neo4j-sh (Skybase,1)$ start n=node(1) return n
-+------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                |
-+------------------------------------------------------------------------------------------------------------------+
-| Node[1]{__type__-&gt;"org.skydingo.skybase.model.Application",name-&gt;"Skybase",shortDescription-&gt;"Cloud-based CMDB"} |
-+------------------------------------------------------------------------------------------------------------------+</pre>
+<p>I plan to use this integration to support autoprovisioning continuous integration servers, among other things.</p>
 
-
-
-
-<h4>Return multiple nodes, looked up by ID</h4>
-
-
-
-
-<pre>neo4j-sh (Skybase,1)$ start n=node(1,4,5) return n
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                                                                                  |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[1]{__type__-&gt;"org.skydingo.skybase.model.Application",name-&gt;"Skybase",shortDescription-&gt;"Cloud-based CMDB"}                                                                   |
-| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
-| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h4>Find all nodes of a given type</h4>
-
-
-
-
-<pre>neo4j-sh[readonly] (Maven,3)$ start n=node:__types__(className="org.skydingo.skybase.model.Module") return n
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                                                                                  |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
-| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
-| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
-| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h4>Find all instances of a class having a certain property</h4>
-
-
-<p>Say we have a <code>org.skydingo.skybase.model.Module</code> class with a <code>groupId</code> property and a <code>moduleId</code> property, both annotated with SDN&rsquo;s <code>@Indexed</code> annotation. Then SDN will create an index for this class called <code>Module</code>. Here&rsquo;s how to find modules in a given group:</p>
-
-<pre>neo4j-sh (Skybase,1)$ start n=node:Module("groupId:org.skydingo.skybase") return n
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                                                                                  |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
-| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
-| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
-| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-<p>Here&rsquo;s an alternative syntax for doing exactly the same thing:</p>
-
-<pre>neo4j-sh (Skybase,1)$ start n=node:Module(groupId = 'org.skydingo.skybase') return n
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                                                                                  |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
-| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
-| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
-| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h4>Find all nodes having a certain set of property values</h4>
-
-
-
-
-<pre>neo4j-sh[readonly] (Maven,3)$ start n=node:Module("groupId:org.skydingo.skybase, moduleId:skybase-maven-plugin") return n  
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                                                                       |
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"} |
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h4>Find all nodes in a specified relationship to a given node</h4>
-
-
-
-
-<pre>neo4j-sh (Skybase,1)$ start app=node(1) match app-[:APPLICATION_MODULE]-&gt;module return module
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| module                                                                                                                                                                             |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
-| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
-| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
-| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h3>Reader-contributed</h3>
-
-
-<p>I&rsquo;ll just add queries here if people send them. It&rsquo;s useful to have examples of queries around.</p>
-
-<h4>Return a user&#8217;s events (of specific types), ordered by date</h4>
-
-
-<p><a href="https://twitter.com/#!/bytor99999">Mark Spritzler</a> sent me the following query, which he noted that <a href="https://twitter.com/#!/mesirii">Michael Hunger</a> mostly wrote:</p>
-
-<pre>START user=node({0})
-MATCH user-[r]-event
-WHERE type(r) = "ATTENDING"
-OR type(r) = "INVITED"
-OR type(r) = "HOSTING"
-RETURN ID(event) as eventId, event.eventDate as eventDate, event.title as eventName, type(r) as eventUserType
-ORDER BY event.eventDate desc</pre>
-
+<p>If you&rsquo;re interested in the code itself, please see my blog post entitled <a href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/">Using Spring Social GitHub to access secured GitHub data</a></p>
 </div>
   
   
@@ -252,7 +131,7 @@ ORDER BY event.eventDate desc</pre>
       
   <header>
     
-      <h1 class="entry-title"><a href="/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/">Supporting XML and JSON Web Service Endpoints in Spring 3.1 Using @ResponseBody</a></h1>
+      <h1 class="entry-title"><a href="/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/">Supporting XML and JSON Web Service Endpoints in Spring 3.1 Using @ResponseBody</a></h1>
     
     
       <p class="meta">
@@ -268,9 +147,9 @@ ORDER BY event.eventDate desc</pre>
   
 
 
-<time datetime="2012-02-21T18:21:32-08:00" pubdate data-updated="true">Feb 21<span>st</span>, 2012</time>
+<time datetime="2012-02-22T04:21:32-08:00" pubdate data-updated="true">Feb 22<span>nd</span>, 2012</time>
         
-         | <a href="/2012/02/21/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/#disqus_thread">Comments</a>
+         | <a href="/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/#disqus_thread">Comments</a>
         
       </p>
     
