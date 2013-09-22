@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 04 - Web forms | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-04-web-forms/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-21T22:20:48-07:00</updated>
+  <updated>2013-09-21T22:28:18-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -15,24 +15,22 @@
   
   <entry>
     <title type="html"><![CDATA[Making form:select work nicely using Spring 3 Formatters]]></title>
-    <link href="http://springinpractice.com/2012/01/06/making-formselect-work-nicely-using-spring-3-formatters/"/>
-    <updated>2012-01-06T18:51:10-08:00</updated>
-    <id>http://springinpractice.com/2012/01/06/making-formselect-work-nicely-using-spring-3-formatters</id>
+    <link href="http://springinpractice.com/2012/01/07/making-formselect-work-nicely-using-spring-3-formatters/"/>
+    <updated>2012-01-07T04:51:10-08:00</updated>
+    <id>http://springinpractice.com/2012/01/07/making-formselect-work-nicely-using-spring-3-formatters</id>
     <content type="html"><![CDATA[<p>When you&rsquo;re creating a web form, it&rsquo;s often the case that you want to give the user a way to connect one entity up to another entity. This post explains how to do this in a nice, clean way using Spring Formatters.</p>
 
-<h3>A real-life example</h3>
-
+<h2>A real-life example</h2>
 
 <p>To make things concrete, let&rsquo;s use a real-life example. I&rsquo;m working on an open source CMDB called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> that has entities such as farms, environments and data centers. When the user creates or edits a farm, he needs to specify the environment in which the farm lives (e.g., Development, Test, Production, etc.) and also the data center (e.g., US West DC 1, US West DC 2, etc.). We want the user to select an environment and a data center using dropdowns, like so:</p>
 
-<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/new_farm2.png"><img class="alignnone size-full wp-image-515" title="New farm form" src="http://springinpractice.com/wp-content/uploads/2012/01/new_farm2.png" alt="" width="526" height="312" /></a></p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-07-making-formselect-work-nicely-using-spring-3-formatters/farm_errors2.png" alt="New farm form" /></p>
 
 <p>For edits, we obviously want the dropdowns to be preset to their current values. We want validation: in our example, all three fields are required. For both edits and creates, when the user submits an invalid farm (e.g., missing name), we want the environment and data center to be preset to whatever value the user just submitted. Standard stuff.</p>
 
 <p>Let&rsquo;s look at three different approaches to solving this in Spring. The first two are ugly and the last one is clean. (If you&rsquo;re impatient, feel free to skip right to the third approach.)</p>
 
-<h3>Approach #1 (ugly): ad hoc ID fields</h3>
-
+<h2>Approach #1 (ugly): ad hoc ID fields</h2>
 
 <p>One approach is to create special fields on the <code>Farm</code> entity to hold the environment and data center IDs, and then write custom code in the controller to map these to <code>Environment</code> and <code>DataCenter</code> instances. Here&rsquo;s how such a <code>Farm</code> might look:</p>
 
@@ -76,15 +74,14 @@
 <p>The approach works, but it&rsquo;s stinky for at least a couple of reasons:</p>
 
 <ul>
-    <li>It dirties up the <code>Farm</code> entity. We already have <code>Environment</code> and <code>DataCenter</code> properties, and each of those has an ID, so it's redundant and annoying to have to include extra getters and setters to handle the IDs. If we're doing ORM or OXM, it becomes very clear from the <code>@Transient</code> and <code>@XmlTransient</code> annotations that these extra ID properties aren't really part of the entity at all; they're purely supporting data transfer.</li>
-    <li>It forces us to write custom code in the controller to map the IDs to an <code>Environment</code> and a <code>DataCenter</code> so we can, e.g., save it in the database using Hibernate or whatever.</li>
+    <li>It dirties up the `Farm` entity. We already have `Environment` and `DataCenter` properties, and each of those has an ID, so it's redundant and annoying to have to include extra getters and setters to handle the IDs. If we're doing ORM or OXM, it becomes very clear from the `@Transient` and `@XmlTransient` annotations that these extra ID properties aren't really part of the entity at all; they're purely supporting data transfer.</li>
+    <li>It forces us to write custom code in the controller to map the IDs to an `Environment` and a `DataCenter` so we can, e.g., save it in the database using Hibernate or whatever.</li>
 </ul>
 
 
 <p>Now let&rsquo;s see a closely related approach that&rsquo;s a step in the right direction, but still stinky.</p>
 
-<h3>Approach #2 (still ugly): use the referenced entities' ID properties</h3>
-
+<h2>Approach #2 (still ugly): use the referenced entities' ID properties</h2>
 
 <p>Instead of using redundant ID properties, we can just leave the <code>Farm</code> alone (meaning it has an ID, a name, an environment and a data center, and no extra ID properties) and just point the form at the environment&rsquo;s and data center&rsquo;s IDs:</p>
 
@@ -100,15 +97,14 @@
 <p>Spring is fine with complex properties like this. And so this almost works. But there are once again a couple of issues:</p>
 
 <ul>
-    <li>Stylistically, it's a bit inelegant to treat reference-backed properties in a special way. It would be cleaner to deal with <code>environment</code> and <code>dataCenter</code> instead of <code>environment.id</code> and <code>dataCenter.id</code>. Minor issue, but still worth considering.</li>
-    <li>More seriously, validation (at least JSR-303 validation) doesn't work properly anymore. Referencing <code>environment.id</code> in the form causes Spring to create an <code>Environment</code> instance automatically, even if the user picks "-- Choose one --" with ID = "". So the <code>environment</code> and <code>dataCenter</code> properties won't ever be null. And we can't put <code>@NotNull</code> on the environment and data center IDs, because they're allowed (indeed, expected) to be null when creating new ones. So you end up having to write custom code to make sure that the IDs are whatever you want to see. Blech.</li>
+    <li>Stylistically, it's a bit inelegant to treat reference-backed properties in a special way. It would be cleaner to deal with `environment` and `dataCenter` instead of `environment.id` and `dataCenter.id`. Minor issue, but still worth considering.</li>
+    <li>More seriously, validation (at least JSR-303 validation) doesn't work properly anymore. Referencing `environment.id` in the form causes Spring to create an `Environment` instance automatically, even if the user picks "-- Choose one --" with ID = "". So the `environment` and `dataCenter` properties won't ever be null. And we can't put `@NotNull` on the environment and data center IDs, because they're allowed (indeed, expected) to be null when creating new ones. So you end up having to write custom code to make sure that the IDs are whatever you want to see. Blech.</li>
 </ul>
 
 
 <p>OK, those are some approaches that aren&rsquo;t very clean. Fortunately Spring 3 has some features that clean things up.</p>
 
-<h3>Approach #3 (good approach): use Formatters</h3>
-
+<h2>Approach #3 (good approach): use Formatters</h2>
 
 <p>The best practice approach in Spring 3 is to use so-called <code>Formatters</code>. As this blog post is already pretty long, let&rsquo;s just jump right into the code. If you want to see more code details, check out the actual code at the <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase Github site</a>.</p>
 
@@ -125,7 +121,7 @@
 &lt;/form:errors&gt;</pre>
 
 
-<p>(Same thing for the <code>dataCenter</code> property.) Notice that we&rsquo;re not messing around with IDs at all, other than where we&rsquo;re telling the <code>&lt;form:options&gt;</code> tag which property to use for the option value, which is perfectly fine and legitimate.</p>
+<p>(Same thing for the <code>dataCenter</code> property.) Notice that we&rsquo;re not messing around with IDs at all, other than where we&rsquo;re telling the <code>&amp;lt;form:options&amp;gt;</code> tag which property to use for the option value, which is perfectly fine and legitimate.</p>
 
 <p>Next we need to look at the controller. In earlier versions of Spring we would have had to register some JavaBeans <code>PropertyEditor</code>s in an <code>@InitBinder</code> method, but we don&rsquo;t have to do that anymore. All we have to do is make sure we&rsquo;re prepared to accept a <code>Farm</code> in our handler method, that we annotate it with <code>@Valid</code>, etc.:</p>
 
@@ -142,7 +138,7 @@ public String putEditForm(
 
 <p>The method body doesn&rsquo;t matter so much for our current purpose&mdash;we can check for validity using <code>result.hasErrors()</code>, save the data if it&rsquo;s valid, return the invalid form if it&rsquo;s not, or whatever. The main thing is that the <code>Farm</code> will come populated with an <code>Environment</code> and a <code>DataCenter</code> (both having the right IDs set) if the user chose them, and they&rsquo;ll be null if the user didn&rsquo;t:</p>
 
-<p><a href="http://springinpractice.com/wp-content/uploads/2012/01/farm_errors2.png"><img class="alignnone size-full wp-image-539" title="Farm with validation errors" src="http://springinpractice.com/wp-content/uploads/2012/01/farm_errors2.png" alt="" width="520" height="304" /></a></p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-07-making-formselect-work-nicely-using-spring-3-formatters/farm_errors2.png" alt="Farm with validation errors" /></p>
 
 <p>To make the magic work, we need to implement <code>Formatter</code>s to convert our environments and data centers back and forth to IDs. Regarding <code>Formatter</code>s, I&rsquo;ll let you read about them in the <a href="http://static.springsource.org/spring/docs/current/spring-framework-reference/html/validation.html#format">Spring Reference Documentation</a>; here I&rsquo;ll give some code examples. Here&rsquo;s the <code>EnvironmentFormatter</code>:</p>
 
