@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Session-scoped beans in Spring"
-date: 2008-05-08 00:50:20
+date: 2008-05-08 12:50:20
 comments: true
 categories: [Chapter 01 - DI, Tutorials]
 ---

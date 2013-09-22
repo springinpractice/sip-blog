@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "SMTP and SMTP-AUTH"
-date: 2008-05-05 00:31:39
+date: 2008-05-05 12:31:39
 comments: true
 categories: [Chapter 08 - Communicating, Tutorials]
 ---

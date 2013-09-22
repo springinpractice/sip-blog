@@ -45,12 +45,12 @@
         <lastmod>2013-09-18T23:52:36-07:00</lastmod>
     </url>
     <url>
-        <loc>http://springinpractice.com/2008/03/27/tutorial-wireshark-in-fifteen-minutes/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <loc>http://springinpractice.com/2008/03/28/tutorial-wireshark-in-fifteen-minutes/</loc>
+        <lastmod>2013-09-22T03:20:26-07:00</lastmod>
     </url>
     <url>
-        <loc>http://springinpractice.com/2008/05/04/smtp-and-smtp-auth/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <loc>http://springinpractice.com/2008/05/05/smtp-and-smtp-auth/</loc>
+        <lastmod>2013-09-22T03:19:58-07:00</lastmod>
     </url>
     <url>
         <loc>
@@ -71,8 +71,8 @@
         <lastmod>2013-09-18T23:52:36-07:00</lastmod>
     </url>
     <url>
-        <loc>http://springinpractice.com/2008/05/07/session-scoped-beans-in-spring/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <loc>http://springinpractice.com/2008/05/08/session-scoped-beans-in-spring/</loc>
+        <lastmod>2013-09-22T03:18:21-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/</loc>
@@ -85,12 +85,12 @@
         <lastmod>2013-09-18T23:52:36-07:00</lastmod>
     </url>
     <url>
-        <loc>http://springinpractice.com/2008/08/30/about-our-book/</loc>
-        <lastmod>2013-09-20T01:07:16-07:00</lastmod>
-    </url>
-    <url>
         <loc>http://springinpractice.com/2008/08/31/storing-passwords-securely/</loc>
         <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://springinpractice.com/2008/08/31/about-our-book/</loc>
+        <lastmod>2013-09-22T03:17:35-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/09/05/just-got-the-book-cover/</loc>
@@ -182,9 +182,9 @@
     </url>
     <url>
         <loc>
-            http://springinpractice.com/2010/07/05/spring-security-database-schemas-for-mysql/
+            http://springinpractice.com/2010/07/06/spring-security-database-schemas-for-mysql/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-09-22T03:12:36-07:00</lastmod>
     </url>
     <url>
         <loc>
@@ -194,13 +194,13 @@
     </url>
     <url>
         <loc>
-            http://springinpractice.com/2010/07/11/spring-security-3-dzone-refcard-and-interview/
+            http://springinpractice.com/2010/07/12/spring-security-3-dzone-refcard-and-interview/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-09-22T03:11:57-07:00</lastmod>
     </url>
     <url>
-        <loc>http://springinpractice.com/2010/07/13/spring-roo-in-under-nine-minutes/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <loc>http://springinpractice.com/2010/07/14/spring-roo-in-under-nine-minutes/</loc>
+        <lastmod>2013-09-22T03:11:23-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2010/07/20/thoughts-on-cloud-portability/</loc>
@@ -208,9 +208,9 @@
     </url>
     <url>
         <loc>
-            http://springinpractice.com/2010/07/26/top-ten-operational-excellence-design-principles/
+            http://springinpractice.com/2010/07/27/top-ten-operational-excellence-design-principles/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-09-22T03:10:08-07:00</lastmod>
     </url>
     <url>
         <loc>
@@ -436,7 +436,7 @@
     </url>
     <url>
         <loc>http://springinpractice.com/archives/</loc>
-        <lastmod>2013-09-22T03:04:37-07:00</lastmod>
+        <lastmod>2013-09-22T03:20:26-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/code-and-setup/</loc>
@@ -444,7 +444,7 @@
     </url>
     <url>
         <loc>http://springinpractice.com/consulting/</loc>
-        <lastmod>2013-09-16T02:11:26-07:00</lastmod>
+        <lastmod>2013-09-22T03:30:28-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/errata/</loc>
@@ -452,7 +452,7 @@
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-09-22T03:04:37-07:00</lastmod>
+        <lastmod>2013-09-22T03:20:26-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>

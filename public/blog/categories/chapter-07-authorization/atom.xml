@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 07 - Authorization | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-07-authorization/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-22T03:06:30-07:00</updated>
+  <updated>2013-09-22T03:30:37-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -113,9 +113,9 @@ public Newsletter getFacultyNews() { ... }
   
   <entry>
     <title type="html"><![CDATA[Spring Security 3 DZone Refcard and interview]]></title>
-    <link href="http://springinpractice.com/2010/07/11/spring-security-3-dzone-refcard-and-interview/"/>
-    <updated>2010-07-11T18:23:20-07:00</updated>
-    <id>http://springinpractice.com/2010/07/11/spring-security-3-dzone-refcard-and-interview</id>
+    <link href="http://springinpractice.com/2010/07/12/spring-security-3-dzone-refcard-and-interview/"/>
+    <updated>2010-07-12T05:23:20-07:00</updated>
+    <id>http://springinpractice.com/2010/07/12/spring-security-3-dzone-refcard-and-interview</id>
     <content type="html"><![CDATA[<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/refcard106/ss3_refcard.png" alt="Spring Security 3 DZone Refcard" style="float:right;margin:0 0 20px 20px;" /></p>
 
 <p>My <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization?oid=hom25493">Spring Security 3 Refcard</a> is out. It covers expression-based authorization in Spring Security 3.</p>
@@ -128,9 +128,9 @@ public Newsletter getFacultyNews() { ... }
   
   <entry>
     <title type="html"><![CDATA[Spring Security 3 database schemas for MySQL]]></title>
-    <link href="http://springinpractice.com/2010/07/05/spring-security-database-schemas-for-mysql/"/>
-    <updated>2010-07-05T17:36:28-07:00</updated>
-    <id>http://springinpractice.com/2010/07/05/spring-security-database-schemas-for-mysql</id>
+    <link href="http://springinpractice.com/2010/07/06/spring-security-database-schemas-for-mysql/"/>
+    <updated>2010-07-06T05:36:28-07:00</updated>
+    <id>http://springinpractice.com/2010/07/06/spring-security-database-schemas-for-mysql</id>
     <content type="html"><![CDATA[<p>In preparation for a <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization?oid=hom25493">DZone Refcard on Spring Security 3</a> I&rsquo;m doing, here are the Spring Security database schemas for MySQL.</p>
 
 <p>This isn&rsquo;t intended to be an exhaustive treatment. Rather it&rsquo;s more a reference for the MySQL dialect version of the database schemas, though I included a few brief notes just to help people get a high-level understanding of the schemas. For more detailed information, please consult the <a href="http://static.springsource.org/spring-security/site/reference.html">Spring Security 3 Reference Documentation</a>.</p>

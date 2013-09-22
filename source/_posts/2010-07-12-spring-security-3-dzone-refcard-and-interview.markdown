@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Spring Security 3 DZone Refcard and interview"
-date: 2010-07-12 01:23:20
+date: 2010-07-12 12:23:20
 comments: true
 categories: [Chapter 07 - Authorization, News]
 ---
@@ -11,4 +11,4 @@ My <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization?oi
 
 There is also a supporting <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">interview</a> about the Refcard. The interview goes into more depth about some security principles like whitelisting and data-driven security, and explains how to implement these ideas using Spring Security 3.
 
-Thanks to <a href="http://www.scottbattaglia.com/">Scott Battaglia</a>, David Harp, Joe Koberstein, <a href="http://www.mularien.com/blog/">Peter Mularien</a>, <a href="http://pveentjer.wordpress.com/">Peter Veentjer</a> and John Wheeler for their helpful suggestions and also for catching typos. 
+Thanks to <a href="http://www.scottbattaglia.com/">Scott Battaglia</a>, David Harp, Joe Koberstein, <a href="http://www.mularien.com/blog/">Peter Mularien</a>, <a href="http://pveentjer.wordpress.com/">Peter Veentjer</a> and John Wheeler for their helpful suggestions and also for catching typos.

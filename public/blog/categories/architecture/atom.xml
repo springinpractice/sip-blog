@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Architecture | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/architecture/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-22T03:06:30-07:00</updated>
+  <updated>2013-09-22T03:30:37-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -278,9 +278,9 @@ public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
   
   <entry>
     <title type="html"><![CDATA[Top ten [and counting] operational excellence design principles]]></title>
-    <link href="http://springinpractice.com/2010/07/26/top-ten-operational-excellence-design-principles/"/>
-    <updated>2010-07-26T18:05:26-07:00</updated>
-    <id>http://springinpractice.com/2010/07/26/top-ten-operational-excellence-design-principles</id>
+    <link href="http://springinpractice.com/2010/07/27/top-ten-operational-excellence-design-principles/"/>
+    <updated>2010-07-27T05:05:26-07:00</updated>
+    <id>http://springinpractice.com/2010/07/27/top-ten-operational-excellence-design-principles</id>
     <content type="html"><![CDATA[<p><a href="http://www.flickr.com/photos/kim_scarborough/147973192/"><img src="http://springinpractice.s3.amazonaws.com/blog/images/noc.jpg" alt="Operational excellence" align="right" /></a></p>
 
 <p>Here are some key operational excellence design principles. These are intended for system architects (both on the software and infrastructure side) and operational staff.</p>

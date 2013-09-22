@@ -6,3 +6,50 @@ comments: true
 sharing: true
 footer: true
 ---
+<img src="http://springinpractice.s3.amazonaws.com/blog/images/about/ww.jpg" align="right" />
+
+Hi, I'm Willie Wheeler. I offer Java/Spring consulting through my independent consulting business, Wheeler Software, LLC.
+
+Contact me
+----------
+
+Please contact me at <code>myfirstname.mylastname@gmail.com</code> to discuss potential engagements.
+
+Note that I don't offer e-mail support for blog posts. Please use the blog comments for that, which allows everybody to assist and benefit.
+
+Areas of expertise
+------------------
+
+**Java/Spring development:**
+
+* 16 years of experience with Java, nine years with Spring.
+* Lead author of [Spring in Practice](http://www.manning.com/wheeler/) by Manning Publications.
+* Expert web developer with strong devops and user experience background.
+
+**Devops architecture:**
+
+* **Current:** Principal Applications Engineer, working in devops on continuous delivery, operations automation and configuration management.
+* **Past:** Principal Solutions Architect for a large automation platform, responsible for automating hundreds of applications across thousands of servers in internal data center and cloud environments. 40,000 automated deployments (both half- and full-stack) into dev, test and production as of October 2012. Scope included continuous integration, SCM, CMDB, automation (build/test/deployment/operations), deployment pipeline, integration (process/tools/data).
+
+For more information on my background and experience, see [my LinkedIn profile](http://www.linkedin.com/in/williewheeler).
+
+Publications
+------------
+
+Here are some Spring-related publications I've done outside this blog:
+
+* <a href="http://manning.com/wheeler/">Spring in Practice</a>
+* <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization">Expression-Based Authorization with Spring Security 3</a>
+* <a href="http://java.dzone.com/articles/getting-started-spring-batch">Getting Started with Spring Batch 2.0</a>
+* <a href="http://java.dzone.com/articles/spring-integration-hands">Spring Integration: A Hands-On Tutorial, Part 1</a>
+* <a href="http://java.dzone.com/articles/spring-integration-hands-0">Spring Integration: A Hands-On Tutorial, Part 2</a>
+* <a href="http://java.dzone.com/articles/domain-modeling-spring-data">Domain modeling with Spring Data Neo4j</a>
+* <a href="http://java.dzone.com/articles/why-i%E2%80%99m-pretty-excited-about">Why I'm pretty excited about using Neo4j for a CMDB backend</a>
+
+I've done a couple of interviews as well:
+
+* <a href="http://java.dzone.com/articles/wheeler-spring-interview">When to Choose Spring with Willie Wheeler</a>
+* <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">Q&amp;A with Willie Wheeler: Spring Security 3</a>
+
+<a href="http://www.manning.com/wheeler/"><img alt="" src="http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png" title="Spring in Practice" class="alignnone" width="212" height="267" /></a>
+<a href="http://refcardz.dzone.com/refcardz/expression-based-authorization"><img src="http://springinpractice.com/wp-content/uploads/2011/12/ss3_refcard.png" alt="" title="Spring Security 3 Refcard" width="206" height="266" class="alignnone size-full wp-image-1303" /></a
