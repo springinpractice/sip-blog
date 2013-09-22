@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="At my Skydingo blog (a devops blog written in collaboration with Paul Jenson) I just wrote a quick post with some screenshots of an open source, &hellip;">
+  <meta name="description" content="In this post, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called Zkybase. In the current post I want to show &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -95,9 +95,9 @@
   </header>
 
 
-<div class="entry-content"><p>At my <a title="Skydingo blog" href="http://skydingo.com/blog/">Skydingo blog</a> (a devops blog written in collaboration with Paul Jenson) I just wrote a <a href="http://skydingo.com/blog/2012/03/skybase-now-supports-authorized-access-to-github-via-spring-social-github/" title="Skybase now supports authorized access to GitHub via Spring Social GitHub">quick post</a> with some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+<div class="entry-content"><p>In <a href="http://springinpractice.herokuapp.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">this post</a>, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
 
-<p>[caption id=&ldquo;attachment_672&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;529&rdquo; caption=&ldquo;Authorize access to get GitHub repo hooks and other sensitive data&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png"><img src="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png" alt="" title="hooks" width="529" height="195" class="size-full wp-image-672" /></a>[/caption]</p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-using-spring-social-github-to-access-secured-github-data-code/hooks2.png" alt="Zkybase screenshot" /></p>
 
 <h3>Spring application configuration</h3>
 
@@ -151,13 +151,13 @@
 
 <p>Here&rsquo;s how I&rsquo;m looking up the GitHub user profile information:</p>
 
-<pre>package org.skydingo.skybase.service.impl;
+<pre>package org.skydingo.zkybase.service.impl;
 
 import javax.inject.Inject;
 
-import org.skydingo.skybase.model.UserAccount;
-import org.skydingo.skybase.repository.UserAccountRepository;
-import org.skydingo.skybase.service.UserAccountService;
+import org.skydingo.zkybase.model.UserAccount;
+import org.skydingo.zkybase.repository.UserAccountRepository;
+import org.skydingo.zkybase.service.UserAccountService;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.connect.ConnectionRepository;
 import org.springframework.social.github.api.GitHub;
@@ -193,12 +193,12 @@ public class UserAccountServiceImpl extends AbstractCIService implements UserAcc
 
 <p>This one&rsquo;s pretty similar to the above.</p>
 
-<pre>package org.skydingo.skybase.service.impl;
+<pre>package org.skydingo.zkybase.service.impl;
 
 import java.util.List;
 import javax.inject.Inject;
-import org.skydingo.skybase.model.Application;
-import org.skydingo.skybase.service.ApplicationService;
+import org.skydingo.zkybase.model.Application;
+import org.skydingo.zkybase.service.ApplicationService;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.connect.ConnectionRepository;
 import org.springframework.social.github.api.GitHub;
@@ -257,7 +257,7 @@ public class ApplicationServiceImpl extends AbstractCIService implements Applica
     &lt;h2&gt;GitHub&lt;/h2&gt;
 
     &lt;social:connected provider="github"&gt;
-        &lt;p&gt;Your Skybase and GitHub accounts are connected.&lt;/p&gt;
+        &lt;p&gt;Your Zkybase and GitHub accounts are connected.&lt;/p&gt;
         &lt;div class="well"&gt;
             &lt;table class="grid"&gt;
                 &lt;tr&gt;
@@ -277,7 +277,7 @@ public class ApplicationServiceImpl extends AbstractCIService implements Applica
     &lt;/social:connected&gt;
 
     &lt;social:notConnected provider="github"&gt;
-        &lt;p&gt;Your Skybase and GitHub accounts are not yet connected. Connect them for additional Skybase features.&lt;/p&gt;
+        &lt;p&gt;Your Zkybase and GitHub accounts are not yet connected. Connect them for additional Zkybase features.&lt;/p&gt;
         &lt;form method="post" action="${githubUrl}"&gt;
             &lt;input type="hidden" name="scope" value="user, repo, gist" /&gt;
             &lt;input class="btn btn-primary" type="submit" value="Connect to GitHub" /&gt;

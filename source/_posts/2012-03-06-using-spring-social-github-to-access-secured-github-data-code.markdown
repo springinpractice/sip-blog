@@ -5,9 +5,9 @@ date: 2012-03-06 00:40:28
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Tutorials]
 ---
-At my <a title="Skydingo blog" href="http://skydingo.com/blog/">Skydingo blog</a> (a devops blog written in collaboration with Paul Jenson) I just wrote a <a href="http://skydingo.com/blog/2012/03/skybase-now-supports-authorized-access-to-github-via-spring-social-github/" title="Skybase now supports authorized access to GitHub via Spring Social GitHub">quick post</a> with some screenshots of an open source, Spring-based CMDB I'm building called <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a>. In the current post I want to show some of the code and configuration that's required to make OAuth2-authorized Spring/GitHub integration work.
+In [this post](http://springinpractice.herokuapp.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/), I shared some screenshots of an open source, Spring-based CMDB I'm building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that's required to make OAuth2-authorized Spring/GitHub integration work.
 
-[caption id="attachment_672" align="alignnone" width="529" caption="Authorize access to get GitHub repo hooks and other sensitive data"]<a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png"><img src="http://springinpractice.com/wp-content/uploads/2012/03/hooks2.png" alt="" title="hooks" width="529" height="195" class="size-full wp-image-672" /></a>[/caption]
+![Zkybase screenshot](http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-using-spring-social-github-to-access-secured-github-data-code/hooks2.png)
 
 <h3>Spring application configuration</h3>
 
@@ -50,13 +50,13 @@ This goes in the app context. I lifted it more or less as-is from the Spring Soc
 
 Here's how I'm looking up the GitHub user profile information:
 
-<pre>package org.skydingo.skybase.service.impl;
+<pre>package org.skydingo.zkybase.service.impl;
 
 import javax.inject.Inject;
 
-import org.skydingo.skybase.model.UserAccount;
-import org.skydingo.skybase.repository.UserAccountRepository;
-import org.skydingo.skybase.service.UserAccountService;
+import org.skydingo.zkybase.model.UserAccount;
+import org.skydingo.zkybase.repository.UserAccountRepository;
+import org.skydingo.zkybase.service.UserAccountService;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.connect.ConnectionRepository;
 import org.springframework.social.github.api.GitHub;
@@ -90,12 +90,12 @@ In the <code>gitHub()</code> method you can see that I return an existing <code>
 
 This one's pretty similar to the above.
 
-<pre>package org.skydingo.skybase.service.impl;
+<pre>package org.skydingo.zkybase.service.impl;
 
 import java.util.List;
 import javax.inject.Inject;
-import org.skydingo.skybase.model.Application;
-import org.skydingo.skybase.service.ApplicationService;
+import org.skydingo.zkybase.model.Application;
+import org.skydingo.zkybase.service.ApplicationService;
 import org.springframework.social.connect.Connection;
 import org.springframework.social.connect.ConnectionRepository;
 import org.springframework.social.github.api.GitHub;
@@ -152,7 +152,7 @@ Here's the JSP code for rendering the connect/disconnect buttons. The CSS classe
     &lt;h2&gt;GitHub&lt;/h2&gt;
 
     &lt;social:connected provider="github"&gt;
-        &lt;p&gt;Your Skybase and GitHub accounts are connected.&lt;/p&gt;
+        &lt;p&gt;Your Zkybase and GitHub accounts are connected.&lt;/p&gt;
         &lt;div class="well"&gt;
             &lt;table class="grid"&gt;
                 &lt;tr&gt;
@@ -172,7 +172,7 @@ Here's the JSP code for rendering the connect/disconnect buttons. The CSS classe
     &lt;/social:connected&gt;
 
     &lt;social:notConnected provider="github"&gt;
-        &lt;p&gt;Your Skybase and GitHub accounts are not yet connected. Connect them for additional Skybase features.&lt;/p&gt;
+        &lt;p&gt;Your Zkybase and GitHub accounts are not yet connected. Connect them for additional Zkybase features.&lt;/p&gt;
         &lt;form method="post" action="${githubUrl}"&gt;
             &lt;input type="hidden" name="scope" value="user, repo, gist" /&gt;
             &lt;input class="btn btn-primary" type="submit" value="Connect to GitHub" /&gt;
