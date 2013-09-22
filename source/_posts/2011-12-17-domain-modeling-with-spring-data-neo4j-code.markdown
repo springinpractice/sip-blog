@@ -5,29 +5,34 @@ date: 2011-12-17 23:26:41
 comments: true
 categories: [Chapter 02 - Data, Chapter 11 - CMDB, Tutorials]
 ---
-Hi all, Willie here. Last time I told you that I'm building the <a title="Skybase GitHub site" href="http://skydingo.com/blog/?p=28">Skybase</a> CMDB using <a title="Neo4j" href="http://neo4j.org/">Neo4j</a> and <a title="Spring Data Neo4j" href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a>, and I was excited to get a lot of positive feedback about that. I showed a little code but not that much. In this post I'll show you how I'm building out the person <a title="Configuration item" href="http://en.wikipedia.org/wiki/Configuration_item">configuration item</a> (CI) in Skybase using Spring Data Neo4j.
+Hi all, Willie here. Last time I told you that I'm building the [Zkybase](https://github.com/williewheeler/zkybase) CMDB using <a title="Neo4j" href="http://neo4j.org/">Neo4j</a> and <a title="Spring Data Neo4j" href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a>, and I was excited to get a lot of positive feedback about that. I showed a little code but not that much. In this post I'll show you how I'm building out the person <a title="Configuration item" href="http://en.wikipedia.org/wiki/Configuration_item">configuration item</a> (CI) in Zkybase using Spring Data Neo4j.
 
-<h3>Person CI requirements</h3>
+Person CI requirements
+----------------------
+
 We're going to start really simply here by building a person CI. It's useful to have people in the CMDB for various reasons: they allow you to define fine-grained access controls (e.g., Jim can deploy such-and-such apps to the development environment; Eric can deploy whatever he wants wherever he wants; etc.); they allow you to define groups who will receive notifications for critical events and incidents; etc.
 
 Our person CI will have a username, first and last names, some phone numbers, an e-mail address, a manager, direct reports and finally projects he or she works on. We need to be able to display people in a list view, display a given person in a details view, allow users to create, edit and delete people and so on. Here for example is what the list view will look like, at least for now:
 
-[caption id="attachment_67" align="alignnone" width="300" caption="Person list view"]<a href="http://springinpractice.com/wp-content/uploads/2011/12/person_list.png"><img class="size-medium wp-image-67 " title="person_list" src="http://springinpractice.com/wp-content/uploads/2011/12/person_list-300x125.png" alt="Person list view" width="300" height="125" /></a>[/caption]
+![Person list](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-17-domain-modeling-with-spring-data-neo4j-code/person_list.png)
 
 And here's how our details view will look:
 
-[caption id="attachment_73" align="alignnone" width="300" caption="Person details"]<a href="http://springinpractice.com/wp-content/uploads/2011/12/person_details.png"><img class="size-medium wp-image-73" title="person_details" src="http://springinpractice.com/wp-content/uploads/2011/12/person_details-300x161.png" alt="Person details" width="300" height="161" /></a>[/caption]
+![Person details](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-17-domain-modeling-with-spring-data-neo4j-code/person_details.png)
 
 The relationship between a person and a project has an associated role. This relationship is also the basis for the list of collaborators: two people are collaborators if there's at least one project of which they're both members.
 
 Our simple requirements should be enough to show what it feels like to write Spring Data Neo4j code.
-<h3>Create the Person and ProjectMembership entities</h3>
+
+Create the Person and ProjectMembership entities
+------------------------------------------------
+
 First we'll create the Person. I've suppressed the validation and JAXB annotations since they're irrelevant for our current purposes:
-<pre>package org.skydingo.skybase.model;
+<pre>package org.skydingo.zkybase.model;
 
 import java.util.Set;
 import org.neo4j.graphdb.Direction;
-import org.skydingo.skybase.model.relationship.ProjectMembership;
+import org.skydingo.zkybase.model.relationship.ProjectMembership;
 import org.springframework.data.neo4j.annotation.*;
 import org.springframework.data.neo4j.support.index.IndexType;
 
@@ -81,7 +86,7 @@ public class Person implements Comparable&lt;Person&gt; {
 }</pre>
 There are lots of annotations we're using to put a structure in place. Let's start with nodes and their properties. Then we'll look at simple relationships between nodes. Then we'll look at so-called relationship entities, which are basically fancy relationships. First, here's an abstract representation of our domain model:
 
-[caption id="attachment_171" align="alignnone" width="300" caption="Abstract domain model"]<a href="http://springinpractice.com/wp-content/uploads/2011/12/abstract_graph.png"><img class="size-medium wp-image-171" title="abstract_graph" src="http://springinpractice.com/wp-content/uploads/2011/12/abstract_graph-300x261.png" alt="Abstract domain model" width="300" height="261" /></a>[/caption]
+![Abstract graph](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-17-domain-modeling-with-spring-data-neo4j-code/abstract_graph.png)
 
 Now let's look at some details.
 
@@ -97,15 +102,15 @@ Our Person CI has a simple relationship, called REPORTS_TO, that relates people 
 
 What's this look like in the database? <a title="Neoclipse site" href="http://wiki.neo4j.org/content/Neoclipse">Neoclipse</a> reveals all. Here are some example reporting relationships (click the image for a larger view):
 
-<a href="http://springinpractice.com/wp-content/uploads/2011/12/reports_to_graph.png"><img class="alignnone size-medium wp-image-100" title="reports_to_graph" src="http://springinpractice.com/wp-content/uploads/2011/12/reports_to_graph-300x217.png" alt="" width="300" height="217" /></a>
+![Reports-to graph](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-17-domain-modeling-with-spring-data-neo4j-code/reports_to_graph.png)
 
-(Small aside: there's a @Fetch annotation--we'll see it in a moment--that tells Spring Data Neo4j to eager load a related entity. For some reason I'm not having to use it for the manager and direct reports relationships, and I'm not sure why. If somebody knows, I'd appreciate the explanation.)
+(Small aside: there's a `@Fetch` annotation--we'll see it in a moment--that tells Spring Data Neo4j to eager load a related entity. For some reason I'm not having to use it for the manager and direct reports relationships, and I'm not sure why. If somebody knows, I'd appreciate the explanation.)
 
 <strong>Relationship entities.</strong> Besides the REPORTS_TO relationship between people, we care about the MEMBER_OF relationship between people and projects. This one's more interesting than the REPORTS_TO relationship because MEMBER_OF has an associated property--role--that's analogous to adding a column to a link table in a RDBMS, as I mentioned in my reply to Brig in the last post. The Person.memberOf() method provides a convenient way to assign a person to a project using a special ProjectMembership "relationship entity". Here's the code:
-<pre>package org.skydingo.skybase.model.relationship;
+<pre>package org.skydingo.zkybase.model.relationship;
 
-import org.skydingo.skybase.model.Person;
-import org.skydingo.skybase.model.Project;
+import org.skydingo.zkybase.model.Person;
+import org.skydingo.zkybase.model.Project;
 import org.springframework.data.neo4j.annotation.*;
 
 @RelationshipEntity(type = "MEMBER_OF")
@@ -139,13 +144,17 @@ public class ProjectMembership {
 
 }</pre>
 ProjectMembership, like Person, is an entity, but it's a relationship entity. We use @RelationshipEntity(type = "MEMBER_OF") to mark this as a relationship entity, and as with the Person, we use @GraphId for the id property. The @StartNode and @EndNode annotations indicate the edge tail and head, respectively. @Fetch tells Spring Data Neo4j to load the nodes eagerly. By default, Spring Data Neo4j doesn't eagerly load relationships since risks loading the entire graph into memory.
-<h3>Create the PersonRepository</h3>
+
+Create the PersonRepository
+---------------------------
+
 Here's our PersonRepository interface:
-<pre>package org.skydingo.skybase.repository;
+
+<pre>package org.skydingo.zkybase.repository;
 
 import java.util.Set;
-import org.skydingo.skybase.model.Person;
-import org.skydingo.skybase.model.Project;
+import org.skydingo.zkybase.model.Person;
+import org.skydingo.zkybase.model.Project;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 
@@ -164,11 +173,13 @@ public interface PersonRepository extends GraphRepository&lt;Person&gt; {
 }</pre>
 <p class="size-medium wp-image-215" title="repos">I noted in the last post that all we need to do is extend the GraphRepository interface; Spring Data generates the implementation automatically.</p>
 
+![Spring Data repositories](http://springinpractice.s3.amazonaws.com/blog/images/2011-12-17-domain-modeling-with-spring-data-neo4j-code/repos.png)
 
-[caption id="attachment_225" align="alignnone" width="300" caption="Spring Data repositories"]<a href="http://springinpractice.com/wp-content/uploads/2011/12/repos.png"><img class="size-medium wp-image-225" title="repos" src="http://springinpractice.com/wp-content/uploads/2011/12/repos-300x198.png" alt="Spring Data repositories" width="300" height="198" /></a>[/caption]
+For `findByUsername()`, Spring Data can figure out what the intended query is there. For the other two queries, we use `@Query` and the <a title="Cypher query language" href="http://docs.neo4j.org/chunked/milestone/cypher-query-lang.html">Cypher query language</a> to specify the desired result set. The `{0}` in the queries refers to the finder method parameter. In the `findCollaborators()` query, we use `[:MEMBER_OF]` to indicate which relationship we want to follow. These return `Set`s instead of `Iterable`s to eliminate duplicates.
 
-For findByUsername(), Spring Data can figure out what the intended query is there. For the other two queries, we use @Query and the <a title="Cypher query language" href="http://docs.neo4j.org/chunked/milestone/cypher-query-lang.html">Cypher query language</a> to specify the desired result set. The {0} in the queries refers to the finder method parameter. In the findCollaborators() query, we use [:MEMBER_OF] to indicate which relationship we want to follow. These return Sets instead of Iterables to eliminate duplicates.
-<h3>Create the web controller</h3>
+Create the web controller
+-------------------------
+
 We won't cover the entire controller here, but we'll cover some representative methods. Assume that we've injected a PersonRepository into the controller.
 
 <strong>Creating a person.</strong> To create a person, we can use the following:
@@ -212,8 +223,11 @@ public String getPersonDetails(@PathVariable String username, Model model) {
 
     return "personDetails";
 }</pre>
-If you want to see the JSPs, check out the <a title="Skybase GitHub site" href="http://skydingo.com/blog/?p=28">Skybase GitHub site</a>.
-<h3>Configure the app</h3>
+If you want to see the JSPs, check out the <a title="Zkybase GitHub site" href="http://skydingo.com/blog/?p=28">Zkybase GitHub site</a>.
+
+Configure the app
+-----------------
+
 Finally, here's my beans-service.xml file:
 <pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans xmlns="http://www.springframework.org/schema/beans"
@@ -235,17 +249,13 @@ Finally, here's my beans-service.xml file:
     &lt;context:property-placeholder
         location="classpath:/spring/environment.properties" /&gt;
     &lt;context:annotation-config /&gt;
-    &lt;context:component-scan base-package="org.skydingo.skybase.service" /&gt;
+    &lt;context:component-scan base-package="org.skydingo.zkybase.service" /&gt;
 
     &lt;tx:annotation-driven mode="proxy" /&gt;
 
     &lt;neo4j:config storeDirectory="${graphDb.dir}" /&gt;
-    &lt;neo4j:repositories base-package="org.skydingo.skybase.repository" /&gt;
+    &lt;neo4j:repositories base-package="org.skydingo.zkybase.repository" /&gt;
 &lt;/beans&gt;</pre>
 Neo4j has a basic POJO-based mapping model and an advanced AspectJ-based mapping model. In this blog post we've been using the basic POJO-based approach, so we don't need to include AspectJ-related configuration like &lt;context:spring-configured /&gt;.
 
 There you have it--a Person CI backed by Neo4j. Happy coding!
-
-<em>To see the code in more detail, or to get involved in Skybase development, please see the <a title="Skybase GitHub site" href="http://skydingo.com/blog/?p=28">Skybase GitHub site</a>.</em>
-
-&nbsp;
