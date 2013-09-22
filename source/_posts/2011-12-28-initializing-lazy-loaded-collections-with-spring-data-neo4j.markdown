@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Initializing lazy-loaded collections with Spring Data Neo4j"
-date: 2011-12-28 01:22:03
+date: 2011-12-28 12:22:03
 comments: true
 categories: [Chapter 02 - Data, Chapter 11 - CMDB, Quick Tips]
 ---
