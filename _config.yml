@@ -95,7 +95,7 @@ disqus_short_name: springinpractice
 disqus_show_comment_count: true
 
 # Google Analytics
-google_analytics_tracking_id:
+google_analytics_tracking_id: UA-31137459-1
 
 # Facebook Like
 facebook_like: true
