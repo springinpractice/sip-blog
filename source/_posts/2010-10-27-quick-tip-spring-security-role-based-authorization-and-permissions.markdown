@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Quick tip: Spring Security role-based authorization and permissions"
-date: 2010-10-27 01:40:13
+date: 2010-10-27 12:40:13
 comments: true
 categories: [Chapter 07 - Authorization, Quick Tips]
 ---

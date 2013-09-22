@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Demos | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/demos/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-22T03:00:17-07:00</updated>
+  <updated>2013-09-22T03:04:42-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -54,9 +54,9 @@
   
   <entry>
     <title type="html"><![CDATA[Zkybase screenshots]]></title>
-    <link href="http://springinpractice.com/2011/12/04/skybase-screenshots/"/>
-    <updated>2011-12-04T23:43:11-08:00</updated>
-    <id>http://springinpractice.com/2011/12/04/skybase-screenshots</id>
+    <link href="http://springinpractice.com/2011/12/05/skybase-screenshots/"/>
+    <updated>2011-12-05T04:43:11-08:00</updated>
+    <id>http://springinpractice.com/2011/12/05/skybase-screenshots</id>
     <content type="html"><![CDATA[<p>One of the things we&rsquo;re working on is an open source configuration management system called <a href="https://github.com/williewheeler/zkybase">Zkybase</a>. It&rsquo;s a new project, and we&rsquo;re still working out a lot of the high-level vision for this thing. I&rsquo;ll post more information about it later, but for now I just wanted to post some screenshots as a way for people to see how it looks. We&rsquo;re using <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a> for the CSS (very nice toolkit&mdash;love it), and Spring/<a href="http://neo4j.org/">Neo4j</a> (along with <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> on the backend. So far the Neo4j graph data is working out great for configuration management data.</p>
 
 <p>Anyway here are the screenshots.</p>

@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Zkybase screenshots"
-date: 2011-12-05 07:43:11
+date: 2011-12-05 12:43:11
 comments: true
 categories: [Chapter 11 - CMDB, Demos, News]
 ---
