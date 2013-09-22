@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="A major goal for Skybase is to tie together the activities of developers, testers, release engineers and operations. A few major benefits are: Tool &hellip;">
+  <meta name="description" content="A major goal for Zkybase is to tie together the activities of developers, testers, release engineers and operations. A few major benefits are: Tool &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -95,22 +95,22 @@
   </header>
 
 
-<div class="entry-content"><p>A major goal for <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase</a> is to tie together the activities of developers, testers, release engineers and operations. A few major benefits are:</p>
+<div class="entry-content"><p>A major goal for <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> is to tie together the activities of developers, testers, release engineers and operations. A few major benefits are:</p>
 
 <ul>
-    <li><strong>Tool integration:</strong> We can single source app lists and more across development, build, test, deployment, monitoring, knowledge management and other tools.</li>
-    <li><strong>Process streamlining:</strong> Outputs from the dev process feed into the test and deployment processes, which in turn feed into operational processes</li>
-    <li><strong>Communications across teams:</strong> All the teams work from the same concepts and data, facilitating communication.</li>
+<li><strong>Tool integration:</strong> We can single source app lists and more across development, build, test, deployment, monitoring, knowledge management and other tools.</li>
+<li><strong>Process streamlining:</strong> Outputs from the dev process feed into the test and deployment processes, which in turn feed into operational processes.</li>
+<li><strong>Communications across teams:</strong> All the teams work from the same concepts and data, facilitating communication.</li>
 </ul>
 
 
-<p>One of the first things I want to tackle in Skybase, then, is supporting some developer-centric concerns. An important one is source control. Obviously Skybase isn&rsquo;t itself a source control management system, but it makes sense to pull in useful information from the source code repos just to provide a &ldquo;single pane of glass&rdquo; where developers and other users can get a holistic view of what an app is all about.</p>
+<p>One of the first things I want to tackle in Zkybase, then, is supporting some developer-centric concerns. An important one is source control. Obviously Zkybase isn&rsquo;t itself a source control management system, but it makes sense to pull in useful information from the source code repos just to provide a &ldquo;single pane of glass&rdquo; where developers and other users can get a holistic view of what an app is all about.</p>
 
-<p>Since I&rsquo;m using GitHub, Github integration is a logical starting point for Skybase/SCM integration. GitHub has a <a title="GitHub REST API" href="http://developer.github.com/v3/">REST API</a> that makes this integration easy. I wrote a <a title="Calling the GitHub API using Spring’s RestTemplate" href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/">blog post on Spring in Practice</a> that explains the technical approach. Here&rsquo;s the end result:</p>
+<p>Since I&rsquo;m using GitHub, Github integration is a logical starting point for Zkybase/SCM integration. GitHub has a <a title="GitHub REST API" href="http://developer.github.com/v3/">REST API</a> that makes this integration easy. I wrote a <a title="Calling the GitHub API using Spring’s RestTemplate" href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/">post</a> that explains the technical approach. Here&rsquo;s the end result:</p>
 
-<p>[caption id=&ldquo;attachment_447&rdquo; align=&ldquo;alignnone&rdquo; width=&ldquo;560&rdquo; caption=&ldquo;Skybase SCM page&rdquo;]<a href="http://springinpractice.com/wp-content/uploads/2012/01/skybase_scm4.png"><img class="size-full wp-image-447 " title="Skybase SCM page" src="http://springinpractice.com/wp-content/uploads/2012/01/skybase_scm4.png" alt="" width="560" /></a>[/caption]</p>
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-14-skybasegithub-integration/skybase_scm4.png" alt="Zkybase SCM page" /></p>
 
-<p>I suspect that such integrations will be a large part of the value that Skybase delivers. They will help realize the process, tool and communications benefits I highlighted above.</p>
+<p>I suspect that such integrations will be a large part of the value that Zkybase delivers. They will help realize the process, tool and communications benefits I highlighted above.</p>
 </div>
 
 
