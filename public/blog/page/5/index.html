@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Here are some key operational excellence design principles. These are intended for system architects (both on the software and infrastructure side) &hellip;">
+  <meta name="description" content="A colleague sent me a NY Times story on cloud portability today. There&rsquo;s lots of interest on both the consumer and provider side in cloud &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,107 +81,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/07/27/top-ten-operational-excellence-design-principles/">Top Ten [and Counting] Operational Excellence Design Principles</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-07-27T05:05:26-07:00" pubdate data-updated="true">Jul 27<span>th</span>, 2010</time>
-        
-         | <a href="/2010/07/27/top-ten-operational-excellence-design-principles/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="http://www.flickr.com/photos/kim_scarborough/147973192/"><img src="http://springinpractice.s3.amazonaws.com/blog/images/noc.jpg" alt="Operational excellence" align="right" /></a></p>
-
-<p>Here are some key operational excellence design principles. These are intended for system architects (both on the software and infrastructure side) and operational staff.</p>
-
-<p>This started out as a top ten list, but it&rsquo;s been growing.</p>
-
-<p><strong>1. Organizational focus.</strong> OK, this one isn&rsquo;t a design principle, but it&rsquo;s too important to neglect. Having an organizational focus on operational excellence really matters. Everything from isolating core development from production support (that is, create a group within development whose daily responsibility is to insulate core development from production), creating a top-ten hit list and just working that weekly, setting explicit availability and performance goals and then tracking to them&mdash;speaking from personal experience, those are things that can create dramatic and almost immediate results.</p>
-
-<p><strong>2. Aggressively automate processes and controls.</strong> Automate ticket workflow, local builds, integration builds, tests, provisioning, OS installs, patching, deployments, rollbacks, monitoring, alerting, diagnostics, escalation, backups, log rotation, reporting, auditing&mdash;everything you can! Automation increases speed and limits variance, which is an operations-killer.</p>
-
-<p>On the control side, in cases where it&rsquo;s possible to use a technical means to enforce policy (automation, tightly constrained configuration schemas, access controls, etc.), use it. The ideal control makes the undesirable action or state technically impossible.</p>
-
-<p><strong>3. Design for supportability.</strong> The NOC should have the tools and information necessary to resolve at least 80% of production issues without directly involving the development team. Put the right monitoring, diagnostic and management (e.g., SNMP, JMX) capability in place.</p>
-
-<p><strong>4. High availability is all about redundancy.</strong> In general high availability involves redundancy at all levels: power sources, network interfaces, switches, RAIDs, RAC nodes, Internet pipes and even data centers if you want to withstand site failures. Redundancy means that you&rsquo;ve deployed independent, readily-available (perhaps active) capacity beyond what&rsquo;s normally needed to hit performance SLAs. Without this extra capacity, component failures often create complete system unavailability through a chain reaction mechanism that looks like this: (1) one component fails; (2) other components take on the excess demand, creating performance issues; (3) other components fail under load; and (4) system is unavailable.</p>
-
-<p>Don’t confuse high availability with load balancing. If all <em>n</em> instances in a load-balanced pool are required to meet a given performance SLA, then there is no redundancy, because there&rsquo;s no spare capacity to take up the slack in the event of a node failure. Indeed exposure is substantially <em>increased</em>, because all it takes is any one node to fail, and your pool is at best missing performance SLAs, and at worst rendered completely unavailable as described above.</p>
-
-<p><strong>5. Control failure modes.</strong> Components will fail. Failure modes should be designed, not emergent or accidental. Design failures to be transparent and limited in impact, using techniques such as <a href="http://springinpractice.com/2010/07/06/annotation-based-circuit-breakers-with-spring/">circuit breakers</a>. Test the design to ensure that it behaves as expected. Create automation and knowledge base articles to target specific failure modes for fast remediation.</p>
-
-<p><strong>6. Prefer horizontal approaches to scalability.</strong> You will sometimes need to add capacity, either to accommodate business growth or else to handle production issues. Prefer horizontal scalability to vertical scalability, since vertical scalability is more tightly coupled to technology. The database is often the constraint here, so consider approaches that support horizontal scalability, such as data sharding, separating reads from writes and farming out reads, and non-relational data stores.</p>
-
-<p><strong>7. Virtualize aggressively.</strong> Virtualization makes it easier to enforce standards, control drift, add capacity, increase utilization and in general create configuration options.</p>
-
-<p><strong>8. Capacity management = capacity planning + JIT capacity.</strong> Capacity planning is an art, not a science, and it&rsquo;s not always possible to anticipate exactly how much capacity you will need. There&rsquo;s a balance to strike between ensuring sufficient capacity and using resources efficiently, and sometimes the drive to be efficient will result in underestimates. In such situations, a JIT capability is key.</p>
-
-<p>For rollouts (e.g., new apps, new features, betas, promotions, or anything that might reasonably impact demand in a material way), it&rsquo;s better to overallocate and then scale back than it is to underallocate and scale up. Both approaches use resources efficiently, but only the former will allow you to meet aggressive SLAs. Virtualization helps tremendously here, partly because it pools excess physical capacity for shared use (thus limiting cost), and partly because it makes reaping excess capacity during scale-backs much easier.</p>
-
-<p><strong>9. Account for operational excellence overhead costs.</strong> Treat overheads such as monitoring and virtualization as costs that the design needs to account for, not as an excuse to neglect key operational requirements. Deal with instrumentation overhead, for example, by being selective about what you instrument. If your instrumentation adds 1 ms to a 200 ms call, that may not be a big deal. If it adds 1 ms to a 5 ms call inside a tight loop, that may be a bigger problem.</p>
-
-<p><strong>10. Focus monitoring efforts on ensuring that the business is running.</strong> It doesn’t matter whether a particular CPU is running at 90% utilization if you can’t connect that to a business or customer impact. Start by identifying the metrics that the business or customer cares about, and monitor those to ensure that the numbers are within expected bounds. Work backwards to correlated technical metrics.</p>
-
-<h3>Bonus principles</h3>
-
-
-<p><strong>11. Defense in depth applies to operational excellence too.</strong> A well-known security principle, defense in depth applies to operational excellence too. Automation controls configuration drift, but so does keeping people off the servers, being able to refresh the environment on demand, and using a configuration schema that makes certain types of drift impossible. Layer your defenses.</p>
-
-<p><strong>12. Treat support processes and staff as part of the system.</strong> All the monitoring, diagnostics and knowledge base articles in the world won’t help if the support staff doesn’t know how to use them. Test the human component of the system (training, communication, etc.) on a regular basis to ensure that when problems arise, the human response will be the one that was designed.</p>
-
-<p>The next three principles are courtesy of Satish Menon. Thanks Satish.</p>
-
-<p><strong>13. Design for graceful degradation:</strong> One example, if load increases, serve out of stale cache (where it is appropriate) rather than go to the origin server (database or whatever). We added a mechanism to Squid at Yahoo to give hints on what can be served stale.</p>
-
-<p><strong>14. Design for independent scalability (this conflicts your horizontal vs. vertical scalability).</strong> I am saying you need both. If there is a heavy hit on one of the services (e.g. Gradebook) over other, isolating the pathway to that in the design would allow you to scale that one service without scaling all of the rest of the infrastructure.</p>
-
-<p><strong>15. Put data in front of engineers.</strong> Define and measure SLAs for each of the major server interactions and put dashboards in place so people can see how their subsystems are doing.</p>
-
-<p>Here&rsquo;s another one that I find myself repeating often. Don&rsquo;t know how I missed it the first time around.</p>
-
-<p><strong>16. Minimize the number of moving parts.</strong> More moving parts mean that more things can break. Better for example to templatize your middleware into a VM template and instantiate than to instantiate a bunch of bare-bones VMs and then follow up with a a lot of middleware installations. You can even get aggressive and take the same approach to app deployments (i.e., templatize a build that includes the app to be released). All things being equal, designs should try to minimize the number of things that can go wrong.</p>
-
-<h3>References</h3>
-
-
-
-
-<ul>
-    <li><a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a>, by Michael Nygard (Pragmatic)</li>
-    <li><a href="http://www.amazon.com/Scalable-Internet-Architectures-Theo-Schlossnagle/dp/067232699X">Scalable Internet Architectures</a>, by Theo Schlossnagle</li>
-    <li><a href="http://jprall.vox.com/library/post/85-operations-rules-to-live-by.html">(85) Operations Rules to Live By</a>, by Jon Prall</li>
-</ul>
-
-
-
-</div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -1570,6 +1469,117 @@ public Reward show(@RequestHeader("region") long regionId,
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/12/01/rod-johnsons-keynote-address-at-springone-americas-2008/">Rod Johnson&#8217;s Keynote Address at SpringOne Americas 2008</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-12-01T14:44:13-08:00" pubdate data-updated="true">Dec 1<span>st</span>, 2008</time>
+        
+         | <a href="/2008/12/01/rod-johnsons-keynote-address-at-springone-americas-2008/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&rsquo;m at SpringOne right now, and very much enjoying the <a href="http://www.diplomatresort.com/">Westin Diplomat</a>. My room is on the 21st floor and it overlooks the Atlantic. My balcony door is open and I can hear the waves crashing on the shore as I write. This is how life should always be. :&ndash;)</p>
+
+<p>I attended Rod Johnson&rsquo;s keynote a couple of hours back. The keynote itself was informative, offering a pretty good glimpse into where SpringSource sees itself going over the coming year, and I had a chance to chat it up with Thomas Risberg and Colin Sampaleanu just a little bit since we were all sitting at the same table. Recognizing an opportunity when I see one, I asked them when they thought Spring 3 would be coming out and they laughed in a way that suggested that this wasn&rsquo;t the first time somebody had asked. Right now they&rsquo;re shooting for late March or thereabouts, though that was just their impression as opposed to a definite statement.</p>
+
+<p>Anyway, here are some highlights from the keynote.</p>
+
+<h3>SpringSource in 2008</h3>
+
+
+<p>Rod started the keynote with some SpringSource efforts and accomplishments over 2008. I won&rsquo;t go into those in detail, but he mentioned several items, including</p>
+
+<ul>
+    <li><a href="http://www.springsource.org/webflow">Spring Web Flow 2.0</a> GA: I remember it well as I wrote <a href="http://wheelersoftware.com/articles/spring-web-flow-2.0.html">an article</a> about it just before the GA and I wanted to make sure that nothing important had changed.</li>
+    <li><a href="http://static.springsource.org/spring-batch/">Spring Batch</a> GA</li>
+    <li>Launched new <a href="http://www.springsource.org/spring-integration">Spring Integration</a> project</li>
+    <li>Preparing for Spring 3.0 GA</li>
+    <li><a href="http://www.springsource.com/products/suite/dmserver">SpringSource dm Server</a></li>
+    <li><a href="http://www.regdeveloper.co.uk/2008/01/29/springsource_buys_covalent/">Covalent Technologies acquisition</a>: ten years supporting Apache HTTP server and leading support provider for Tomcat (which is important to SpringSource&#8217;s strategy, as I&#8217;ll describe below)</li>
+    <li><a href="http://broadcast.oreilly.com/2008/11/springsource-getting-into-the.html">G2One acquisition</a>: Bringing Groovy and Grails into SpringSource</li>
+    <li>Several commercial software releases, including the <a href="http://www.springsource.com/products/suite/sts">SpringSource Tool Suite</a>, <a href="http://www.springsource.com/products/suite/ams">SpringSource Application Management Suite</a> and the <a href="http://www.springsource.com/products/suite/apfororacledb">SpringSource Advanced Pack for Oracle</a>.</li>
+</ul>
+
+
+<p>They&rsquo;ve clearly been a busy company over the past year, but it may not be entirely clear what they&rsquo;re up to. (Well, part of it is clear enough&mdash;they&rsquo;re moving into the app server space.) The next part of the keynote explained where SpringSource is going as a company.</p>
+
+<h3>SpringSource in 2009</h3>
+
+
+<p>Rod noted that 2008 has been a tough year for the world economy in general, and thus one reasonable prediction is that that&rsquo;s going to translate into pressure on IT budgets. One development he expects to see is license costs coming under increased scrutiny. Another is that he thinks IT will begin paying more attention to the costs associated with complexity, and will invest more in reducing that complexity.</p>
+
+<p>I know from my own workplace that his ideas here are correct. Even before news broke that everything&rsquo;s melting down, we were reevaluating our license situation and indeed even in some cases making changes. And one of the themes that our CIO has sounded time and time again is that we need to work to reduce complexity when we can. I suspect that these are common themes anyway, but with the tough economic times it&rsquo;s pretty easy to believe that one can build a business strategy around this, and that&rsquo;s what SpringSource is doing.</p>
+
+<h3>The SpringSource strategy: help customers control costs by managing and reducing complexity</h3>
+
+
+<p>This was really the theme of the keynote and Rod noted that they&rsquo;d even changed their tagline to reflect it: &ldquo;Weapons for the War on Java Complexity.&rdquo; He explained how the various efforts over 2008 are generally aligned with managing complexity on different fronts. For example:</p>
+
+<p><b>Continue targeting complexity in development by expanding the Spring Framework in a way that simplifies application development.</b> Rod showed how with each new release of Spring, the SLOC for the pet store application dropped. He highlighted Spring Web MVC, Spring Web Flow and the acquisition of G2One in particular as representing a continued commitment to simplifying application development. Another notable item here includes Spring 2.5-style configuration via annotations.</p>
+
+<p>Spring 3.0 moves the platform further along in this simplifying direction. Some highlights:</p>
+
+<ul>
+    <li>Spring 3.0 will support EL in XML configuration and in annotations. He didn&#8217;t say exactly where this would appear.</li>
+    <li>Spring Web MVC will provide first-class support for RESTful web services. The match is strong (Spring Web MVC already has a @RequestMapping attribute that serves well here), and RESTful remoting is simpler than say SOAP-based web services.</li>
+    <li>With Spring Web MVC, developers should adopt the annotated POJO model as Spring 3.0 will deprecate the Controller hierarchy and 3.1 will probably eliminate it altogether. Again the argument is that this is simpler than XML configuration.</li>
+    <li>Spring Web Flow should be seen not as a niche technology but as a core part of their web framework that potentially applies any time there&#8217;s a directed navigation requirement. Examples include wizards, back button, refresh, multiple UIs, and UI reuse.</li>
+    <li>Speaking of their web framework, they&#8217;re treating the following four projects as constituting a coherent, layered set: Spring Web MVC (the core), Spring JavaScript and Spring Web Flow (sitting on top of Spring Web MVC), and Spring Faces (sitting on top of the other three). He said that historically Spring hadn&#8217;t simplified web development as much as it could have, and their converging the four aforementioned web technologies into a single group is an effort to address this.</li>
+</ul>
+
+
+<p>Finally (we&rsquo;re still on the topic of managing complexity in development), Rod suggested that we take a look at <a href="http://static.springframework.org/spring/docs/2.5.x/api/org/springframework/beans/factory/annotation/Configurable.html">@Configurable</a> (which was available in Spring 2.0) and consider it a &ldquo;secret weapon&rdquo; against complexity.</p>
+
+<p>The other major way in which SpringSource aims to manage/reduce complexity:</p>
+
+<p><b>Target complexity not only in development but also in operations:</b> Though it&rsquo;s by no means unanimous, lots of people feel that Spring has done a pretty nice job of simplifying JEE development. Their idea is now to take that to the data center. Their commercial offerings align with this; for example, the Application Management Suite provides deep diagnostics for Spring-based applications, and the dm Server aims to make release management simpler and more flexible. Besides their commercial offerings, their investment in Covalent Technologies (better access to Apache and Tomcat expertise) represents a desire to strengthen their offering in hosting and operations.</p>
+
+<p>They see Tomcat as being the platform of choice where WAR-based deployments are concerned, but they see server-side OSGi as the wave of the future. Because Tomcat is currently widely deployed (I think Rod said something like 70% of enterprises have deployed Tomcat?), SpringSource wants to be involved there, and that&rsquo;s why they bought Covalent. But at the same time they are trying to encourage their customers and indeed the industry at large to make the transition to OSGi-based deployment.</p>
+
+<p>And this leads to a couple of announcements he made.</p>
+
+<h3>A couple of product announcements</h3>
+
+
+<p><b>tc Server:</b> The first announcement was that SpringSource will be releasing another server product to complement their current dm Server offering. This one is called tc Server for (you guessed it) Tomcat Server, and the idea is that it&rsquo;s an enhanced version of Tomcat, one that includes management functionality to make it &ldquo;ready for the data center.&rdquo; The AMS product comes with it, and it will provide features such as visibility into Tomcat and app performance stats, deadlock detection, heap and thread dumps, and stuff like that. It will also be possible to manage tc Server WAR deployments through AMS. They&rsquo;re expecting (if I understood correctly) a GA release in January 2009.</p>
+
+<p>Rod emphasized that the Spring Framework itself would remain server-agnostic, despite the fact that SpringSource is a server vendor.</p>
+
+<p><b>SpringSource Application Platform Configurator:</b> The second announcement is that SpringSource will be making available a web application called the SpringSource Application Platform Configurator. Again, managing complexity is the driver here. This time they are addressing the complexity associated with managing dependencies between JAR files, eliminating version conflicts, and that sort of thing. The idea is that you go to this app (which they host), and you specify a bunch of parameters such as the app type (web app, Grails, batch, etc.), whether you&rsquo;re OK with including pre-release software (such as milestone releases) or whether you allow only GAs, what sorts of capabilities you want and where your religious allegiances lie (is it OK to include JSF? is it OK to include Flex?), what hosting provider you&rsquo;re using (WebSphere, WebLogic, dm Server, etc.), what OS, etc. (By the way, they don&rsquo;t explicitly ask &ldquo;where are your religious allegiances,&rdquo; but Rod noted that they recognize this reality of how software is sometimes chosen and the configurator is designed accordingly.) Then at the end you register (free), get a text dump of the JARs you just chose, and get a dynamically-generated ZIP containing those JARs (and they&rsquo;re of course mutually consistent so as to avoid versioning conflicts). That&rsquo;s a cool idea. They don&rsquo;t know though when this will be available for use; it&rsquo;s not even in beta yet.</p>
+
+<p>Well, there you have it. If you weren&rsquo;t at the keynote, now it&rsquo;s as if you were.  :&ndash;)</p>
+
+<p>I&rsquo;ll post more as the conference progresses. Here&rsquo;s <a href="http://greybeardedgeek.net/?p=66">another post</a> on the same keynote.</p>
+
+<p>[Update: Here&rsquo;s <a href="http://www.infoq.com/news/2008/12/springone-2008">a related InfoQ article</a>.]</p>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/6/">&larr; Older</a>
@@ -1587,10 +1597,6 @@ public Reward show(@RequestHeader("region") long regionId,
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
-      </li>
-    
-      <li class="post">
         <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
       </li>
     
@@ -1604,6 +1610,10 @@ public Reward show(@RequestHeader("region") long regionId,
     
       <li class="post">
         <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
       </li>
     
   </ul>

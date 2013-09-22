@@ -4,6 +4,7 @@ title: "Optimistic locking with Spring Data REST"
 date: 2013-09-14 20:43
 comments: true
 categories: [Chapter 02 - Data, Chapter 13 - Integration]
+published: false
 ---
 I'm working on a web service for a document management system, where clients grab documents from the web service, modify them and submit the updates. Since multiple clients can all grab the same document at the same time, we needed to implement an [optimistic locking](http://c2.com/cgi/wiki?OptimisticLocking) scheme. In this scheme, each document has a version number, and when the client submits an update to the service, the service checks to see whether the submitted version number baseline is still the most recent one in the database. If so, we increment the version number and the update proceeds. Otherwise, we throw an exception indicating a conflict.
 

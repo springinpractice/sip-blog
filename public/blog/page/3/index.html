@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="This one&rsquo;s another quick Zkybase screenshot post. Using Spring Social GitHub, it&rsquo;s easy to access public user and repo information via &hellip;">
+  <meta name="description" content="In an earlier post I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,62 +81,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">Zkybase Now Supports Authorized Access to GitHub via Spring Social GitHub</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-03-06T04:04:45-08:00" pubdate data-updated="true">Mar 6<span>th</span>, 2012</time>
-        
-         | <a href="/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>This one&rsquo;s another quick <a href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the <code>GitHubTemplate</code>. But if we want to access private information, or write capabilities, we need to use the <a href="http://projects.spring.io/spring-social/">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a href="http://projects.spring.io/spring-security/">Spring Security</a>, and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
-
-<h2>Screenshots</h2>
-
-<p>Here&rsquo;s what the GitHub section of the account page looks like before you connect to GitHub:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/disconnected.png" alt="Disconnected screenshot" /></p>
-
-<p>Once you&rsquo;ve done that, the display changes to the following:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/connected.png" alt="Connected screenshot" /></p>
-
-<p>And now we can perform various secure operations on our GitHub objects, like viewing repo hooks:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/hooks3.png" alt="Hooks screenshot" /></p>
-
-<p>I plan to use this integration to support autoprovisioning continuous integration servers, among other things.</p>
-
-<p>If you&rsquo;re interested in the code itself, please see my blog post entitled <a href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/">Using Spring Social GitHub to access secured GitHub data</a></p>
-</div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -1338,6 +1282,75 @@ public class ClasspathScanningJaxb2Marshaller extends Jaxb2Marshaller {
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2011/12/28/initializing-lazy-loaded-collections-with-spring-data-neo4j/">Initializing Lazy-loaded Collections With Spring Data Neo4j</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-12-28T04:22:03-08:00" pubdate data-updated="true">Dec 28<span>th</span>, 2011</time>
+        
+         | <a href="/2011/12/28/initializing-lazy-loaded-collections-with-spring-data-neo4j/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Spring Data Neo4j has been around for about a year now, but the so-called &ldquo;simple mapping&rdquo; strategy (the one that doesn&rsquo;t use AspectJ) is new. So it doesn&rsquo;t have some of the bells and whistles that you might expect to see if you&rsquo;re coming from, say, Hibernate. In particular, it doesn&rsquo;t (as of Spring Data Neo4j 2.0.0.RELEASE) use proxies for collections.</p>
+
+<p>The <a href="http://stackoverflow.com/questions/8218864/fetch-annotation-in-sdg-2-0-fetching-strategy-questions">question of how to initialize lazily loaded collections</a> came up on StackOverflow. Michael Hunger (Spring Data Neo4j lead) explained that you can use the Neo4jTemplate&rsquo;s fetch() method to perform the initialization. Here&rsquo;s some code showing how to do it:</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import javax.inject.Inject;
+import org.skydingo.skybase.model.Person;
+import org.skydingo.skybase.repository.PersonRepository;
+import org.skydingo.skybase.service.PersonService;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+public class PersonServiceImpl implements PersonService {
+    @Inject private Neo4jTemplate template;
+    @Inject private PersonRepository personRepo;
+
+    @Override
+    public Person findPersonDetails(Long id) {
+        Person person = personRepo.findOne(id);
+        template.fetch(person.getDirectReports());
+        return person;
+    }
+
+    ... other methods ...
+}</pre>
+
+
+<p>Have fun.</p>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -1355,10 +1368,6 @@ public class ClasspathScanningJaxb2Marshaller extends Jaxb2Marshaller {
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
-      </li>
-    
-      <li class="post">
         <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
       </li>
     
@@ -1372,6 +1381,10 @@ public class ClasspathScanningJaxb2Marshaller extends Jaxb2Marshaller {
     
       <li class="post">
         <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
       </li>
     
   </ul>

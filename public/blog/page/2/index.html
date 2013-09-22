@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="This post is for myself more than anything else, just because I keep forgetting the steps involved. I&rsquo;m using SpringSource Tool Suite 2.9.1. &hellip;">
+  <meta name="description" content="To better focus my Java/Spring blogging, I&rsquo;ve merged my former Wheeler Software blog into this one. There are a few articles that didn&rsquo;t &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,79 +81,6 @@
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/05/06/mavenizing-an-empty-github-project-in-eclipse/">Mavenizing an Empty GitHub Project in Eclipse</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-06T12:30:15-07:00" pubdate data-updated="true">May 6<span>th</span>, 2012</time>
-        
-         | <a href="/2012/05/06/mavenizing-an-empty-github-project-in-eclipse/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>This post is for myself more than anything else, just because I keep forgetting the steps involved.</p>
-
-<p>I&rsquo;m using SpringSource Tool Suite 2.9.1.RELEASE, which is based on Eclipse 3.7.2 (Indigo). I have the egit and m2e Eclipse plugins installed.</p>
-
-<h3>The scenario</h3>
-
-
-<p>You have a brand new, pretty-much-empty GitHub project (other than the README, say&mdash;but no Maven stuff yet), and you want to import it into Eclipse as a Maven project.</p>
-
-<h3>The steps</h3>
-
-
-
-
-<ol>
-
-<li>Add the remote GitHub repo to your list of Git repos in Eclipse.</li>
-
-<li>In Eclipse, go to File &rarr; Import &rarr; Git &rarr; Projects from Git. (I&#8217;m on a Mac; the menu may be a little different for other platforms.)</li>
-
-<li>On the &#8220;Select Repository Source&#8221;, choose &#8220;URI&#8221;.</li>
-
-<li>On the &#8220;Source Git Repository&#8221; pane, enter the URI info. It might be something like <code>ssh://git@github.com/williewheeler/sip11.git</code>, for example.</li>
-
-<li>On the &#8220;Branch Selection&#8221; pane, choose the master branch.</li>
-
-<li>On the &#8220;Local Destination&#8221; pane, decide where you want the local copy to live.</li>
-
-<li>Where it asks you to select an import wizard, choose &#8220;Use the New Project wizard&#8221; and click &#8220;Finish&#8221;.</li>
-
-<li>Now you have to choose a New Project wizard. Choose Maven &rarr; Maven Project.</li>
-
-<li>From here just create the project like you would any other new Maven project. Once you&#8217;re done, it will show up in your list of projects in the Package Explorer view, and sharing should be activated.</li>
-
-</ol>
-
-</div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -1485,6 +1412,62 @@ ORDER BY event.eventDate desc</pre>
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">Zkybase Now Supports Authorized Access to GitHub via Spring Social GitHub</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-06T04:04:45-08:00" pubdate data-updated="true">Mar 6<span>th</span>, 2012</time>
+        
+         | <a href="/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This one&rsquo;s another quick <a href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the <code>GitHubTemplate</code>. But if we want to access private information, or write capabilities, we need to use the <a href="http://projects.spring.io/spring-social/">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a href="http://projects.spring.io/spring-security/">Spring Security</a>, and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
+
+<h2>Screenshots</h2>
+
+<p>Here&rsquo;s what the GitHub section of the account page looks like before you connect to GitHub:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/disconnected.png" alt="Disconnected screenshot" /></p>
+
+<p>Once you&rsquo;ve done that, the display changes to the following:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/connected.png" alt="Connected screenshot" /></p>
+
+<p>And now we can perform various secure operations on our GitHub objects, like viewing repo hooks:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-zkybase-now-supports-authorized-access-to-github-via-spring-social-github/hooks3.png" alt="Hooks screenshot" /></p>
+
+<p>I plan to use this integration to support autoprovisioning continuous integration servers, among other things.</p>
+
+<p>If you&rsquo;re interested in the code itself, please see my blog post entitled <a href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/">Using Spring Social GitHub to access secured GitHub data</a></p>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/3/">&larr; Older</a>
@@ -1502,10 +1485,6 @@ ORDER BY event.eventDate desc</pre>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
-      </li>
-    
-      <li class="post">
         <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
       </li>
     
@@ -1519,6 +1498,10 @@ ORDER BY event.eventDate desc</pre>
     
       <li class="post">
         <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
       </li>
     
   </ul>
