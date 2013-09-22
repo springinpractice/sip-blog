@@ -1,11 +1,11 @@
 ---
 layout: post
 title: "Using Spring Social GitHub to access secured GitHub data"
-date: 2012-03-06 00:40:28
+date: 2012-03-06 12:40:28
 comments: true
 categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Tutorials]
 ---
-In [this post](http://springinpractice.herokuapp.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/), I shared some screenshots of an open source, Spring-based CMDB I'm building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that's required to make OAuth2-authorized Spring/GitHub integration work.
+In [this post](http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/), I shared some screenshots of an open source, Spring-based CMDB I'm building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that's required to make OAuth2-authorized Spring/GitHub integration work.
 
 ![Zkybase screenshot](http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-using-spring-social-github-to-access-secured-github-data-code/hooks2.png)
 

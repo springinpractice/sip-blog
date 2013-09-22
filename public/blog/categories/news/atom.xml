@@ -4,7 +4,7 @@
   <title><![CDATA[Category: News | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/news/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-21T21:21:59-07:00</updated>
+  <updated>2013-09-21T21:25:55-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -52,9 +52,9 @@
   
   <entry>
     <title type="html"><![CDATA[Zkybase now supports authorized access to GitHub via Spring Social GitHub]]></title>
-    <link href="http://springinpractice.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/"/>
-    <updated>2012-03-05T16:04:45-08:00</updated>
-    <id>http://springinpractice.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github</id>
+    <link href="http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/"/>
+    <updated>2012-03-06T04:04:45-08:00</updated>
+    <id>http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github</id>
     <content type="html"><![CDATA[<p>This one&rsquo;s another quick <a title="Zkybase" href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a title="Spring Social GitHub" href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the GitHubTemplate. But if we want to access private information, or write capabilities, we need to use the <a title="Spring Social" href="http://www.springsource.org/spring-social">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a title="Spring Security" href="http://static.springsource.org/spring-security/site/">Spring Security</a>), and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
 
 <h3>Screenshots</h3>

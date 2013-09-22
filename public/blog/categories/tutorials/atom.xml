@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Tutorials | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/tutorials/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-21T21:21:59-07:00</updated>
+  <updated>2013-09-21T21:25:55-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -385,10 +385,10 @@ public interface ChapterRepo
   
   <entry>
     <title type="html"><![CDATA[Using Spring Social GitHub to access secured GitHub data]]></title>
-    <link href="http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code/"/>
-    <updated>2012-03-05T16:40:28-08:00</updated>
-    <id>http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code</id>
-    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.herokuapp.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">this post</a>, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+    <link href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/"/>
+    <updated>2012-03-06T04:40:28-08:00</updated>
+    <id>http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code</id>
+    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">this post</a>, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
 
 <p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-using-spring-social-github-to-access-secured-github-data-code/hooks2.png" alt="Zkybase screenshot" /></p>
 

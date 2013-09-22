@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-21T21:21:59-07:00</updated>
+  <updated>2013-09-21T21:25:55-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -1360,159 +1360,11 @@ Rss rss = rssResponse.getBody();</pre>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Neo4j 1.6.1 Cypher query examples when using Spring Data Neo4j 2.0]]></title>
-    <link href="http://springinpractice.com/2012/03/05/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/"/>
-    <updated>2012-03-05T17:36:56-08:00</updated>
-    <id>http://springinpractice.com/2012/03/05/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0</id>
-    <content type="html"><![CDATA[<p>This post shows how to perform various sample Cypher queries when using Neo4j 1.6.1 and Spring Data Neo4j (SDN) 2.0.</p>
-
-<p>SDN 2.0 assumes Neo4j 1.6, and it imposes specific structures on databases that it creates. For example, SDN uses the <code><strong>type</strong></code> property on nodes to store the associated Java class, and it names its indexes using the Java class&#8217; simple name.</p>
-
-<p>In the examples below, I&rsquo;m using the Neo4j shell, though you can of course run Cypher queries outside of the shell (e.g., from within the app itself). See <a href="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/" title="Working with the Neo4j shell">my earlier blog post</a> if you&rsquo;re interested in learning how to use the shell.</p>
-
-<p>I&rsquo;ll probably add more examples to this post from time to time.</p>
-
-<h4>Return a single node with a given ID</h4>
-
-
-
-
-<pre>neo4j-sh (Skybase,1)$ start n=node(1) return n
-+------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                |
-+------------------------------------------------------------------------------------------------------------------+
-| Node[1]{__type__-&gt;"org.skydingo.skybase.model.Application",name-&gt;"Skybase",shortDescription-&gt;"Cloud-based CMDB"} |
-+------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h4>Return multiple nodes, looked up by ID</h4>
-
-
-
-
-<pre>neo4j-sh (Skybase,1)$ start n=node(1,4,5) return n
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                                                                                  |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[1]{__type__-&gt;"org.skydingo.skybase.model.Application",name-&gt;"Skybase",shortDescription-&gt;"Cloud-based CMDB"}                                                                   |
-| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
-| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h4>Find all nodes of a given type</h4>
-
-
-
-
-<pre>neo4j-sh[readonly] (Maven,3)$ start n=node:__types__(className="org.skydingo.skybase.model.Module") return n
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                                                                                  |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
-| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
-| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
-| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h4>Find all instances of a class having a certain property</h4>
-
-
-<p>Say we have a <code>org.skydingo.skybase.model.Module</code> class with a <code>groupId</code> property and a <code>moduleId</code> property, both annotated with SDN&rsquo;s <code>@Indexed</code> annotation. Then SDN will create an index for this class called <code>Module</code>. Here&rsquo;s how to find modules in a given group:</p>
-
-<pre>neo4j-sh (Skybase,1)$ start n=node:Module("groupId:org.skydingo.skybase") return n
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                                                                                  |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
-| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
-| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
-| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-<p>Here&rsquo;s an alternative syntax for doing exactly the same thing:</p>
-
-<pre>neo4j-sh (Skybase,1)$ start n=node:Module(groupId = 'org.skydingo.skybase') return n
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                                                                                  |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
-| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
-| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
-| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h4>Find all nodes having a certain set of property values</h4>
-
-
-
-
-<pre>neo4j-sh[readonly] (Maven,3)$ start n=node:Module("groupId:org.skydingo.skybase, moduleId:skybase-maven-plugin") return n  
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| n                                                                                                                                                                       |
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"} |
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h4>Find all nodes in a specified relationship to a given node</h4>
-
-
-
-
-<pre>neo4j-sh (Skybase,1)$ start app=node(1) match app-[:APPLICATION_MODULE]-&gt;module return module
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| module                                                                                                                                                                             |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Node[7]{moduleId-&gt;"org.skydingo.skybase.client",name-&gt;"Client",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Client module",__type__-&gt;"org.skydingo.skybase.model.Module"}    |
-| Node[5]{moduleId-&gt;"org.skydingo.skybase.service",name-&gt;"Service",groupId-&gt;"org.skydingo.skybase",shortDescription-&gt;"Service module",__type__-&gt;"org.skydingo.skybase.model.Module"} |
-| Node[4]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Domain",shortDescription-&gt;"Domain model",moduleId-&gt;"org.skydingo.skybase.domain",groupId-&gt;"org.skydingo.skybase"}     |
-| Node[3]{__type__-&gt;"org.skydingo.skybase.model.Module",name-&gt;"Maven",shortDescription-&gt;"Maven plugins",moduleId-&gt;"skybase-maven-plugin",groupId-&gt;"org.skydingo.skybase"}            |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+</pre>
-
-
-
-
-<h3>Reader-contributed</h3>
-
-
-<p>I&rsquo;ll just add queries here if people send them. It&rsquo;s useful to have examples of queries around.</p>
-
-<h4>Return a user&#8217;s events (of specific types), ordered by date</h4>
-
-
-<p><a href="https://twitter.com/#!/bytor99999">Mark Spritzler</a> sent me the following query, which he noted that <a href="https://twitter.com/#!/mesirii">Michael Hunger</a> mostly wrote:</p>
-
-<pre>START user=node({0})
-MATCH user-[r]-event
-WHERE type(r) = "ATTENDING"
-OR type(r) = "INVITED"
-OR type(r) = "HOSTING"
-RETURN ID(event) as eventId, event.eventDate as eventDate, event.title as eventName, type(r) as eventUserType
-ORDER BY event.eventDate desc</pre>
-
-]]></content>
-  </entry>
-  
-  <entry>
     <title type="html"><![CDATA[Using Spring Social GitHub to access secured GitHub data]]></title>
-    <link href="http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code/"/>
-    <updated>2012-03-05T16:40:28-08:00</updated>
-    <id>http://springinpractice.com/2012/03/05/using-spring-social-github-to-access-secured-github-data-code</id>
-    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.herokuapp.com/2012/03/05/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">this post</a>, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+    <link href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/"/>
+    <updated>2012-03-06T04:40:28-08:00</updated>
+    <id>http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code</id>
+    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">this post</a>, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
 
 <p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-using-spring-social-github-to-access-secured-github-data-code/hooks2.png" alt="Zkybase screenshot" /></p>
 
@@ -1708,6 +1560,34 @@ public class ApplicationServiceImpl extends AbstractCIService implements Applica
 <p>Notice also that the connect button sends a hidden <code>scope</code> parameter to the GitHub URL. This allows us to specify the kinds of operation we want the user to authorize.</p>
 
 <p>Anyway, there you have it. This post was a bit quick, so let me know if I left anything important out and I&rsquo;m happy to add it. Have fun.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Zkybase now supports authorized access to GitHub via Spring Social GitHub]]></title>
+    <link href="http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/"/>
+    <updated>2012-03-06T04:04:45-08:00</updated>
+    <id>http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github</id>
+    <content type="html"><![CDATA[<p>This one&rsquo;s another quick <a title="Zkybase" href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a title="Spring Social GitHub" href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the GitHubTemplate. But if we want to access private information, or write capabilities, we need to use the <a title="Spring Social" href="http://www.springsource.org/spring-social">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a title="Spring Security" href="http://static.springsource.org/spring-security/site/">Spring Security</a>), and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
+
+<h3>Screenshots</h3>
+
+
+<p>Here&rsquo;s what the GitHub section of the account page looks like before you connect to GitHub:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/disconnected.png"><img class="alignnone  wp-image-681" style="border: 1px solid #EEE;" title="disconnected" src="http://springinpractice.com/wp-content/uploads/2012/03/disconnected.png" alt="" width="565" height="96" /></a></p>
+
+<p>Once you&rsquo;ve done that, the display changes to the following:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/connected.png"><img class="alignnone size-medium wp-image-682" style="border: 1px solid #EEE;" title="connected" src="http://springinpractice.com/wp-content/uploads/2012/03/connected-300x195.png" alt="" width="300" height="195" /></a></p>
+
+<p>And now we can perform various secure operations on our GitHub objects, like viewing repo hooks:</p>
+
+<p><a href="http://springinpractice.com/wp-content/uploads/2012/03/hooks3.png"><img class="alignnone  wp-image-683" style="border: 1px solid #eeeeee;" title="hooks" src="http://springinpractice.com/wp-content/uploads/2012/03/hooks3.png" alt="" width="619" height="229" /></a></p>
+
+<p>I plan to use this integration to support autoprovisioning continuous integration servers, among other things.</p>
+
+<p>If you&rsquo;re interested in the code itself, please see my blog post entitled <a href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/">Using Spring Social GitHub to access secured GitHub data [code]</a>.</p>
 ]]></content>
   </entry>
   
