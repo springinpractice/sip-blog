@@ -1215,7 +1215,7 @@ public class EnvironmentFormatter implements Formatter&lt;Environment&gt; {
       
   <header>
     
-      <h1 class="entry-title"><a href="/2012/01/02/closed-loops-the-secret-to-collecting-configuration-management-data/">Closed Loops: The Secret to Collecting Configuration Management Data</a></h1>
+      <h1 class="entry-title"><a href="/2012/01/03/closed-loops-the-secret-to-collecting-configuration-management-data/">Closed Loops: The Secret to Collecting Configuration Management Data</a></h1>
     
     
       <p class="meta">
@@ -1231,7 +1231,7 @@ public class EnvironmentFormatter implements Formatter&lt;Environment&gt; {
   
 
 
-<time datetime="2012-01-02T18:45:19-08:00" pubdate data-updated="true">Jan 2<span>nd</span>, 2012</time>
+<time datetime="2012-01-03T04:45:19-08:00" pubdate data-updated="true">Jan 3<span>rd</span>, 2012</time>
         
       </p>
     
@@ -1240,7 +1240,7 @@ public class EnvironmentFormatter implements Formatter&lt;Environment&gt; {
 
   <div class="entry-content"><p>Hi all, Willie here. Happy New Year!</p>
 
-<p>In my last post, <a title="Devops: How NOT to collect configuration management data" href="http://skydingo.com/blog/?p=229">How NOT to collect configuration management data</a>, I gave a quick rundown of some losing CM data approaches that I and others have attempted in the past. Most of these approaches were variants of asking people for information, putting their answers in documents somewhere and never looking at the documents again.</p>
+<p>In my last post, <a href="http://springinpractice.com/2011/12/26/devops-how-not-to-collect-configuration-management-data/">Devops: How NOT to collect configuration management data</a>, I gave a quick rundown of some losing CM data approaches that I and others have attempted in the past. Most of these approaches were variants of asking people for information, putting their answers in documents somewhere and never looking at the documents again.</p>
 
 <p>This time around I&rsquo;m going to describe a key breakthough that our team finally made&mdash;one that made it a lot easier to collect and update the data in question.</p>
 
@@ -1250,8 +1250,7 @@ public class EnvironmentFormatter implements Formatter&lt;Environment&gt; {
 
 <p>We&rsquo;re going to have to build up to the closed loop concept. Let&rsquo;s start by looking at who has the best CM data in the org.</p>
 
-<h3>Who has the best CM data?</h3>
-
+<h2>Who has the best CM data?</h2>
 
 <p>Different orgs are different, so it&rsquo;s tough to make blanket statements about who has the best CM data. But what I can do is give the answer for my workplace, and hopefully the principles will make sense even if the reality is different where you work. But I&rsquo;ll bet for a lot of orgs it&rsquo;s quite similar.</p>
 
@@ -1261,22 +1260,18 @@ public class EnvironmentFormatter implements Formatter&lt;Environment&gt; {
 
 <p>Let&rsquo;s look at some other teams though.</p>
 
-<ul class="square">
-    <li><strong>App teams have nonsystematic data.</strong> The app teams typically know the URLs for their apps, which servers their apps are on (or at least the VIPs), the interdependencies between their apps and other adjacent systems (web services, databases). But the knowledge is less systematic. It&#8217;s more like browser bookmarks, tribal knowledge and not-quite-up-to-date wiki pages. And any given developer knows his own app and maybe the last app or two he worked on, but not all apps.<strong></strong></li>
-    <li><strong>Ops teams have to depend on busy developers for info.</strong> The ops teams have better or worse information depending on how close to the app teams they are. The team in the NOC is almost entirely at the mercy of the app teams to write and update knowledge base articles. As you might imagine, it can be a challenge to ensure that developers up against a deadline are writing solid KB articles and maintaining older ones. For the NOC it&#8217;s very important to know who the app SMEs are, given such challenges. Even this is not always readily clear as org changes occur, new apps appear, old apps get new names and so on.</li>
-    <li><strong>App support teams are more expertise-driven than data-driven.</strong> The app support teams (they handle escalations out of the NOC) are generally more familiar with the apps themselves and so build up stronger knowledge about the apps, but this knowledge tends to be stronger with &#8220;problem child&#8221; apps. Also, different people tend to develop expertise with specific apps.</li>
+<ul>
+<li><strong>App teams have nonsystematic data.</strong> The app teams typically know the URLs for their apps, which servers their apps are on (or at least the VIPs), the interdependencies between their apps and other adjacent systems (web services, databases). But the knowledge is less systematic. It&rsquo;s more like browser bookmarks, tribal knowledge and not-quite-up-to-date wiki pages. And any given developer knows his own app and maybe the last app or two he worked on, but not all apps.****</li>
+<li><strong>Ops teams have to depend on busy developers for info.</strong> The ops teams have better or worse information depending on how close to the app teams they are. The team in the NOC is almost entirely at the mercy of the app teams to write and update knowledge base articles. As you might imagine, it can be a challenge to ensure that developers up against a deadline are writing solid KB articles and maintaining older ones. For the NOC it&rsquo;s very important to know who the app SMEs are, given such challenges. Even this is not always readily clear as org changes occur, new apps appear, old apps get new names and so on.</li>
+<li><strong>App support teams are more expertise-driven than data-driven.</strong> The app support teams (they handle escalations out of the NOC) are generally more familiar with the apps themselves and so build up stronger knowledge about the apps, but this knowledge tends to be stronger with &ldquo;problem child&rdquo; apps. Also, different people tend to develop expertise with specific apps.</li>
 </ul>
 
 
-
-
-<h3>Why does the release team have the best CM data?</h3>
-
+<h2>Why does the release team have the best CM data?</h2>
 
 <p>The release team has the best CM data because properly maintained CM data is fundamental to their job in a way that it&rsquo;s not for other teams.</p>
 
-<blockquote>First, a quick aside. If your company isn&#8217;t regulated by <a title="SOX" href="http://en.wikipedia.org/wiki/Sarbanes%E2%80%93Oxley_Act">SOX</a>, you may be wondering about what a release team is and why we have one. Among many other things, SOX requires a separation of duties between people who write software and people who deploy/support it in the production environment. The release team&#8217;s primary responsibility is to release software into production. We actually have a couple of release teams, and each of them services many apps. It would not be feasible from a cost and utilization perspective for each app team to have its own dedicated release engineer. The release teams release software at low-volume times, generally during the wee hours.</blockquote>
-
+<blockquote><p>First, a quick aside. If your company isn&rsquo;t regulated by <a href="http://en.wikipedia.org/wiki/Sarbanes%E2%80%93Oxley_Act">SOX</a>, you may be wondering about what a release team is and why we have one. Among many other things, SOX requires a separation of duties between people who write software and people who deploy/support it in the production environment. The release team&rsquo;s primary responsibility is to release software into production. We actually have a couple of release teams, and each of them services many apps. It would not be feasible from a cost and utilization perspective for each app team to have its own dedicated release engineer. The release teams release software at low-volume times, generally during the wee hours.</p></blockquote>
 
 <p>Back to this idea that the release team needs proper CM data more than the other teams do. Why am I saying that?</p>
 
@@ -1290,16 +1285,15 @@ public class EnvironmentFormatter implements Formatter&lt;Environment&gt; {
 
 <p>Let&rsquo;s look at the app and ops teams again.</p>
 
-<ul class="square">
-    <li><strong>App teams can make do without great CM data.</strong> The dependency of app developers on their CM data is softer. Yes, a developer needs to know which web services his app calls, but someone just explains that when he joins the project, and that&#8217;s really all there is to it. If he has a question about a transitive dependency, he might ask a teammate. If he needs to get to the app in the test environment, he probably has the URL bookmarked and the credentials recorded somewhere, but if not, he can easily ask somebody. 99% of the time, the developer can do what he needs to do without reference to specific CM data points. The developer may or may not automate against the CM data.<strong></strong></li>
-    <li><strong>Ops/support teams need good CM data, but expertise is cheaper in the short- to medium-term.</strong> Except in cases involving very aggressive SLAs, even ops often has a softer dependency on CM data than the release team does. Since (hopefully) app outages occur much less frequently than app deployments, the return on knowledge base investments is more sporadic than that on deployment automation. If the app in question isn&#8217;t particularly important, investments in KB articles may be very limited indeed. In most cases, investing in serious support firepower (when something breaks, bring significant subject matter expertise to bear on the problem) yields a better short- to medium-term return. (Of course, in the longer term this strategy fails, because eventually there will be the very costly outage that takes the business out for several days. That&#8217;s a subject for a different day.)</li>
+<ul>
+<li><strong>App teams can make do without great CM data.</strong> The dependency of app developers on their CM data is softer. Yes, a developer needs to know which web services his app calls, but someone just explains that when he joins the project, and that&rsquo;s really all there is to it. If he has a question about a transitive dependency, he might ask a teammate. If he needs to get to the app in the test environment, he probably has the URL bookmarked and the credentials recorded somewhere, but if not, he can easily ask somebody. 99% of the time, the developer can do what he needs to do without reference to specific CM data points. The developer may or may not automate against the CM data.</li>
+<li><strong>Ops/support teams need good CM data, but expertise is cheaper in the short- to medium-term.</strong> Except in cases involving very aggressive SLAs, even ops often has a softer dependency on CM data than the release team does. Since (hopefully) app outages occur much less frequently than app deployments, the return on knowledge base investments is more sporadic than that on deployment automation. If the app in question isn&rsquo;t particularly important, investments in KB articles may be very limited indeed. In most cases, investing in serious support firepower (when something breaks, bring significant subject matter expertise to bear on the problem) yields a better short- to medium-term return. (Of course, in the longer term this strategy fails, because eventually there will be the very costly outage that takes the business out for several days. That&rsquo;s a subject for a different day.)</li>
 </ul>
 
 
 <p>Now we&rsquo;re in a good place to understand closed loops and why they&rsquo;re so important for configuration management data.</p>
 
-<h3>Closed loops and why they matter</h3>
-
+<h2>Closed loops and why they matter</h2>
 
 <p>I think of closed loops like this. There&rsquo;s a &ldquo;steady state&rdquo; that we want to establish and maintain with respect to our CM data. We want it to be comprehensive, accurate and relevant. When the state of our CM data diverges from that desired steady state, we want feedback loops to alert us to the situation so we can address it. That&rsquo;s a closed loop.</p>
 
@@ -1313,19 +1307,15 @@ public class EnvironmentFormatter implements Formatter&lt;Environment&gt; {
 
 <p>Ideally it&rsquo;s best if the CM data drives an automated process that people care about, but that&rsquo;s not strictly necessary. In my org, for instance, there&rsquo;s a fairly robust but manual goal planning and goal tracking process. Every quarter the whole department goes through a goal planning process (my goals roll up into my boss&#8217; goals and so on), and then we track progress against those goals every couple of weeks. The goal planning and tracking app requires correct information about who&rsquo;s on which team, and so this serves to establish yet another closed loop on the team membership data. It also illustrates the point that you can hit the same type of data with multiple loops.</p>
 
-<h3>Design your CM strategy holistically</h3>
-
+<h2>Design your CM strategy holistically</h2>
 
 <p>There are several areas in technology where it pays to take a holistic view of design: security, user experience and system testing come immediately to mind. In each case you consider a given technical system in its wider organizational context. (Super-duper-strong password requirements don&rsquo;t help if people have to write them down on Post-Its.)</p>
 
 <p>Configuration management is another place where it makes lots of sense to take a holistic approach to design. For any given type of data (there&rsquo;s no one-size-fits-all answer here), try to figure out something important that depends on it, and then figure out how to tie that something to your data so that wheels just start falling off if the data is wrong, incomplete and so on. Again, data-driven automated processes are superior here, but any important process (automated or not) will help.</p>
 
-<h3>Fewer meetings?</h3>
-
+<h2>Fewer meetings?</h2>
 
 <p>Almost forgot. In the last post, I mentioned that I&rsquo;ll equip you to get out of some pointless meetings. The meetings in question are the ones where somebody wants to get together with you to collect CM data from you so they can post it to their Sharepoint site. Decline those&mdash;they&rsquo;re just a waste of time. Insist that people be able to articulate the closed loops that they will be creating to make sure that someone discovers gaps and errors in the data. I&rsquo;ve been in plenty of such meetings, and in some cases they&rsquo;re set up as half- or full-day meetings. I don&rsquo;t do those anymore.</p>
-
-<p><em>I&rsquo;m working on an open source CMDB, called Zkybase, that can help you establish closed loop configuration management. See the <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase GitHub site</a>.</em></p>
 </div>
   
   
