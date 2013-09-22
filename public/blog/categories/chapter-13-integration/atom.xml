@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-22T07:52:47-07:00</updated>
+  <updated>2013-09-22T13:16:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -21,6 +21,9 @@
     <content type="html"><![CDATA[<p>Sometimes it is necessary to send cookies along with requests to a RESTful API. One such example is the JIRA 4.3 API, which requires sending the <code>JSESSIONID</code> to JIRA for session management and authentication purposes. REST purists point out that such usages are not properly RESTful (see <a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/" target="_blank"><a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/">http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/</a></a> for a good discussion), and indeed the <code>RestTemplate</code> doesn&rsquo;t directly support sending cookies.</p>
 
 <p>But in the real world, we need to make things work, and so in this quick post I&rsquo;ll show how to send cookies with <code>RestTemplate</code>.</p>
+
+<!-- more -->
+
 
 <p>The first thing to bear in mind is that we implement cookies as HTTP headers: the service uses a <code>Set-Cookie</code> response header to tell the client to set a cookie, and the client uses the <code>Cookie</code> request header for subsequent requests. And <code>RestTemplate</code> certainly supports setting request headers.</p>
 
@@ -49,6 +52,9 @@ Rss rss = rssResponse.getBody();</pre>
     <updated>2012-03-06T04:40:28-08:00</updated>
     <id>http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code</id>
     <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">this post</a>, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+
+<!-- more -->
+
 
 <p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-using-spring-social-github-to-access-secured-github-data-code/hooks2.png" alt="Zkybase screenshot" /></p>
 
@@ -253,6 +259,11 @@ public class ApplicationServiceImpl extends AbstractCIService implements Applica
     <updated>2012-02-22T04:21:32-08:00</updated>
     <id>http://springinpractice.com/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody</id>
     <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2011/12/06/jackson-json-jaxb2-xml-spring/" title="Configuring Jackson to use JAXB2 annotations with Spring">an earlier post</a> I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the idea was to configure the Jackson <code>ObjectMapper</code> to understand JAXB2 annotations.</p>
+
+<!-- more -->
+
+
+
 
 <h3>The problem</h3>
 

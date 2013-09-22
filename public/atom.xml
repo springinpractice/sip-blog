@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-22T07:52:47-07:00</updated>
+  <updated>2013-09-22T13:16:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -503,6 +503,11 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
 
 <p>Here&rsquo;s what I&rsquo;m doing.</p>
 
+<!-- more -->
+
+
+
+
 <h3>The old, custom comment table</h3>
 
 
@@ -664,9 +669,12 @@ update wp_posts set comment_count = @comment_count where ID = @post_id;</pre>
     <id>http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider</id>
     <content type="html"><![CDATA[<p>In chapter 8 of <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, recipes 8.2 and 8.3 require a JNDI-exposed JavaMail session backed by an SMTP provider. Here I&rsquo;ll show how to set that up in Jetty 6. For SMTP we&rsquo;ll use Gmail, which provides a free SMTP service to anybody with a Gmail account.</p>
 
+<!-- more -->
+
+
 <p>Here&rsquo;s the <code>jetty-env.xml</code> configuration supporting the goals above.</p>
 
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd"&gt;
 &lt;Configure class="org.mortbay.jetty.webapp.WebAppContext"&gt;
     &lt;New id="repository" class="org.mortbay.jetty.plus.naming.Resource"&gt;
@@ -692,23 +700,19 @@ update wp_posts set comment_count = @comment_count where ID = @post_id;</pre>
     &lt;/New&gt;
 
     ... other configuration (e.g. JDBC DataSource) ...
-&lt;/Configure&gt;</pre>
-
+&lt;/Configure&gt;
+</code></pre>
 
 <p>This configuration allows us to grab the mail session using the <code>mail/Session</code> name from the Spring configuration file:</p>
 
-<pre>&lt;jee:jndi-lookup id="mailSession" jndi-name="mail/Session" resource-ref="true" /&gt;</pre>
+<pre><code>&lt;jee:jndi-lookup id="mailSession" jndi-name="mail/Session" resource-ref="true" /&gt;
+</code></pre>
 
-
-
-
-<h3>Alternative configurations</h3>
-
+<h2>Alternative configurations</h2>
 
 <p>For information about doing the same thing with Tomcat, or information on configuring your JavaMail session directly into the app (along with the SMTP provider details), see my post <a href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/">Send e-mail using Spring and JavaMail</a>.</p>
 
-<h3>Problems?</h3>
-
+<h2>Problems?</h2>
 
 <p>If you run into an error to the effect that there was a PKIX path building problem, then you need to import the remote certificate into your local truststore. See <a href="http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/">Fixing PKIX path building issues when using JavaMail and SMTP</a> for details on this issue and how to fix it.</p>
 ]]></content>
@@ -720,6 +724,11 @@ update wp_posts set comment_count = @comment_count where ID = @post_id;</pre>
     <updated>2012-04-29T06:08:01-07:00</updated>
     <id>http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp</id>
     <content type="html"><![CDATA[<p>I&rsquo;m writing this post in support of <a href="http://springinpractice.com/category/book/chapter-8/">chapter 8</a> in my book <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, which deals with <a href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/">Spring/JavaMail integration</a>, since it&rsquo;s not always straightforward to <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">configure an app to use SMTP</a>.</p>
+
+<!-- more -->
+
+
+
 
 <h3>The problem</h3>
 
@@ -889,6 +898,11 @@ jM3JXG7LRkr/G6M24RCxBKONckQy+3j1wdy/jZwfisilPg==
 
 <p>Did you know that Spring 3.1 introduces an analogous namespace for constructor injection? Yup&mdash;it&rsquo;s the <code>c</code> namespace:</p>
 
+<!-- more -->
+
+
+
+
 <pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:c="http://www.springframework.org/schema/c"
@@ -959,7 +973,12 @@ jM3JXG7LRkr/G6M24RCxBKONckQy+3j1wdy/jZwfisilPg==
 
 <p>Items 1 and 2 amount to creating a homegrown DAO framework, and items 3 and 4 amount to using it to implement DAOs.</p>
 
-<p>Now there&rsquo;s a better way to do things. The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don&rsquo;t have to implement it ourselves.</p>
+<p>Now there&rsquo;s a better way to do things.</p>
+
+<!-- more -->
+
+
+<p>The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don&rsquo;t have to implement it ourselves.</p>
 
 <p>Moreover, Spring Data is able to generate concrete DAO implementations and custom queries automatically. So even step 4 above goes away in many cases. With Spring Data JPA you can create DAO tiers by defining interfaces.</p>
 
@@ -1177,6 +1196,9 @@ public interface ChapterRepo
 
 <p>But in the real world, we need to make things work, and so in this quick post I&rsquo;ll show how to send cookies with <code>RestTemplate</code>.</p>
 
+<!-- more -->
+
+
 <p>The first thing to bear in mind is that we implement cookies as HTTP headers: the service uses a <code>Set-Cookie</code> response header to tell the client to set a cookie, and the client uses the <code>Cookie</code> request header for subsequent requests. And <code>RestTemplate</code> certainly supports setting request headers.</p>
 
 <p>Here&rsquo;s how I&rsquo;m pulling down an access-controlled RSS feed from JIRA 4.3:</p>
@@ -1204,6 +1226,9 @@ Rss rss = rssResponse.getBody();</pre>
     <updated>2012-03-06T04:40:28-08:00</updated>
     <id>http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code</id>
     <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">this post</a>, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+
+<!-- more -->
+
 
 <p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-using-spring-social-github-to-access-secured-github-data-code/hooks2.png" alt="Zkybase screenshot" /></p>
 
@@ -1409,6 +1434,9 @@ public class ApplicationServiceImpl extends AbstractCIService implements Applica
     <id>http://springinpractice.com/2012/03/06/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0</id>
     <content type="html"><![CDATA[<p>This post shows how to perform various sample Cypher queries when using Neo4j 1.6.1 and Spring Data Neo4j (SDN) 2.0.</p>
 
+<!-- more -->
+
+
 <p>SDN 2.0 assumes Neo4j 1.6, and it imposes specific structures on databases that it creates. For example, SDN uses the <code><strong>type</strong></code> property on nodes to store the associated Java class, and it names its indexes using the Java class&#8217; simple name.</p>
 
 <p>In the examples below, I&rsquo;m using the Neo4j shell, though you can of course run Cypher queries outside of the shell (e.g., from within the app itself). See <a href="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/" title="Working with the Neo4j shell">my earlier blog post</a> if you&rsquo;re interested in learning how to use the shell.</p>
@@ -1557,6 +1585,9 @@ ORDER BY event.eventDate desc</pre>
     <id>http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github</id>
     <content type="html"><![CDATA[<p>This one&rsquo;s another quick <a href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the <code>GitHubTemplate</code>. But if we want to access private information, or write capabilities, we need to use the <a href="http://projects.spring.io/spring-social/">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a href="http://projects.spring.io/spring-security/">Spring Security</a>, and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
 
+<!-- more -->
+
+
 <h2>Screenshots</h2>
 
 <p>Here&rsquo;s what the GitHub section of the account page looks like before you connect to GitHub:</p>
@@ -1583,6 +1614,11 @@ ORDER BY event.eventDate desc</pre>
     <updated>2012-02-22T04:21:32-08:00</updated>
     <id>http://springinpractice.com/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody</id>
     <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2011/12/06/jackson-json-jaxb2-xml-spring/" title="Configuring Jackson to use JAXB2 annotations with Spring">an earlier post</a> I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the idea was to configure the Jackson <code>ObjectMapper</code> to understand JAXB2 annotations.</p>
+
+<!-- more -->
+
+
+
 
 <h3>The problem</h3>
 

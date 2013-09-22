@@ -16,7 +16,11 @@ For a long time, creating a DAO layer in Spring has been a largely manual proces
 
 Items 1 and 2 amount to creating a homegrown DAO framework, and items 3 and 4 amount to using it to implement DAOs.
 
-Now there's a better way to do things. The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don't have to implement it ourselves.
+Now there's a better way to do things.
+
+<!-- more -->
+
+The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don't have to implement it ourselves.
 
 Moreover, Spring Data is able to generate concrete DAO implementations and custom queries automatically. So even step 4 above goes away in many cases. With Spring Data JPA you can create DAO tiers by defining interfaces.
 

@@ -111,9 +111,12 @@
 
 <div class="entry-content"><p>In chapter 8 of <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, recipes 8.2 and 8.3 require a JNDI-exposed JavaMail session backed by an SMTP provider. Here I&rsquo;ll show how to set that up in Jetty 6. For SMTP we&rsquo;ll use Gmail, which provides a free SMTP service to anybody with a Gmail account.</p>
 
+<!-- more -->
+
+
 <p>Here&rsquo;s the <code>jetty-env.xml</code> configuration supporting the goals above.</p>
 
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd"&gt;
 &lt;Configure class="org.mortbay.jetty.webapp.WebAppContext"&gt;
     &lt;New id="repository" class="org.mortbay.jetty.plus.naming.Resource"&gt;
@@ -139,23 +142,19 @@
     &lt;/New&gt;
 
     ... other configuration (e.g. JDBC DataSource) ...
-&lt;/Configure&gt;</pre>
-
+&lt;/Configure&gt;
+</code></pre>
 
 <p>This configuration allows us to grab the mail session using the <code>mail/Session</code> name from the Spring configuration file:</p>
 
-<pre>&lt;jee:jndi-lookup id="mailSession" jndi-name="mail/Session" resource-ref="true" /&gt;</pre>
+<pre><code>&lt;jee:jndi-lookup id="mailSession" jndi-name="mail/Session" resource-ref="true" /&gt;
+</code></pre>
 
-
-
-
-<h3>Alternative configurations</h3>
-
+<h2>Alternative configurations</h2>
 
 <p>For information about doing the same thing with Tomcat, or information on configuring your JavaMail session directly into the app (along with the SMTP provider details), see my post <a href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/">Send e-mail using Spring and JavaMail</a>.</p>
 
-<h3>Problems?</h3>
-
+<h2>Problems?</h2>
 
 <p>If you run into an error to the effect that there was a PKIX path building problem, then you need to import the remote certificate into your local truststore. See <a href="http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/">Fixing PKIX path building issues when using JavaMail and SMTP</a> for details on this issue and how to fix it.</p>
 </div>

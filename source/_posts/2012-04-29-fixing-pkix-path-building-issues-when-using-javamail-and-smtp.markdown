@@ -7,6 +7,8 @@ categories: [Chapter 08 - Communicating, Troubleshooting]
 ---
 I'm writing this post in support of <a href="http://springinpractice.com/category/book/chapter-8/">chapter 8</a> in my book <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, which deals with <a href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/">Spring/JavaMail integration</a>, since it's not always straightforward to <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">configure an app to use SMTP</a>.
 
+<!-- more -->
+
 <h3>The problem</h3>
 
 Suppose that you've configured your JavaMail app to send e-mail via an SMTP server, but you get the following error:

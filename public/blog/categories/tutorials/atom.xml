@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Tutorials | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/tutorials/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-22T07:52:47-07:00</updated>
+  <updated>2013-09-22T13:16:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -174,7 +174,12 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
 
 <p>Items 1 and 2 amount to creating a homegrown DAO framework, and items 3 and 4 amount to using it to implement DAOs.</p>
 
-<p>Now there&rsquo;s a better way to do things. The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don&rsquo;t have to implement it ourselves.</p>
+<p>Now there&rsquo;s a better way to do things.</p>
+
+<!-- more -->
+
+
+<p>The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don&rsquo;t have to implement it ourselves.</p>
 
 <p>Moreover, Spring Data is able to generate concrete DAO implementations and custom queries automatically. So even step 4 above goes away in many cases. With Spring Data JPA you can create DAO tiers by defining interfaces.</p>
 
@@ -389,6 +394,9 @@ public interface ChapterRepo
     <updated>2012-03-06T04:40:28-08:00</updated>
     <id>http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code</id>
     <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">this post</a>, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+
+<!-- more -->
+
 
 <p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-using-spring-social-github-to-access-secured-github-data-code/hooks2.png" alt="Zkybase screenshot" /></p>
 

@@ -312,59 +312,59 @@
         <loc>
             http://springinpractice.com/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/
         </loc>
-        <lastmod>2013-09-22T02:55:54-07:00</lastmod>
+        <lastmod>2013-09-22T13:16:33-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/
         </loc>
-        <lastmod>2013-09-21T21:42:39-07:00</lastmod>
+        <lastmod>2013-09-22T13:15:57-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/03/06/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/
         </loc>
-        <lastmod>2013-09-22T02:55:27-07:00</lastmod>
+        <lastmod>2013-09-22T13:15:36-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/
         </loc>
-        <lastmod>2013-09-21T21:25:43-07:00</lastmod>
+        <lastmod>2013-09-22T13:15:07-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-09-22T13:14:43-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-09-22T13:14:11-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/
         </loc>
-        <lastmod>2013-09-22T02:53:59-07:00</lastmod>
+        <lastmod>2013-09-22T13:13:04-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-09-22T13:11:51-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-09-22T13:11:24-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/05/03/migrating-non-wordpress-blog-comments-into-wordpress/
         </loc>
-        <lastmod>2013-09-22T02:52:33-07:00</lastmod>
+        <lastmod>2013-09-22T13:07:07-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2012/05/05/combined-my-two-blogs/</loc>
@@ -426,7 +426,7 @@
     </url>
     <url>
         <loc>http://springinpractice.com/archives/</loc>
-        <lastmod>2013-09-22T03:20:26-07:00</lastmod>
+        <lastmod>2013-09-22T13:16:33-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/code-and-setup/</loc>
@@ -442,7 +442,7 @@
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-09-22T03:20:26-07:00</lastmod>
+        <lastmod>2013-09-22T13:16:33-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>

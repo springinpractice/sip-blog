@@ -7,6 +7,8 @@ categories: [Chapter 02 - Data, Chapter 11 - CMDB, Quick Tips]
 ---
 This post shows how to perform various sample Cypher queries when using Neo4j 1.6.1 and Spring Data Neo4j (SDN) 2.0.
 
+<!-- more -->
+
 SDN 2.0 assumes Neo4j 1.6, and it imposes specific structures on databases that it creates. For example, SDN uses the <code>__type__</code> property on nodes to store the associated Java class, and it names its indexes using the Java class' simple name.
 
 In the examples below, I'm using the Neo4j shell, though you can of course run Cypher queries outside of the shell (e.g., from within the app itself). See <a href="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/" title="Working with the Neo4j shell">my earlier blog post</a> if you're interested in learning how to use the shell.

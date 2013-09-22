@@ -7,6 +7,8 @@ categories: [Chapter 11 - CMDB, News]
 ---
 This one's another quick [Zkybase](https://github.com/williewheeler/zkybase) screenshot post. Using [Spring Social GitHub](https://github.com/SpringSource/spring-social-github), it's easy to access public user and repo information via the `GitHubTemplate`. But if we want to access private information, or write capabilities, we need to use the [Spring Social](http://projects.spring.io/spring-social/) connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via [Spring Security](http://projects.spring.io/spring-security/), and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.
 
+<!-- more -->
+
 Screenshots
 -----------
 

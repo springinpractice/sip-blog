@@ -9,6 +9,8 @@ Sometimes it is necessary to send cookies along with requests to a RESTful API. 
 
 But in the real world, we need to make things work, and so in this quick post I'll show how to send cookies with <code>RestTemplate</code>.
 
+<!-- more -->
+
 The first thing to bear in mind is that we implement cookies as HTTP headers: the service uses a <code>Set-Cookie</code> response header to tell the client to set a cookie, and the client uses the <code>Cookie</code> request header for subsequent requests. And <code>RestTemplate</code> certainly supports setting request headers.
 
 Here's how I'm pulling down an access-controlled RSS feed from JIRA 4.3:

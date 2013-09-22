@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 02 - Data | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-02-data/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-22T07:52:47-07:00</updated>
+  <updated>2013-09-22T13:16:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -195,7 +195,12 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
 
 <p>Items 1 and 2 amount to creating a homegrown DAO framework, and items 3 and 4 amount to using it to implement DAOs.</p>
 
-<p>Now there&rsquo;s a better way to do things. The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don&rsquo;t have to implement it ourselves.</p>
+<p>Now there&rsquo;s a better way to do things.</p>
+
+<!-- more -->
+
+
+<p>The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don&rsquo;t have to implement it ourselves.</p>
 
 <p>Moreover, Spring Data is able to generate concrete DAO implementations and custom queries automatically. So even step 4 above goes away in many cases. With Spring Data JPA you can create DAO tiers by defining interfaces.</p>
 
@@ -410,6 +415,9 @@ public interface ChapterRepo
     <updated>2012-03-06T04:36:56-08:00</updated>
     <id>http://springinpractice.com/2012/03/06/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0</id>
     <content type="html"><![CDATA[<p>This post shows how to perform various sample Cypher queries when using Neo4j 1.6.1 and Spring Data Neo4j (SDN) 2.0.</p>
+
+<!-- more -->
+
 
 <p>SDN 2.0 assumes Neo4j 1.6, and it imposes specific structures on databases that it creates. For example, SDN uses the <code><strong>type</strong></code> property on nodes to store the associated Java class, and it names its indexes using the Java class' simple name.</p>
 

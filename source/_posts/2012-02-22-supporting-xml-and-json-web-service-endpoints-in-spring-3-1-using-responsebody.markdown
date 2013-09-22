@@ -7,6 +7,8 @@ categories: [Chapter 11 - CMDB, Chapter 13 - Integration, Quick Tips]
 ---
 In <a href="http://springinpractice.com/2011/12/06/jackson-json-jaxb2-xml-spring/" title="Configuring Jackson to use JAXB2 annotations with Spring">an earlier post</a> I explained how to avoid parallel JAXB2/Jackson annotations when supporting both XML and JSON web service endpoints. Basically the idea was to configure the Jackson <code>ObjectMapper</code> to understand JAXB2 annotations.
 
+<!-- more -->
+
 <h3>The problem</h3>
 
 One of the things that was a little unsatisfactory about that post was that I was using views to generate the XML and JSON representations. We can do that, of course, but a more direct approach to generating the desired data payloads is to use <code>@ResponseBody</code> in conjunction with Spring's <code>HttpMessageConverter</code>s. The idea here is that handler methods simply return the object to be mapped (whether to XML or to JSON), and then HTTP message converters sitting on the app context map the object to XML or JSON. Correspondingly, there are HTTP message converters for both JAXB2 and Jackson (among several others). I say this is more direct because there's no need to involve a model or a view at all: the controller simply returns the object and the converters do the rest.

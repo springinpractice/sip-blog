@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 11 - CMDB | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-11-cmdb/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-22T07:52:47-07:00</updated>
+  <updated>2013-09-22T13:16:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -111,6 +111,9 @@ neo4j-sh (Spring in Practice Blog,49)$
 
 <p>But in the real world, we need to make things work, and so in this quick post I&rsquo;ll show how to send cookies with <code>RestTemplate</code>.</p>
 
+<!-- more -->
+
+
 <p>The first thing to bear in mind is that we implement cookies as HTTP headers: the service uses a <code>Set-Cookie</code> response header to tell the client to set a cookie, and the client uses the <code>Cookie</code> request header for subsequent requests. And <code>RestTemplate</code> certainly supports setting request headers.</p>
 
 <p>Here&rsquo;s how I&rsquo;m pulling down an access-controlled RSS feed from JIRA 4.3:</p>
@@ -138,6 +141,9 @@ Rss rss = rssResponse.getBody();</pre>
     <updated>2012-03-06T04:40:28-08:00</updated>
     <id>http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code</id>
     <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">this post</a>, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
+
+<!-- more -->
+
 
 <p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-using-spring-social-github-to-access-secured-github-data-code/hooks2.png" alt="Zkybase screenshot" /></p>
 
@@ -343,6 +349,9 @@ public class ApplicationServiceImpl extends AbstractCIService implements Applica
     <id>http://springinpractice.com/2012/03/06/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0</id>
     <content type="html"><![CDATA[<p>This post shows how to perform various sample Cypher queries when using Neo4j 1.6.1 and Spring Data Neo4j (SDN) 2.0.</p>
 
+<!-- more -->
+
+
 <p>SDN 2.0 assumes Neo4j 1.6, and it imposes specific structures on databases that it creates. For example, SDN uses the <code><strong>type</strong></code> property on nodes to store the associated Java class, and it names its indexes using the Java class' simple name.</p>
 
 <p>In the examples below, I&rsquo;m using the Neo4j shell, though you can of course run Cypher queries outside of the shell (e.g., from within the app itself). See <a href="http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/" title="Working with the Neo4j shell">my earlier blog post</a> if you&rsquo;re interested in learning how to use the shell.</p>
@@ -490,6 +499,9 @@ ORDER BY event.eventDate desc</pre>
     <updated>2012-03-06T04:04:45-08:00</updated>
     <id>http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github</id>
     <content type="html"><![CDATA[<p>This one&rsquo;s another quick <a href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshot post. Using <a href="https://github.com/SpringSource/spring-social-github">Spring Social GitHub</a>, it&rsquo;s easy to access public user and repo information via the <code>GitHubTemplate</code>. But if we want to access private information, or write capabilities, we need to use the <a href="http://projects.spring.io/spring-social/">Spring Social</a> connection framework. This involves adding a Spring Social web controller to the app, giving users a way to log into Zkybase itself (via <a href="http://projects.spring.io/spring-security/">Spring Security</a>, and then finally giving them a way to connect their Zkybase account to their GitHub account via OAuth 2.</p>
+
+<!-- more -->
+
 
 <h2>Screenshots</h2>
 

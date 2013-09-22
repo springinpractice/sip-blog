@@ -13,6 +13,8 @@ The slight wrinkle in the plan is that the software and database for the old blo
 
 Here's what I'm doing.
 
+<!-- more -->
+
 <h3>The old, custom comment table</h3>
 
 <pre>CREATE TABLE `services_comment` (
