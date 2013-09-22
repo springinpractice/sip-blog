@@ -2,7 +2,7 @@
 layout: page
 title: "Consulting services"
 date: 2013-09-15 00:22
-comments: true
+comments: false
 sharing: true
 footer: true
 ---
@@ -52,4 +52,4 @@ I've done a couple of interviews as well:
 * <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">Q&amp;A with Willie Wheeler: Spring Security 3</a>
 
 <a href="http://www.manning.com/wheeler/"><img alt="" src="http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png" title="Spring in Practice" width="212" height="267" /></a>
-<a href="http://refcardz.dzone.com/refcardz/expression-based-authorization"><img src="http://springinpractice.com/wp-content/uploads/2011/12/ss3_refcard.png" alt="" title="Spring Security 3 Refcard" width="206" height="266"" /></a>
+<a href="http://refcardz.dzone.com/refcardz/expression-based-authorization"><img src="http://springinpractice.com/wp-content/uploads/2011/12/ss3_refcard.png" alt="" title="Spring Security 3 Refcard" width="206" height="267"" /></a>

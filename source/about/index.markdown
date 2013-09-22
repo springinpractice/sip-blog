@@ -2,7 +2,7 @@
 layout: page
 title: "About this blog"
 date: 2013-09-14 23:23
-comments: true
+comments: false
 sharing: true
 footer: true
 ---
