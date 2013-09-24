@@ -38,8 +38,3 @@ Selected publications
 * <a href="http://java.dzone.com/articles/spring-integration-hands-0">Spring Integration: A Hands-On Tutorial, Part 2</a>
 * <a href="http://java.dzone.com/articles/wheeler-spring-interview">When to Choose Spring with Willie Wheeler</a> (Interview)
 * <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">Q&amp;A with Willie Wheeler: Spring Security 3</a> (Interview)
-
-<!--
-<a href="http://www.manning.com/wheeler/"><img alt="" src="http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png" title="Spring in Practice" width="212" height="267" /></a>
-<a href="http://refcardz.dzone.com/refcardz/expression-based-authorization"><img src="http://springinpractice.com/wp-content/uploads/2011/12/ss3_refcard.png" title="Spring Security 3 Refcard" width="206" height="267" /></a>
--->
