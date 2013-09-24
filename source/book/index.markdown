@@ -8,17 +8,18 @@ footer: true
 ---
 <img src="http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png" align="right" />
 
-* [About the Book](#about)
+* [About This Blog](#about-this-blog)
 * [Code &amp; Setup](#code-and-setup)
 * [Errata](#errata)
 
-<section id="about">
+<section id="about-this-blog">
 
-This is Willie Wheeler's blog for the Manning title, [Spring in Practice](http://manning.com/wheeler/), by [Willie Wheeler](https://twitter.com/williewheeler) and [Joshua White](https://twitter.com/joshuawhite929). It provides supplemental materials for the book. In some cases it's material that's more conceptual or theoretical in nature (and thus didn't mesh well with the cookbook format). In other cases we just ran out of room in the book itself. But mostly it's extra content that I wrote after the chapters were already done. I'll post additional content and also errata here over time.
+About This Blog
+===============
 
-Most, but not all, of the posts here are about Spring. Every now and then there's the odd devops, user experience or other post, just because I've consolidated content from a couple of other blogs onto this one.
+This is Willie Wheeler's blog for the Manning title, [Spring in Practice](http://manning.com/wheeler/), by [Willie Wheeler](https://twitter.com/williewheeler) and [Joshua White](https://twitter.com/joshuawhite929). The posts here generally supplement what's in the book.
 
-As a general rule, if you need support for something in the book, you'll want to post that to the [Manning forum](http://www.manning-sandbox.com/forum.jspa?forumID=503) for the book. There you can create arbitrary threads instead of having to post to an existing blog post that may or may not have anything to do with your question.
+If you need *support* for something in the book, please post your question to the [book's forum at Manning](http://www.manning-sandbox.com/forum.jspa?forumID=503).
 
 </section>
 <section id="code-and-setup">
@@ -49,8 +50,6 @@ The source code for [Spring in Practice](http://manning.com/wheeler/) is freely 
 
 Each chapter is organized as an incremental set of recipes around some common theme. Each recipe has its own branch in the chapter's repo. Recipe 9.1, for instance, is branch 01 in the chaper 9 repo. (The links above point at master branches, and as such they reflect the last recipe in each chapter.)
 
-Once the book is done, I'll create specific tags for each recipe and link them up.
-
 Importing the source code into Eclipse (or Spring Tool Suite)
 -------------------------------------------------------------
 
@@ -63,9 +62,7 @@ The book includes an appendix explaining how the Maven builds and project config
 
 Each recipe externalizes user- and/or environment-specific configuration from the main project code. So in general you will <i>not</i> want to directly edit files in the `/sample_conf` directory. Those are there as documentation rather than configuration. Instead you'll want to do the following.
 
-**Step 1. Book configuration setup (one time only)**
-
-Skip this step if you've already done this for some other recipe, as it's a one-time setup for the whole book.
+**Step 1: Book configuration setup (one time only).** Skip this step if you've already done this for some other recipe, as it's a one-time setup for the whole book.
 
 Create a directory somewhere on your filesystem to store your app configuration files for this book. For instance, I created
 
@@ -88,9 +85,7 @@ Go into your Maven `[user_directory]/.m2/settings.xml` configuration file (creat
         </activeProfile>
     </settings>
 
-**Step 2. Chapter configuration setup (per chapter)**
-
-Each chapter in the book is an incremental series of recipes, so you will need a chapter-specific folder for each one: `sip01, sip02, sip03, ..., sip14`. Those are the names you need to use; if you use `sip3` instead of `sip03`, it won't work. You can create all of them at the beginning if you like, or you can create them as you need them. Either way, create them inside the general configuration directory from step 1 above:
+**Step 2: Chapter configuration setup (per chapter).** Each chapter in the book is an incremental series of recipes, so you will need a chapter-specific folder for each one: `sip01, sip02, sip03, ..., sip14`. Those are the names you need to use; if you use `sip3` instead of `sip03`, it won't work. You can create all of them at the beginning if you like, or you can create them as you need them. Either way, create them inside the general configuration directory from step 1 above:
 
     /Users/williewheeler/projects/sip/conf/sip01
     /Users/williewheeler/projects/sip/conf/sip02 
@@ -100,9 +95,7 @@ Each chapter in the book is an incremental series of recipes, so you will need a
 
 For each chapter, copy the full contents of the chapter's first recipe's `/sample_conf` directory into the chapter-specific configuration directory. Don't copy `/sample_conf` itself&mdash;just its contents. Once again, you can do this all at once if you like, though it's probably easier for you if you just do it as you start each new chapter.
 
-**Step 3. Chapter resource setup (per chapter)**
-
-Each chapter uses some set of resources (e.g., database, JavaMail, etc.) to provide backend services to the app. In the case of databases, each chapter that uses one has its own database. For Javamail, it probably makes sense to set up a single SMTP service since there's no reason for each chapter to use a separate one. Anyway, you'll need to set these up.
+**Step 3: Chapter resource setup (per chapter).** Each chapter uses some set of resources (e.g., database, JavaMail, etc.) to provide backend services to the app. In the case of databases, each chapter that uses one has its own database. For Javamail, it probably makes sense to set up a single SMTP service since there's no reason for each chapter to use a separate one. Anyway, you'll need to set these up.
 
 For the databases, the scripts you need are MySQL 5.1 scripts inside the recipe's `/src/main/sql` directory. (These are usually called something like `schema.sql` and `data.sql`, though the naming isn't 100% consistent across all chapters.) If you need something other than MySQL 5.1, you'll probably have to make minor modifications to the scripts. In most cases we're not doing anything fancy in the database scripts at all.
 
@@ -110,15 +103,11 @@ For SMTP, I recommend using Gmail if you don't already have something available.
 
 As noted above, this is a once-per-chapter affair, though sometimes the resources don't appear until later recipes in the chapter.
 
-**Step 4. Chapter configuration (per chapter)**
-
-Use the `jetty-env.xml` configuration in your chapter-specific configuration directory to configure JNDI resources. Note that not all chapters have a `jetty-env.xml` configuration file since not all chapters use external resources.
+**Step 4: Chapter configuration (per chapter).** Use the `jetty-env.xml` configuration in your chapter-specific configuration directory to configure JNDI resources. Note that not all chapters have a `jetty-env.xml` configuration file since not all chapters use external resources.
 
 Most chapters also include a `/classes/spring/environment.properties` configuration file. Open it up and make any adjustments that seem sensible given your local environment. The details are chapter- and environment-specific. If the meaning of a property isn't clear from the name, then you'll want to consult the chapter itself to see what the property means and how it is being used.
 
-**Step 5. Running the app (per recipe)**
-
-You can run the app using the Maven Jetty plugin as follows:
+**Step 5: Running the app (per recipe).** You can run the app using the Maven Jetty plugin as follows:
 
     mvn -e clean jetty:run
 

@@ -9,9 +9,9 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Spring in Practice - the Book Sep 14th, 2013 About the Book
+  <meta name="description" content="Spring in Practice - the Book Sep 14th, 2013 About This Blog
 Code &amp; Setup
-Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
+Errata About This Blog This is Willie Wheeler&rsquo;s blog for the &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -72,9 +72,7 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 <ul class="main-navigation">
   <li><a href="/">Blog</a></li>
   <li><a href="/archives/">Archives</a></li>
-  <li><a href="/about/">About</a></li>
-  <li><a href="/code-and-setup/">Code &amp; Setup</a></li>
-  <li><a href="/errata/">Errata</a></li>
+  <li><a href="/book/">The Book</a></li>
   <li><a href="/consulting/">Consulting</a></li>
 </ul>
 
@@ -104,19 +102,19 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
   <p><img src="http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png" align="right" /></p>
 
 <ul>
-<li><a href="#about">About the Book</a></li>
+<li><a href="#about-this-blog">About This Blog</a></li>
 <li><a href="#code-and-setup">Code &amp; Setup</a></li>
 <li><a href="#errata">Errata</a></li>
 </ul>
 
 
-<p><section id="about"></p>
+<p><section id="about-this-blog"></p>
 
-<p>This is Willie Wheeler&rsquo;s blog for the Manning title, <a href="http://manning.com/wheeler/">Spring in Practice</a>, by <a href="https://twitter.com/williewheeler">Willie Wheeler</a> and <a href="https://twitter.com/joshuawhite929">Joshua White</a>. It provides supplemental materials for the book. In some cases it&rsquo;s material that&rsquo;s more conceptual or theoretical in nature (and thus didn&rsquo;t mesh well with the cookbook format). In other cases we just ran out of room in the book itself. But mostly it&rsquo;s extra content that I wrote after the chapters were already done. I&rsquo;ll post additional content and also errata here over time.</p>
+<h1>About This Blog</h1>
 
-<p>Most, but not all, of the posts here are about Spring. Every now and then there&rsquo;s the odd devops, user experience or other post, just because I&rsquo;ve consolidated content from a couple of other blogs onto this one.</p>
+<p>This is Willie Wheeler&rsquo;s blog for the Manning title, <a href="http://manning.com/wheeler/">Spring in Practice</a>, by <a href="https://twitter.com/williewheeler">Willie Wheeler</a> and <a href="https://twitter.com/joshuawhite929">Joshua White</a>. The posts here generally supplement what&rsquo;s in the book.</p>
 
-<p>As a general rule, if you need support for something in the book, you&rsquo;ll want to post that to the <a href="http://www.manning-sandbox.com/forum.jspa?forumID=503">Manning forum</a> for the book. There you can create arbitrary threads instead of having to post to an existing blog post that may or may not have anything to do with your question.</p>
+<p>If you need <em>support</em> for something in the book, please post your question to the <a href="http://www.manning-sandbox.com/forum.jspa?forumID=503">book&rsquo;s forum at Manning</a>.</p>
 
 <p></section>
 <section id="code-and-setup"></p>
@@ -148,8 +146,6 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 
 <p>Each chapter is organized as an incremental set of recipes around some common theme. Each recipe has its own branch in the chapter&rsquo;s repo. Recipe 9.1, for instance, is branch 01 in the chaper 9 repo. (The links above point at master branches, and as such they reflect the last recipe in each chapter.)</p>
 
-<p>Once the book is done, I&rsquo;ll create specific tags for each recipe and link them up.</p>
-
 <h2>Importing the source code into Eclipse (or Spring Tool Suite)</h2>
 
 <p>I created a <a href="http://www.youtube.com/watch?v=0831ETZinmE">YouTube video explaining how to import the sample code</a>.</p>
@@ -160,9 +156,7 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 
 <p>Each recipe externalizes user- and/or environment-specific configuration from the main project code. So in general you will <i>not</i> want to directly edit files in the <code>/sample_conf</code> directory. Those are there as documentation rather than configuration. Instead you&rsquo;ll want to do the following.</p>
 
-<p><strong>Step 1. Book configuration setup (one time only)</strong></p>
-
-<p>Skip this step if you&rsquo;ve already done this for some other recipe, as it&rsquo;s a one-time setup for the whole book.</p>
+<p><strong>Step 1: Book configuration setup (one time only).</strong> Skip this step if you&rsquo;ve already done this for some other recipe, as it&rsquo;s a one-time setup for the whole book.</p>
 
 <p>Create a directory somewhere on your filesystem to store your app configuration files for this book. For instance, I created</p>
 
@@ -187,9 +181,7 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 &lt;/settings&gt;
 </code></pre>
 
-<p><strong>Step 2. Chapter configuration setup (per chapter)</strong></p>
-
-<p>Each chapter in the book is an incremental series of recipes, so you will need a chapter-specific folder for each one: <code>sip01, sip02, sip03, ..., sip14</code>. Those are the names you need to use; if you use <code>sip3</code> instead of <code>sip03</code>, it won&rsquo;t work. You can create all of them at the beginning if you like, or you can create them as you need them. Either way, create them inside the general configuration directory from step 1 above:</p>
+<p><strong>Step 2: Chapter configuration setup (per chapter).</strong> Each chapter in the book is an incremental series of recipes, so you will need a chapter-specific folder for each one: <code>sip01, sip02, sip03, ..., sip14</code>. Those are the names you need to use; if you use <code>sip3</code> instead of <code>sip03</code>, it won&rsquo;t work. You can create all of them at the beginning if you like, or you can create them as you need them. Either way, create them inside the general configuration directory from step 1 above:</p>
 
 <pre><code>/Users/williewheeler/projects/sip/conf/sip01
 /Users/williewheeler/projects/sip/conf/sip02 
@@ -200,9 +192,7 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 
 <p>For each chapter, copy the full contents of the chapter&rsquo;s first recipe&rsquo;s <code>/sample_conf</code> directory into the chapter-specific configuration directory. Don&rsquo;t copy <code>/sample_conf</code> itself&mdash;just its contents. Once again, you can do this all at once if you like, though it&rsquo;s probably easier for you if you just do it as you start each new chapter.</p>
 
-<p><strong>Step 3. Chapter resource setup (per chapter)</strong></p>
-
-<p>Each chapter uses some set of resources (e.g., database, JavaMail, etc.) to provide backend services to the app. In the case of databases, each chapter that uses one has its own database. For Javamail, it probably makes sense to set up a single SMTP service since there&rsquo;s no reason for each chapter to use a separate one. Anyway, you&rsquo;ll need to set these up.</p>
+<p><strong>Step 3: Chapter resource setup (per chapter).</strong> Each chapter uses some set of resources (e.g., database, JavaMail, etc.) to provide backend services to the app. In the case of databases, each chapter that uses one has its own database. For Javamail, it probably makes sense to set up a single SMTP service since there&rsquo;s no reason for each chapter to use a separate one. Anyway, you&rsquo;ll need to set these up.</p>
 
 <p>For the databases, the scripts you need are MySQL 5.1 scripts inside the recipe&rsquo;s <code>/src/main/sql</code> directory. (These are usually called something like <code>schema.sql</code> and <code>data.sql</code>, though the naming isn&rsquo;t 100% consistent across all chapters.) If you need something other than MySQL 5.1, you&rsquo;ll probably have to make minor modifications to the scripts. In most cases we&rsquo;re not doing anything fancy in the database scripts at all.</p>
 
@@ -210,15 +200,11 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 
 <p>As noted above, this is a once-per-chapter affair, though sometimes the resources don&rsquo;t appear until later recipes in the chapter.</p>
 
-<p><strong>Step 4. Chapter configuration (per chapter)</strong></p>
-
-<p>Use the <code>jetty-env.xml</code> configuration in your chapter-specific configuration directory to configure JNDI resources. Note that not all chapters have a <code>jetty-env.xml</code> configuration file since not all chapters use external resources.</p>
+<p><strong>Step 4: Chapter configuration (per chapter).</strong> Use the <code>jetty-env.xml</code> configuration in your chapter-specific configuration directory to configure JNDI resources. Note that not all chapters have a <code>jetty-env.xml</code> configuration file since not all chapters use external resources.</p>
 
 <p>Most chapters also include a <code>/classes/spring/environment.properties</code> configuration file. Open it up and make any adjustments that seem sensible given your local environment. The details are chapter- and environment-specific. If the meaning of a property isn&rsquo;t clear from the name, then you&rsquo;ll want to consult the chapter itself to see what the property means and how it is being used.</p>
 
-<p><strong>Step 5. Running the app (per recipe)</strong></p>
-
-<p>You can run the app using the Maven Jetty plugin as follows:</p>
+<p><strong>Step 5: Running the app (per recipe).</strong> You can run the app using the Maven Jetty plugin as follows:</p>
 
 <pre><code>mvn -e clean jetty:run
 </code></pre>

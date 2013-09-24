@@ -1,0 +1,384 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Code & Setup - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="Code & Setup Sep 19th, 2013 Getting the source code The source code for Spring in Practice is freely available from GitHub. You don't have to buy &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/code-and-setup/index.markdown.old">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-31137459-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/book/">The Book</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article role="article">
+  
+  <header>
+    <h1 class="entry-title">Code & Setup</h1>
+    <p class="meta">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-19T20:00:00-07:00" pubdate data-updated="true">Sep 19<span>th</span>, 2013</time></p>
+  </header>
+  
+  <h3>Getting the source code</h3>
+
+The source code for <a href="http://manning.com/wheeler/">Spring in Practice</a> is freely available from GitHub. You don't have to buy the book to download it, though obviously I hope that you'll find the material sufficiently compelling to consider <a href="http://manning.com/wheeler/">buying it</a> after all. Each chapter has its own repo, and there's a repo for common dependencies as well:
+
+<ul class="square">
+<li><a href="https://github.com/springinpractice/sip-top">Parent POM and common dependencies </a></li>
+<li><a href="https://github.com/springinpractice/sip01">Chapter 1: Introducing Spring: the dependency injection container</a></li>
+<li><a href="https://github.com/springinpractice/sip02">Chapter 2: Data persistence, ORM &amp; transactions</a></li>
+<li><a href="https://github.com/springinpractice/sip03">Chapter 3: Building web applications with Spring Web MVC</a></li>
+<li><a href="https://github.com/springinpractice/sip04">Chapter 4: Basic web forms</a></li>
+<li><a href="https://github.com/springinpractice/sip05">Chapter 5: Enhancing Spring MVC applications with Web Flow</a></li>
+<li><a href="https://github.com/springinpractice/sip06">Chapter 6: Authenticating users</a></li>
+<li><a href="https://github.com/springinpractice/sip07">Chapter 7: Authorizing user requests</a></li>
+<li><a href="https://github.com/springinpractice/sip08">Chapter 8: Communicating with users and customers</a></li>
+<li><a href="https://github.com/springinpractice/sip09">Chapter 9: Creating a rich text comment engine</a></li>
+<li><a href="https://github.com/springinpractice/sip10">Chapter 10: Integration testing</a></li>
+<li><a href="https://github.com/springinpractice/sip11">Chapter 11: Building a configuration management database</a></li>
+<li><a href="https://github.com/springinpractice/sip12">Chapter 12: Building an article delivery engine</a></li>
+<li><a href="https://github.com/springinpractice/sip13">Chapter 13: Enterprise integration</a></li>
+<li><a href="https://github.com/springinpractice/sip14">Chapter 14: Creating a Spring-based "site-up" framework</a></li>
+</ul>
+
+Each chapter is organized as an incremental set of recipes around some common theme. Each recipe has its own branch in the chapter's repo. Recipe 9.1, for instance, is branch 01 in the chaper 9 repo. (The links above point at master branches, and as such they reflect the last recipe in each chapter.)
+
+Once the book is done, I'll create specific tags for each recipe and link them up.
+
+<h3>Importing the source code into Eclipse (or Spring Tool Suite)</h3>
+
+I created a <a href="http://www.youtube.com/watch?v=0831ETZinmE">YouTube video explaining how to import the sample code (ZIP format)</a>.
+
+<h3>Building and configuration</h3>
+
+The book will include an appendix explaining how the Maven builds and project configurations are organized, but I'll go ahead and describe them here as well since some of the MEAP readers and technical reviewers have already asked for better guidance.
+
+Each recipe externalizes user- and/or environment-specific configuration from the main project code. So in general you will <i>not</i> want to directly edit files in the <code>/sample_conf</code> directory. Those are there as documentation rather than configuration. Instead you'll want to do the following.
+
+<h4>Step 1. Book configuration setup (one time only)</h4>
+
+Skip this step if you've already done this for some other recipe, as it's a one-time setup for the whole book.
+
+Create a directory somewhere on your filesystem to store your app configuration files for this book. For instance, I created
+
+<code>/Users/williewheeler/projects/sip/conf</code>
+
+Go into your Maven <code>[user_directory]/.m2/settings.xml</code> configuration file (create it if it doesn't already exist&mdash;see the <a href="http://maven.apache.org/settings.html" target="_blank">Maven documentation</a>) and create a <code>sip.conf.dir</code> property pointing to whichever directory you want to use as the top-level configuration directory for the apps in this book. Here's a simple example of an <code>settings.xml</code> file:
+
+<pre>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;settings&gt;
+    &lt;profiles&gt;
+        &lt;profile&gt;
+            &lt;id&gt;default&lt;/id&gt;
+            &lt;properties&gt;
+                &lt;sip.conf.dir&gt;/Users/williewheeler/projects/sip/conf&lt;/sip.conf.dir&gt;
+            &lt;/properties&gt;
+        &lt;/profile&gt;
+    &lt;/profiles&gt;
+    &lt;activeProfiles&gt;
+        &lt;activeProfile&gt;default&lt;/activeProfile&gt;
+    &lt;/activeProfile&gt;
+&lt;/settings&gt;</pre>
+
+<h4>Step 2. Chapter configuration setup (per chapter)</h4>
+
+Each chapter in the book is an incremental series of recipes, so you will need a chapter-specific folder for each one: <code>sip01, sip02, sip03, ..., sip14</code>. Those are the names you need to use; if you use <code>sip3</code> instead of <code>sip03</code>, it won't work. You can create all of them at the beginning if you like, or you can create them as you need them. Either way, create them inside the general configuration directory from step 1 above:
+
+<pre>/Users/williewheeler/projects/sip/conf/sip01
+/Users/williewheeler/projects/sip/conf/sip02 
+/Users/williewheeler/projects/sip/conf/sip03
+...
+/Users/williewheeler/projects/sip/conf/sip14</pre>
+
+For each chapter, copy the full contents of the chapter's first recipe's <code>/sample_conf</code> directory into the chapter-specific configuration directory. Don't copy <code>/sample_conf</code> itself&mdash;just its contents. Once again, you can do this all at once if you like, though it's probably easier for you if you just do it as you start each new chapter.
+
+<h4>Step 3. Chapter resource setup (per chapter)</h4>
+
+Each chapter uses some set of resources (e.g., database, JavaMail, etc.) to provide backend services to the app. In the case of databases, each chapter that uses one has its own database. For Javamail, it probably makes sense to set up a single SMTP service since there's no reason for each chapter to use a separate one. Anyway, you'll need to set these up.
+
+For the databases, the scripts you need are MySQL 5.1 scripts inside the recipe's <code>/src/main/sql</code> directory. (These are usually called something like <code>schema.sql</code> and <code>data.sql</code>, though the naming isn't 100% consistent across all chapters.) If you need something other than MySQL 5.1, you'll probably have to make minor modifications to the scripts. In most cases we're not doing anything fancy in the database scripts at all.
+
+For SMTP, I recommend using Gmail if you don't already have something available. See my post on <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">Configuring Jetty to use Gmail as an SMTP provider</a> for more information.
+
+As noted above, this is a once-per-chapter affair, though sometimes the resources don't appear until later recipes in the chapter.
+
+<h4>Step 4. Chapter configuration (per chapter)</h4>
+
+Use the <code>jetty-env.xml</code> configuration in your chapter-specific configuration directory to configure JNDI resources. Note that not all chapters have a <code>jetty-env.xml</code> configuration file since not all chapters use external resources.
+
+Most chapters also include a <code>/classes/spring/environment.properties</code> configuration file. Open it up and make any adjustments that seem sensible given your local environment. The details are chapter- and environment-specific. If the meaning of a property isn't clear from the name, then you'll want to consult the chapter itself to see what the property means and how it is being used.
+
+<h4>Step 5. Running the app (per recipe)</h4>
+
+You can run the app using the Maven Jetty plugin as follows:
+
+<code>mvn -e clean jetty:run</code>
+
+When the app starts up, in most cases you will direct your browser to
+
+<code>http://localhost:8080/sip/</code>
+
+to see the app. There are some exceptions, but the book calls them out where they exist.
+
+<h4>Troubleshooting</h4>
+
+The scheme above is somewhat sophisticated for a technical book, reflecting best practices around configuration externalization. So it's very possible that you might need some assistance getting it to work. If so, please see the <a href="http://springinpractice.com/troubleshooting/">Troubleshooting</a> page. If that doesn't solve the issue, you can always post a comment on that page, or else contact the authors at the <a href="http://www.manning-sandbox.com/forum.jspa?forumID=503">Manning author forum</a>.
+
+  
+    <footer>
+      <p class="meta">
+        
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-19T20:00:00-07:00" pubdate data-updated="true">Sep 19<span>th</span>, 2013</time>
+        
+      </p>
+      
+        <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/code-and-setup/index.markdown.old" data-via="williewheeler" data-counturl="http://springinpractice.com/code-and-setup/index.markdown.old" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+      
+    </footer>
+  
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'springinpractice';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://springinpractice.com/code-and-setup/index.markdown.old';
+        var disqus_url = 'http://springinpractice.com/code-and-setup/index.markdown.old';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
