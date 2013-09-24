@@ -31,13 +31,13 @@ For more information on my background and experience, see [my LinkedIn profile](
 Selected publications
 ---------------------
 
-* <a href="http://manning.com/wheeler/">Spring in Practice</a>
-* <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization">Expression-Based Authorization with Spring Security 3</a>
+* <a href="http://manning.com/wheeler/">Spring in Practice</a> (Manning Publications)
+* <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization">Expression-Based Authorization with Spring Security 3</a> (DZone Refcard)
 * <a href="http://java.dzone.com/articles/getting-started-spring-batch">Getting Started with Spring Batch 2.0</a>
 * <a href="http://java.dzone.com/articles/spring-integration-hands">Spring Integration: A Hands-On Tutorial, Part 1</a>
 * <a href="http://java.dzone.com/articles/spring-integration-hands-0">Spring Integration: A Hands-On Tutorial, Part 2</a>
-* <a href="http://java.dzone.com/articles/wheeler-spring-interview">When to Choose Spring with Willie Wheeler</a>
-* <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">Q&amp;A with Willie Wheeler: Spring Security 3</a>
+* <a href="http://java.dzone.com/articles/wheeler-spring-interview">When to Choose Spring with Willie Wheeler</a> (Interview)
+* <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">Q&amp;A with Willie Wheeler: Spring Security 3</a> (Interview)
 
 <!--
 <a href="http://www.manning.com/wheeler/"><img alt="" src="http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png" title="Spring in Practice" width="212" height="267" /></a>
