@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "Java/Spring Consulting by Willie Wheeler"
+title: "Spring Consulting by Willie Wheeler"
 date: 2013-09-15 00:22
 comments: false
 sharing: true
@@ -8,7 +8,7 @@ footer: true
 ---
 <img src="http://springinpractice.s3.amazonaws.com/blog/images/about/ww.jpg" align="right" />
 
-I offer expert Java/Spring software development services through my independent consulting business, Wheeler Software, LLC.
+I offer expert Java and Spring software development services through my independent consulting business, Wheeler Software, LLC.
 
 Please contact me at `myfirstname.mylastname@gmail.com` to discuss potential engagements.
 
