@@ -125,7 +125,7 @@ Finally, let's look at the `OptimisticLockChecker` itself.
             Annotation idColAnn = idField.getAnnotation(Column.class);
             String idColName = (String) AnnotationUtils.getValue(idColAnn, "name");
             
-            String sql = "select version_id from " + tableName
+            String sql = "select version from " + tableName
                 + " where " + idColName + "=" + entity.getId();
             Long latestVersion = jdbcTemplate.queryForObject(sql, Long.class);
             
