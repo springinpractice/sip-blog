@@ -111,7 +111,7 @@ Finally, let's look at the `OptimisticLockChecker` itself.
         @Inject private JdbcTemplate jdbcTemplate;
         
         public void check(VersionedEntity entity) {
-            Long submittedVersion = entity.getVersionId();
+            Long submittedVersion = entity.getVersion();
             if (submittedVersion == null) {
                 throw new RuntimeException("Submitted entity must have a version");
             }
