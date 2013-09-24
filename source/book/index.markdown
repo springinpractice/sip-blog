@@ -31,23 +31,21 @@ Getting the source code
 
 The source code for [Spring in Practice](http://manning.com/wheeler/) is freely available from GitHub. You don't have to buy the book to download it, though obviously I hope that you'll find the material sufficiently compelling to consider [buying it](http://manning.com/wheeler/) after all. Each chapter has its own repo, and there's a repo for common dependencies as well:
 
-<ul>
-<li><a href="https://github.com/springinpractice/sip-top">Parent POM and common dependencies </a></li>
-<li><a href="https://github.com/springinpractice/sip01">Chapter 1: Introducing Spring: the dependency injection container</a></li>
-<li><a href="https://github.com/springinpractice/sip02">Chapter 2: Data persistence, ORM &amp; transactions</a></li>
-<li><a href="https://github.com/springinpractice/sip03">Chapter 3: Building web applications with Spring Web MVC</a></li>
-<li><a href="https://github.com/springinpractice/sip04">Chapter 4: Basic web forms</a></li>
-<li><a href="https://github.com/springinpractice/sip05">Chapter 5: Enhancing Spring MVC applications with Web Flow</a></li>
-<li><a href="https://github.com/springinpractice/sip06">Chapter 6: Authenticating users</a></li>
-<li><a href="https://github.com/springinpractice/sip07">Chapter 7: Authorizing user requests</a></li>
-<li><a href="https://github.com/springinpractice/sip08">Chapter 8: Communicating with users and customers</a></li>
-<li><a href="https://github.com/springinpractice/sip09">Chapter 9: Creating a rich text comment engine</a></li>
-<li><a href="https://github.com/springinpractice/sip10">Chapter 10: Integration testing</a></li>
-<li><a href="https://github.com/springinpractice/sip11">Chapter 11: Building a configuration management database</a></li>
-<li><a href="https://github.com/springinpractice/sip12">Chapter 12: Building an article delivery engine</a></li>
-<li><a href="https://github.com/springinpractice/sip13">Chapter 13: Enterprise integration</a></li>
-<li><a href="https://github.com/springinpractice/sip14">Chapter 14: Creating a Spring-based "site-up" framework</a></li>
-</ul>
+* [Parent POM and common dependencies](https://github.com/springinpractice/sip-top)
+* [Chapter 1: Introducing Spring: the dependency injection container](https://github.com/springinpractice/sip01)
+* [Chapter 2: Data persistence, ORM &amp; transactions](https://github.com/springinpractice/sip02)
+* [Chapter 3: Building web applications with Spring Web MVC](https://github.com/springinpractice/sip03)
+* [Chapter 4: Basic web forms](https://github.com/springinpractice/sip04)
+* [Chapter 5: Enhancing Spring MVC applications with Web Flow](https://github.com/springinpractice/sip05)
+* [Chapter 6: Authenticating users](https://github.com/springinpractice/sip06)
+* [Chapter 7: Authorizing user requests](https://github.com/springinpractice/sip07)
+* [Chapter 8: Communicating with users and customers](https://github.com/springinpractice/sip08)
+* [Chapter 9: Creating a rich text comment engine](https://github.com/springinpractice/sip09)
+* [Chapter 10: Integration testing](https://github.com/springinpractice/sip10)
+* [Chapter 11: Building a configuration management database](https://github.com/springinpractice/sip11)
+* [Chapter 12: Building an article delivery engine](https://github.com/springinpractice/sip12)
+* [Chapter 13: Enterprise integration](https://github.com/springinpractice/sip13)
+* [Chapter 14: Creating a Spring-based "site-up" framework](https://github.com/springinpractice/sip14)
 
 Each chapter is organized as an incremental set of recipes around some common theme. Each recipe has its own branch in the chapter's repo. Recipe 9.1, for instance, is branch 01 in the chaper 9 repo. (The links above point at master branches, and as such they reflect the last recipe in each chapter.)
 
@@ -71,9 +69,9 @@ Skip this step if you've already done this for some other recipe, as it's a one-
 
 Create a directory somewhere on your filesystem to store your app configuration files for this book. For instance, I created
 
-`/Users/williewheeler/projects/sip/conf`
+    /Users/williewheeler/projects/sip/conf
 
-Go into your Maven `[user_directory]/.m2/settings.xml` configuration file (create it if it doesn't already exist&mdash;see the <a href="http://maven.apache.org/settings.html" target="_blank">Maven documentation</a>) and create a `sip.conf.dir` property pointing to whichever directory you want to use as the top-level configuration directory for the apps in this book. Here's a simple example of an `settings.xml` file:
+Go into your Maven `[user_directory]/.m2/settings.xml` configuration file (create it if it doesn't already exist&mdash;see the [Maven documentation](http://maven.apache.org/settings.html)) and create a `sip.conf.dir` property pointing to whichever directory you want to use as the top-level configuration directory for the apps in this book. Here's a simple example of an `settings.xml` file:
 
     <?xml version="1.0" encoding="utf-8"?>
     <settings>
@@ -108,7 +106,7 @@ Each chapter uses some set of resources (e.g., database, JavaMail, etc.) to prov
 
 For the databases, the scripts you need are MySQL 5.1 scripts inside the recipe's `/src/main/sql` directory. (These are usually called something like `schema.sql` and `data.sql`, though the naming isn't 100% consistent across all chapters.) If you need something other than MySQL 5.1, you'll probably have to make minor modifications to the scripts. In most cases we're not doing anything fancy in the database scripts at all.
 
-For SMTP, I recommend using Gmail if you don't already have something available. See my post on <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">Configuring Jetty to use Gmail as an SMTP provider</a> for more information.
+For SMTP, I recommend using Gmail if you don't already have something available. See my post on [Configuring Jetty to use Gmail as an SMTP provider](http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/) for more information.
 
 As noted above, this is a once-per-chapter affair, though sometimes the resources don't appear until later recipes in the chapter.
 
@@ -122,11 +120,11 @@ Most chapters also include a `/classes/spring/environment.properties` configurat
 
 You can run the app using the Maven Jetty plugin as follows:
 
-`mvn -e clean jetty:run`
+    mvn -e clean jetty:run
 
 When the app starts up, in most cases you will direct your browser to
 
-`http://localhost:8080/sip/`
+    http://localhost:8080/sip/
 
 to see the app. There are some exceptions, but the book calls them out where they exist.
 
@@ -135,5 +133,91 @@ to see the app. There are some exceptions, but the book calls them out where the
 
 Errata
 ======
+
+Despite our best efforts, the book contains errors. We're collecting those up here with the hope that doing so will help clear up any confusion that such errors engender. Please report errors to [the book's forum at the Manning site](http://www.manning-sandbox.com/forum.jspa?forumID=503).
+
+General
+-------
+
+Nothing yet.
+
+Chapter 1
+---------
+
+Nothing yet.
+
+Chapter 2
+---------
+
+In listing 2.14, the `entityManagerFactory` definition should have a JPA vendor adapter:
+
+    <bean id="entityManagerFactory" ...>
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+        </property>
+        ...
+    </bean>
+
+Nothing yet.
+
+Chapter 3
+---------
+
+Section 3.5.6 incorrectly says that we will discuss `MultipartResolver` in chapter 11 (purportedly about product catalogs, but in fact about CMDBs), and also says that we'll discuss `LocaleResolver` and `ThemeResolver` in chapter 7 (claimed to be about user interfaces; actually about ACLs).
+
+Chapter 4
+---------
+
+Nothing yet.
+
+Chapter 5
+---------
+
+Nothing yet.
+
+Chapter 6
+---------
+
+Nothing yet.
+
+Chapter 7
+---------
+
+Nothing yet.
+
+Chapter 8
+---------
+
+Nothing yet.
+
+Chapter 9
+---------
+
+Nothing yet.
+
+Chapter 10
+----------
+
+Nothing yet.
+
+Chapter 11
+----------
+
+Nothing yet.
+
+Chapter 12
+----------
+
+The summary introduces Chapter 13 as being about product catalogs, but Chapter 13 is really about enterprise integration.
+
+Chapter 13
+----------
+
+`/sip13/portal/sample_conf/classes/spring/portal.properties` is missing from the code distribution. You can get it at [the GitHub site](https://github.com/springinpractice/sip13/tree/02/portal/sample_conf/classes/spring).
+
+Chapter 14
+----------
+
+Nothing yet.
 
 </section>

@@ -128,7 +128,7 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 <p>The source code for <a href="http://manning.com/wheeler/">Spring in Practice</a> is freely available from GitHub. You don&rsquo;t have to buy the book to download it, though obviously I hope that you&rsquo;ll find the material sufficiently compelling to consider <a href="http://manning.com/wheeler/">buying it</a> after all. Each chapter has its own repo, and there&rsquo;s a repo for common dependencies as well:</p>
 
 <ul>
-<li><a href="https://github.com/springinpractice/sip-top">Parent POM and common dependencies </a></li>
+<li><a href="https://github.com/springinpractice/sip-top">Parent POM and common dependencies</a></li>
 <li><a href="https://github.com/springinpractice/sip01">Chapter 1: Introducing Spring: the dependency injection container</a></li>
 <li><a href="https://github.com/springinpractice/sip02">Chapter 2: Data persistence, ORM &amp; transactions</a></li>
 <li><a href="https://github.com/springinpractice/sip03">Chapter 3: Building web applications with Spring Web MVC</a></li>
@@ -142,7 +142,7 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 <li><a href="https://github.com/springinpractice/sip11">Chapter 11: Building a configuration management database</a></li>
 <li><a href="https://github.com/springinpractice/sip12">Chapter 12: Building an article delivery engine</a></li>
 <li><a href="https://github.com/springinpractice/sip13">Chapter 13: Enterprise integration</a></li>
-<li><a href="https://github.com/springinpractice/sip14">Chapter 14: Creating a Spring-based &#8220;site-up&#8221; framework</a></li>
+<li><a href="https://github.com/springinpractice/sip14">Chapter 14: Creating a Spring-based &ldquo;site-up&rdquo; framework</a></li>
 </ul>
 
 
@@ -166,9 +166,10 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 
 <p>Create a directory somewhere on your filesystem to store your app configuration files for this book. For instance, I created</p>
 
-<p><code>/Users/williewheeler/projects/sip/conf</code></p>
+<pre><code>/Users/williewheeler/projects/sip/conf
+</code></pre>
 
-<p>Go into your Maven <code>[user_directory]/.m2/settings.xml</code> configuration file (create it if it doesn&rsquo;t already exist&mdash;see the <a href="http://maven.apache.org/settings.html" target="_blank">Maven documentation</a>) and create a <code>sip.conf.dir</code> property pointing to whichever directory you want to use as the top-level configuration directory for the apps in this book. Here&rsquo;s a simple example of an <code>settings.xml</code> file:</p>
+<p>Go into your Maven <code>[user_directory]/.m2/settings.xml</code> configuration file (create it if it doesn&rsquo;t already exist&mdash;see the <a href="http://maven.apache.org/settings.html">Maven documentation</a>) and create a <code>sip.conf.dir</code> property pointing to whichever directory you want to use as the top-level configuration directory for the apps in this book. Here&rsquo;s a simple example of an <code>settings.xml</code> file:</p>
 
 <pre><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;settings&gt;
@@ -219,11 +220,13 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 
 <p>You can run the app using the Maven Jetty plugin as follows:</p>
 
-<p><code>mvn -e clean jetty:run</code></p>
+<pre><code>mvn -e clean jetty:run
+</code></pre>
 
 <p>When the app starts up, in most cases you will direct your browser to</p>
 
-<p><code>http://localhost:8080/sip/</code></p>
+<pre><code>http://localhost:8080/sip/
+</code></pre>
 
 <p>to see the app. There are some exceptions, but the book calls them out where they exist.</p>
 
@@ -231,6 +234,78 @@ Errata This is Willie Wheeler&rsquo;s blog for the Manning title, &hellip;">
 <section id="errata"></p>
 
 <h1>Errata</h1>
+
+<p>Despite our best efforts, the book contains errors. We&rsquo;re collecting those up here with the hope that doing so will help clear up any confusion that such errors engender. Please report errors to <a href="http://www.manning-sandbox.com/forum.jspa?forumID=503">the book&rsquo;s forum at the Manning site</a>.</p>
+
+<h2>General</h2>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 1</h2>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 2</h2>
+
+<p>In listing 2.14, the <code>entityManagerFactory</code> definition should have a JPA vendor adapter:</p>
+
+<pre><code>&lt;bean id="entityManagerFactory" ...&gt;
+    &lt;property name="jpaVendorAdapter"&gt;
+        &lt;bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" /&gt;
+    &lt;/property&gt;
+    ...
+&lt;/bean&gt;
+</code></pre>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 3</h2>
+
+<p>Section 3.5.6 incorrectly says that we will discuss <code>MultipartResolver</code> in chapter 11 (purportedly about product catalogs, but in fact about CMDBs), and also says that we&rsquo;ll discuss <code>LocaleResolver</code> and <code>ThemeResolver</code> in chapter 7 (claimed to be about user interfaces; actually about ACLs).</p>
+
+<h2>Chapter 4</h2>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 5</h2>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 6</h2>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 7</h2>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 8</h2>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 9</h2>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 10</h2>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 11</h2>
+
+<p>Nothing yet.</p>
+
+<h2>Chapter 12</h2>
+
+<p>The summary introduces Chapter 13 as being about product catalogs, but Chapter 13 is really about enterprise integration.</p>
+
+<h2>Chapter 13</h2>
+
+<p><code>/sip13/portal/sample_conf/classes/spring/portal.properties</code> is missing from the code distribution. You can get it at <a href="https://github.com/springinpractice/sip13/tree/02/portal/sample_conf/classes/spring">the GitHub site</a>.</p>
+
+<h2>Chapter 14</h2>
+
+<p>Nothing yet.</p>
 
 <p></section></p>
 
