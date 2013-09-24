@@ -22,6 +22,9 @@ This is Willie Wheeler's blog for the Manning title, [Spring in Practice](http:/
 If you need *support* for something in the book, please post your question to the [book's forum at Manning](http://www.manning-sandbox.com/forum.jspa?forumID=503).
 
 </section>
+
+--------------------------------------------------------------------------------
+
 <section id="code-and-setup">
 
 Code &amp; Setup
@@ -118,6 +121,9 @@ When the app starts up, in most cases you will direct your browser to
 to see the app. There are some exceptions, but the book calls them out where they exist.
 
 </section>
+
+--------------------------------------------------------------------------------
+
 <section id="errata">
 
 Errata
