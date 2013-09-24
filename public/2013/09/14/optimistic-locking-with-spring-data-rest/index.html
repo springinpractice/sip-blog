@@ -152,7 +152,7 @@ public abstract class AbstractVersionedEntity implements VersionedEntity {
 }
 </code></pre>
 
-<p>Notice the <code>@EntityListener</code> annotation. This tells JPA which class will listen for JPA lifecycle events. Here&rsquo;s the <code>OptimisticLockListener</code>.</p>
+<p>Notice the <code>@EntityListeners</code> annotation. This tells JPA which class will listen for JPA lifecycle events. Here&rsquo;s the <code>OptimisticLockListener</code>.</p>
 
 <pre><code>package myapp.repo.listener;
 

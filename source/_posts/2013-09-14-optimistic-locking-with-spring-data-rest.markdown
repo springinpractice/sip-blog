@@ -48,7 +48,7 @@ Next we have an abstract base class for versioned entities. I could have done a 
         public void setVersion(Long version) { this.version = version; }
     }
 
-Notice the `@EntityListener` annotation. This tells JPA which class will listen for JPA lifecycle events. Here's the `OptimisticLockListener`.
+Notice the `@EntityListeners` annotation. This tells JPA which class will listen for JPA lifecycle events. Here's the `OptimisticLockListener`.
 
     package myapp.repo.listener;
     
