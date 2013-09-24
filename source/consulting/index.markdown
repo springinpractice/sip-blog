@@ -31,22 +31,15 @@ For more information on my background and experience, see [my LinkedIn profile](
 Selected publications
 ---------------------
 
-Here are some Spring-related publications I've done outside this blog:
-
 * <a href="http://manning.com/wheeler/">Spring in Practice</a>
 * <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization">Expression-Based Authorization with Spring Security 3</a>
 * <a href="http://java.dzone.com/articles/getting-started-spring-batch">Getting Started with Spring Batch 2.0</a>
 * <a href="http://java.dzone.com/articles/spring-integration-hands">Spring Integration: A Hands-On Tutorial, Part 1</a>
 * <a href="http://java.dzone.com/articles/spring-integration-hands-0">Spring Integration: A Hands-On Tutorial, Part 2</a>
-* <a href="http://java.dzone.com/articles/domain-modeling-spring-data">Domain modeling with Spring Data Neo4j</a>
-* <a href="http://java.dzone.com/articles/why-i%E2%80%99m-pretty-excited-about">Why I'm pretty excited about using Neo4j for a CMDB backend</a>
-
-I've done a couple of interviews as well:
-
 * <a href="http://java.dzone.com/articles/wheeler-spring-interview">When to Choose Spring with Willie Wheeler</a>
 * <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">Q&amp;A with Willie Wheeler: Spring Security 3</a>
 
-<a href="http://www.manning.com/wheeler/"><img alt="" src="http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png" title="Spring in Practice" width="212" height="267" /></a>
 <!--
+<a href="http://www.manning.com/wheeler/"><img alt="" src="http://springinpractice.s3.amazonaws.com/blog/images/sip-cover.png" title="Spring in Practice" width="212" height="267" /></a>
 <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization"><img src="http://springinpractice.com/wp-content/uploads/2011/12/ss3_refcard.png" title="Spring Security 3 Refcard" width="206" height="267" /></a>
 -->
