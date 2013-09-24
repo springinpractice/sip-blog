@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Hi all, Willie here. Last time I told you that I&rsquo;m building the Zkybase CMDB using Neo4j and Spring Data Neo4j, and I was excited to get a lot &hellip;">
+  <meta name="description" content="Spring Data Neo4j has been around for about a year now, but the so-called &ldquo;simple mapping&rdquo; strategy (the one that doesn&rsquo;t use &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,195 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2011/12/28/initializing-lazy-loaded-collections-with-spring-data-neo4j/">Initializing Lazy-loaded Collections With Spring Data Neo4j</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-12-28T04:22:03-08:00" pubdate data-updated="true">Dec 28<span>th</span>, 2011</time>
+        
+         | <a href="/2011/12/28/initializing-lazy-loaded-collections-with-spring-data-neo4j/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Spring Data Neo4j has been around for about a year now, but the so-called &ldquo;simple mapping&rdquo; strategy (the one that doesn&rsquo;t use AspectJ) is new. So it doesn&rsquo;t have some of the bells and whistles that you might expect to see if you&rsquo;re coming from, say, Hibernate. In particular, it doesn&rsquo;t (as of Spring Data Neo4j 2.0.0.RELEASE) use proxies for collections.</p>
+
+<p>The <a href="http://stackoverflow.com/questions/8218864/fetch-annotation-in-sdg-2-0-fetching-strategy-questions">question of how to initialize lazily loaded collections</a> came up on StackOverflow. Michael Hunger (Spring Data Neo4j lead) explained that you can use the Neo4jTemplate&rsquo;s fetch() method to perform the initialization. Here&rsquo;s some code showing how to do it:</p>
+
+<pre>package org.skydingo.skybase.service.impl;
+
+import javax.inject.Inject;
+import org.skydingo.skybase.model.Person;
+import org.skydingo.skybase.repository.PersonRepository;
+import org.skydingo.skybase.service.PersonService;
+import org.springframework.data.neo4j.support.Neo4jTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+public class PersonServiceImpl implements PersonService {
+    @Inject private Neo4jTemplate template;
+    @Inject private PersonRepository personRepo;
+
+    @Override
+    public Person findPersonDetails(Long id) {
+        Person person = personRepo.findOne(id);
+        template.fetch(person.getDirectReports());
+        return person;
+    }
+
+    ... other methods ...
+}</pre>
+
+
+<p>Have fun.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2011/12/26/devops-how-not-to-collect-configuration-management-data/">Devops: How NOT to Collect Configuration Management Data</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-12-26T14:31:55-08:00" pubdate data-updated="true">Dec 26<span>th</span>, 2011</time>
+        
+         | <a href="/2011/12/26/devops-how-not-to-collect-configuration-management-data/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Hi all, Willie here. This time we&rsquo;re going to step away from the keyboard and get architectural. But no ivory towers here. In my next two blog posts, I&rsquo;m going to give you something that will get you out of lots of pointless meetings.</p>
+
+<p>Got your attention yet? Good!</p>
+
+<p>If you&rsquo;re in devops, one of the things that you have to figure out is how to collect up all the information that will allow you to manage your configuration and also keep your apps up and running. This isn&rsquo;t too hard when you have two apps sitting on a single server. It&rsquo;s much harder when you have 400 apps deployed to thousands of servers across multiple environments and data centers.</p>
+
+<p>So how do you do that? Let&rsquo;s start off by looking at some things that just don&rsquo;t work. In my next post I&rsquo;ll share with you an approach that <em>does</em> work.</p>
+
+<h3>Some quick background</h3>
+
+
+<p>Probably owing to some psychological glitch, I&rsquo;ve always been an information curator. Especially when I was in management, it was always important to me to understand exactly where my apps were deployed, which servers they were on, which services and databases they depended on, which servers <em>those</em> services and databases lived on, who are the SMEs for a given app, and so on.</p>
+
+<p>If you work in a small environment, you&rsquo;re probably thinking, &ldquo;what&rsquo;s the big deal?&rdquo;</p>
+
+<p>Well, I don&rsquo;t work in a small environment, but the first time I undertook this task, I probably would have said something like, &ldquo;no sweat.&rdquo; (That&rsquo;s the developer in me.) Anyway, for whatever reason, I decided that it was high time that somebody around the department could answer seemingly basic questions about our systems.</p>
+
+<h3>Attempt #1: Wiki Wheeler</h3>
+
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-26-devops-how-not-to-collect-configuration-management-data/bullwhip1.jpg" alt="Wiki Wheeler" /></p>
+
+<p>The first time I made the attempt (several years ago), I was a director over a dozen or so app teams. So I created a wiki template with all the information that I wanted, and I chased after my teams to fill it out. My zeal was such that, unbeknownst to me, I acquired the nickname &ldquo;Wiki Wheeler&rdquo;. (One of my managers shared this heartwarming bit of information with me a couple years later.) I guess other managers liked the approach, though, because they chased after their teams too.</p>
+
+<p>This approach started out decently well, since the teams involved could manage their own information, and since I was, well, Wiki Wheeler. But it didn&rsquo;t last. Through different system redesigns and department reorgs, wiki spaces came and went, some spaces atrophied from neglect, and there was redundant but contradictory information everywhere. The QA team had its own list, the release guys had their list, the app teams had their list. The UX guys might have even gotten in on the act. Anyway, after a year or so it was a big mess and to this day our wiki remains a big mess.</p>
+
+<h3>Attempt #2: My huge Visio</h3>
+
+
+<p><strong></strong>The second time, my approach was to collect the information from all the app development teams. We had hundreds of developers, so to make things efficient, I sent out a department-wide e-mail telling everybody that I was putting together a huge Visio document with all of our systems, and I&rsquo;d appreciate it if they could reply back with the requested information. And while I had to send out more nag e-mails than I would have liked, the end result was in fact a huge Visio diagram that had hundreds of boxes and lines going everywhere. I was very proud of this thing, and I printed out five or six copies on the department plotter and hung them on the walls.</p>
+
+<p>How long do you think it was before it was out of date?</p>
+
+<p>I have no idea. I seriously doubt that it was ever correct in the first place. Nobody (myself included) ever used the diagram to do actual work, and its chief utility was in making our workplace look somewhat more hardcore since there were huge color engineering plots on the walls.</p>
+
+<p>There was one additional effect of this diagram, though I hesitate to call it utility. I acquired the wholly undeserved reputation for knowing what all these apps were and how they related to one another. This went on for years through no fault of my own. I mention it because it&rsquo;s relevant for the next attempt.</p>
+
+<h3>Attempt #3: Disaster recovery</h3>
+
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-26-devops-how-not-to-collect-configuration-management-data/asteroid.jpg" alt="When asteroids strike..." /></p>
+
+<p>This one wasn&rsquo;t my attempt, but it&rsquo;s still worth describing since I have to imagine that we aren&rsquo;t the only ones who ever tried it.</p>
+
+<p>As a rapidly growing company, disaster recovery became an increasingly big deal for us several years back, and there was a mandate from up high to put a plan in place. This involved collecting up all the information that would allow us to keep the business running if our primary data center ever got cratered. The person in charge of the effort spent about two years meeting with app teams or else &ldquo;experts&rdquo; (me, along with others who, like me, had only the highest-level understanding of how things were connected up) and documenting it on a Sharepoint site where nobody could see it.</p>
+
+<p>This didn&rsquo;t work at all. Most people were too busy to meet with her, so the quality of the information was poor. Apps were misnamed, app suites were mistaken for apps, and to make a long story short, the result was not correct or maintainable.</p>
+
+<h3>Attempt #4: Our external consultants&#8217; even bigger Visio</h3>
+
+
+<p>Following a major reorg, we brought in some external consultants and they came up with their own Visio. By this time I had already figured out that interviewing teams and putting together huge Visios is a losing approach, so I was surprised that a bunch of highly-paid consultants would use it. Well, they did, and their diagram was, well, &ldquo;impressive&rdquo;. It was also (to put it gently) neither as helpful nor as maintainable as we would have liked.</p>
+
+<h3>Attempt #5: HP uCMDB autodiscovery</h3>
+
+
+<p>We have the HP uCMDB tool, and so our IT Services group ran some automated discovery agents to populate it with data. It loaded the uCMDB up with tons of fine-grained detail that nobody cared about, and we couldn&rsquo;t see the stuff that we actually did care about (like apps, web services, databases, etc.).</p>
+
+<h3>Attempt #6: Service catalog</h3>
+
+
+<p>Our IT Services group was pretty big on ITIL, so they went about putting together a service catalog. The person doing it collected service and app information into an Excel spreadsheet and posted it to a Sharepoint site. But this didn&rsquo;t really get into the details of configuration management. It was mostly around figuring out which business services we offered and which systems support which services.</p>
+
+<p>They ended up printing out a glossy, full-color service catalog for the business, but nobody was really asking for it, so it was more of a curiosity than anything else.</p>
+
+<p>There were other attempts too (Paul led a couple that I haven&rsquo;t even mentioned), but by now you get the picture.</p>
+
+<h3>So why did these attempts fail?</h3>
+
+
+<p>To understand why these attempts failed, it helps to look at what they had in common:</p>
+
+<ul>
+    <li>First, they generally involved trying to collect up information from SMEs and then putting it in some kind of document. This could be wiki pages, Visio diagrams, Word docs on Sharepoint or an Excel spreadsheet.</li>
+    <li>Once the information went there, nobody used it. So the information, if it was ever correct and/or complete in the first place, was before long outdated, and there wasn&#8217;t any mechanism in place to bring it up to date.</li>
+</ul>
+
+
+<p>In general, people saw the problem as a data <em>collection</em> problem rather than a data <em>management</em> problem. There needs to be a systematic, ongoing mechanism to discover and fix errors. None of the approaches took the management problem seriously at all&mdash;they all simply assumed that the organization would care about the data enough to keep it up to date.</p>
+
+<p>In the next installment, I&rsquo;ll tell you about the approach we eventually figured out. And as promised, that&rsquo;s also where I&rsquo;ll explain how to get rid of some of your meetings.</p>
+
+<p><span class="icon stickyNote"><em>Interested in configuration management? I&rsquo;m working on an open source CMDB called <a href="http://zkybase.org/">Zkybase</a>.</em></span></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -948,169 +1137,6 @@ public Newsletter getFacultyNews() { ... }
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/07/27/top-ten-operational-excellence-design-principles/">Top Ten [and Counting] Operational Excellence Design Principles</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-07-27T05:05:26-07:00" pubdate data-updated="true">Jul 27<span>th</span>, 2010</time>
-        
-         | <a href="/2010/07/27/top-ten-operational-excellence-design-principles/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="http://www.flickr.com/photos/kim_scarborough/147973192/"><img src="http://springinpractice.s3.amazonaws.com/blog/images/noc.jpg" alt="Operational excellence" align="right" /></a></p>
-
-<p>Here are some key operational excellence design principles. These are intended for system architects (both on the software and infrastructure side) and operational staff.</p>
-
-<p>This started out as a top ten list, but it&rsquo;s been growing.</p>
-
-<p><strong>1. Organizational focus.</strong> OK, this one isn&rsquo;t a design principle, but it&rsquo;s too important to neglect. Having an organizational focus on operational excellence really matters. Everything from isolating core development from production support (that is, create a group within development whose daily responsibility is to insulate core development from production), creating a top-ten hit list and just working that weekly, setting explicit availability and performance goals and then tracking to them&mdash;speaking from personal experience, those are things that can create dramatic and almost immediate results.</p>
-
-<p><strong>2. Aggressively automate processes and controls.</strong> Automate ticket workflow, local builds, integration builds, tests, provisioning, OS installs, patching, deployments, rollbacks, monitoring, alerting, diagnostics, escalation, backups, log rotation, reporting, auditing&mdash;everything you can! Automation increases speed and limits variance, which is an operations-killer.</p>
-
-<p>On the control side, in cases where it&rsquo;s possible to use a technical means to enforce policy (automation, tightly constrained configuration schemas, access controls, etc.), use it. The ideal control makes the undesirable action or state technically impossible.</p>
-
-<p><strong>3. Design for supportability.</strong> The NOC should have the tools and information necessary to resolve at least 80% of production issues without directly involving the development team. Put the right monitoring, diagnostic and management (e.g., SNMP, JMX) capability in place.</p>
-
-<p><strong>4. High availability is all about redundancy.</strong> In general high availability involves redundancy at all levels: power sources, network interfaces, switches, RAIDs, RAC nodes, Internet pipes and even data centers if you want to withstand site failures. Redundancy means that you&rsquo;ve deployed independent, readily-available (perhaps active) capacity beyond what&rsquo;s normally needed to hit performance SLAs. Without this extra capacity, component failures often create complete system unavailability through a chain reaction mechanism that looks like this: (1) one component fails; (2) other components take on the excess demand, creating performance issues; (3) other components fail under load; and (4) system is unavailable.</p>
-
-<p>Don’t confuse high availability with load balancing. If all <em>n</em> instances in a load-balanced pool are required to meet a given performance SLA, then there is no redundancy, because there&rsquo;s no spare capacity to take up the slack in the event of a node failure. Indeed exposure is substantially <em>increased</em>, because all it takes is any one node to fail, and your pool is at best missing performance SLAs, and at worst rendered completely unavailable as described above.</p>
-
-<p><strong>5. Control failure modes.</strong> Components will fail. Failure modes should be designed, not emergent or accidental. Design failures to be transparent and limited in impact, using techniques such as <a href="http://springinpractice.com/2010/07/06/annotation-based-circuit-breakers-with-spring/">circuit breakers</a>. Test the design to ensure that it behaves as expected. Create automation and knowledge base articles to target specific failure modes for fast remediation.</p>
-
-<p><strong>6. Prefer horizontal approaches to scalability.</strong> You will sometimes need to add capacity, either to accommodate business growth or else to handle production issues. Prefer horizontal scalability to vertical scalability, since vertical scalability is more tightly coupled to technology. The database is often the constraint here, so consider approaches that support horizontal scalability, such as data sharding, separating reads from writes and farming out reads, and non-relational data stores.</p>
-
-<p><strong>7. Virtualize aggressively.</strong> Virtualization makes it easier to enforce standards, control drift, add capacity, increase utilization and in general create configuration options.</p>
-
-<p><strong>8. Capacity management = capacity planning + JIT capacity.</strong> Capacity planning is an art, not a science, and it&rsquo;s not always possible to anticipate exactly how much capacity you will need. There&rsquo;s a balance to strike between ensuring sufficient capacity and using resources efficiently, and sometimes the drive to be efficient will result in underestimates. In such situations, a JIT capability is key.</p>
-
-<p>For rollouts (e.g., new apps, new features, betas, promotions, or anything that might reasonably impact demand in a material way), it&rsquo;s better to overallocate and then scale back than it is to underallocate and scale up. Both approaches use resources efficiently, but only the former will allow you to meet aggressive SLAs. Virtualization helps tremendously here, partly because it pools excess physical capacity for shared use (thus limiting cost), and partly because it makes reaping excess capacity during scale-backs much easier.</p>
-
-<p><strong>9. Account for operational excellence overhead costs.</strong> Treat overheads such as monitoring and virtualization as costs that the design needs to account for, not as an excuse to neglect key operational requirements. Deal with instrumentation overhead, for example, by being selective about what you instrument. If your instrumentation adds 1 ms to a 200 ms call, that may not be a big deal. If it adds 1 ms to a 5 ms call inside a tight loop, that may be a bigger problem.</p>
-
-<p><strong>10. Focus monitoring efforts on ensuring that the business is running.</strong> It doesn’t matter whether a particular CPU is running at 90% utilization if you can’t connect that to a business or customer impact. Start by identifying the metrics that the business or customer cares about, and monitor those to ensure that the numbers are within expected bounds. Work backwards to correlated technical metrics.</p>
-
-<h3>Bonus principles</h3>
-
-
-<p><strong>11. Defense in depth applies to operational excellence too.</strong> A well-known security principle, defense in depth applies to operational excellence too. Automation controls configuration drift, but so does keeping people off the servers, being able to refresh the environment on demand, and using a configuration schema that makes certain types of drift impossible. Layer your defenses.</p>
-
-<p><strong>12. Treat support processes and staff as part of the system.</strong> All the monitoring, diagnostics and knowledge base articles in the world won’t help if the support staff doesn’t know how to use them. Test the human component of the system (training, communication, etc.) on a regular basis to ensure that when problems arise, the human response will be the one that was designed.</p>
-
-<p>The next three principles are courtesy of Satish Menon. Thanks Satish.</p>
-
-<p><strong>13. Design for graceful degradation:</strong> One example, if load increases, serve out of stale cache (where it is appropriate) rather than go to the origin server (database or whatever). We added a mechanism to Squid at Yahoo to give hints on what can be served stale.</p>
-
-<p><strong>14. Design for independent scalability (this conflicts your horizontal vs. vertical scalability).</strong> I am saying you need both. If there is a heavy hit on one of the services (e.g. Gradebook) over other, isolating the pathway to that in the design would allow you to scale that one service without scaling all of the rest of the infrastructure.</p>
-
-<p><strong>15. Put data in front of engineers.</strong> Define and measure SLAs for each of the major server interactions and put dashboards in place so people can see how their subsystems are doing.</p>
-
-<p>Here&rsquo;s another one that I find myself repeating often. Don&rsquo;t know how I missed it the first time around.</p>
-
-<p><strong>16. Minimize the number of moving parts.</strong> More moving parts mean that more things can break. Better for example to templatize your middleware into a VM template and instantiate than to instantiate a bunch of bare-bones VMs and then follow up with a a lot of middleware installations. You can even get aggressive and take the same approach to app deployments (i.e., templatize a build that includes the app to be released). All things being equal, designs should try to minimize the number of things that can go wrong.</p>
-
-<h3>References</h3>
-
-
-
-
-<ul>
-    <li><a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a>, by Michael Nygard (Pragmatic)</li>
-    <li><a href="http://www.amazon.com/Scalable-Internet-Architectures-Theo-Schlossnagle/dp/067232699X">Scalable Internet Architectures</a>, by Theo Schlossnagle</li>
-    <li><a href="http://jprall.vox.com/library/post/85-operations-rules-to-live-by.html">(85) Operations Rules to Live By</a>, by Jon Prall</li>
-</ul>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/07/20/thoughts-on-cloud-portability/">Thoughts on Cloud Portability</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-07-20T05:40:37-07:00" pubdate data-updated="true">Jul 20<span>th</span>, 2010</time>
-        
-         | <a href="/2010/07/20/thoughts-on-cloud-portability/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>A colleague sent me a <a href="http://bits.blogs.nytimes.com/2010/07/20/the-recipe-for-clouds-goes-open-source/?ref=technology">NY Times story on cloud portability</a> today.</p>
-
-<p>There&rsquo;s lots of interest on both the consumer and provider side in cloud portability. Consumers want to avoid vendor lock-in and providers often want to lock customers in. Among the lock-in approaches are the following:</p>
-
-<ul class="square">
-<li><b>Technology-based lock-in:</b> Offer compelling technology that other providers don&#8217;t offer, or technology that&#8217;s hard to migrate away from.</li>
-<li><b>Data-based lock-in:</b> Make it hard for customers to move data from one provider to another.</li>
-</ul>
-
-
-<p>Those are tried and true approaches, but historically they have been overcome. For example, providers copy each others&#8217; technology and create migration tools. Industry defines standards to commoditize individual offerings.</p>
-
-<p>Where cloud portability gets interesting is on the data side. There are two types:</p>
-
-<ul class="square">
-<li>Data the customer owns</li>
-<li>Data the provider owns, and offers up as a feature of the platform</li>
-</ul>
-
-
-<p>Provider-owned data is inherently unportable. Or at least it sure seems that way to me.</p>
-
-<p>To the extent that customers depend on provider-proprietary data, there is a real lock-in danger. I think that&rsquo;s one of the major reasons that lots of companies are excited about the idea of providing cloud services. Build a platform with compelling data that nobody else has, and you have a powerful lock-in mechanism.</p>
-
-<p>Any organization contemplating moving applications to the cloud needs to consider how it wants to deal with this sort of lock-in risk.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/5/">&larr; Older</a>
@@ -1128,6 +1154,14 @@ public Newsletter getFacultyNews() { ... }
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
@@ -1137,14 +1171,6 @@ public Newsletter getFacultyNews() { ... }
     
       <li class="post">
         <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/05/13/how-to-run-javascript-from-java/">How to run JavaScript from Java</a>
       </li>
     
   </ul>

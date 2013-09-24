@@ -4,7 +4,7 @@ title: "Optimistic locking with Spring Data REST"
 date: 2013-09-14 20:43
 comments: true
 categories: [Chapter 02 - Data, Chapter 13 - Integration]
-published: false
+published: true
 ---
 I'm working on a web service for a document management system, where clients grab documents from the web service, modify them and submit the updates. Since multiple clients can all grab the same document at the same time, we needed to implement an [optimistic locking](http://c2.com/cgi/wiki?OptimisticLocking) scheme. In this scheme, each document has a version number, and when the client submits an update to the service, the service checks to see whether the submitted version number baseline is still the most recent one in the database. If so, we increment the version number and the update proceeds. Otherwise, we throw an exception indicating a conflict.
 
@@ -108,19 +108,27 @@ Finally, let's look at the `OptimisticLockChecker` itself.
     @Component
     public class OptimisticLockChecker {
         @PersistenceContext private EntityManager entityManager;
+        @Inject private JdbcTemplate jdbcTemplate;
         
         public void check(VersionedEntity entity) {
-            Long submittedVersion = entity.getVersion();
+            Long submittedVersion = entity.getVersionId();
             if (submittedVersion == null) {
                 throw new RuntimeException("Submitted entity must have a version");
             }
-    
-            Object copy = BeanUtils.instantiate(entity.getClass());
-            BeanUtils.copyProperties(entity, copy);
-            entityManager.refresh(entity);
-            Long latestVersion = entity.getVersion();
-            BeanUtils.copyProperties(copy, entity);
-
+            
+            Class<?> entityClass = entity.getClass();
+            
+            Annotation tableAnn = AnnotationUtils.findAnnotation(entityClass, Table.class);
+            String tableName = (String) AnnotationUtils.getValue(tableAnn, "name");
+            
+            Field idField = ReflectionUtils.findField(entityClass, "id");
+            Annotation idColAnn = idField.getAnnotation(Column.class);
+            String idColName = (String) AnnotationUtils.getValue(idColAnn, "name");
+            
+            String sql = "select version_id from " + tableName
+                + " where " + idColName + "=" + entity.getId();
+            Long latestVersion = jdbcTemplate.queryForObject(sql, Long.class);
+            
             if (submittedVersion != latestVersion) {
                 throw new OptimisticLockException(
                         "Stale entity: submitted version " + submittedVersion
@@ -131,12 +139,8 @@ Finally, let's look at the `OptimisticLockChecker` itself.
         }
     }
 
-Despite appearances, the code is a little tricky because we're trying to compare an entity version in the persistence context with an entity version in the database, and by design JPA hides the database from the developer. While we can certainly use JDBC to grab the entity version in the database, I wanted to avoid having to map all the entities to "get-latest-version" SQL queries since we already have all the table names mapped in the entity classes. I suppose I could have read the contents of the `@Table` annotation and created dynamic queries, but I wanted to do something cleaner.
+Despite appearances, the code is a little tricky because we're trying to compare an entity version in the persistence context with an entity version in the database, and by design JPA hides the database from the developer. There are different ways to achieve this, but the most straightforward and reliable is probably to use `JdbcTemplate` to get the latest version in the database. We use Spring's `AnnotationUtils` and `ReflectionUtils` to grab the table name and ID column name from the `@Table` and `@Column` annotations. (Note that the code above is for a `@Column` annotation defined on the field itself; if you've defined `@Column` on the getter, then you can use `AnnotationUtils` to get at that.)
 
-When we get the entity, we cache a copy using Spring's `BeanUtils.copyProperties()` utility. That allows us to refresh the original entity, which puts it back in its database state, allowing us to see the latest version number in the database. After that, we put the entity back into its modified state by doing another `BeanUtils.copyProperties()`, this time from the copy to the entity.
-
-(Instead of cloning, I would have preferred to detach the entity, load the database entity into the persistence context, compare the two, and then reattach the entity to the persistence context. Unfortunately, while Hibernate supports reattachment, [JPA doesn't](http://stackoverflow.com/questions/912659/what-is-the-proper-way-to-re-attach-detached-objects-in-hibernate). JPA supports merges, but this leaves the original entity detached, which is no good since that's the reference that JPA is going to try to save after the entity listener's `@PreUpdate` handler completes its processing. See [this article](http://java.dzone.com/articles/saving_detatched_entities) for more information on these topics.)
-
-Now our entity is back to its original state, and we have both the submitted and the latest version numbers. So we compare and either throw an exception or else increment the version number.
+After that, we compare and either throw an exception or else increment the version number.
 
 Perhaps the Spring Data REST guys will provide more direct support for `@Version` (or some suitable alternative) at some future point. Until then, I hope the approach above proves useful.

@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Manning just sent us the book cover &ndash; we love it! I&rsquo;m pretty sure we will have a lot more than fifty problems solved (we&rsquo;re &hellip;">
+  <meta name="description" content="We&rsquo;re very excited to announce that we&rsquo;ve been MEAPed. :&ndash;) MEAP is the Manning Early Access Program. MEAP allows you to buy the &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,106 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/09/30/weve-been-meaped-chapters-4-5-available/">We&#8217;ve Been MEAPed - Chapters 4 & 5 Available</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-30T14:27:53-07:00" pubdate data-updated="true">Sep 30<span>th</span>, 2008</time>
+        
+         | <a href="/2008/09/30/weve-been-meaped-chapters-4-5-available/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>We&rsquo;re very excited to announce that we&rsquo;ve been MEAPed. :&ndash;)</p>
+
+<p>MEAP is the Manning Early Access Program. MEAP allows you to buy the book before it&rsquo;s actually done so you can start getting at the content as it becomes available.</p>
+
+<p>We just released the first pair of chapters: Chapter 4 (User registrations) and Chapter 5 (Authentication). Also the table of contents is online for those who are interested.</p>
+
+<p>MEAP page: <a title="Spring in Practice MEAP page" href="http://www.manning.com/wheeler/"><a href="http://www.manning.com/wheeler/">http://www.manning.com/wheeler/</a></a></p>
+
+<p>Author forum: <a title="Spring in Practice author forum" href="http://www.manning-sandbox.com/forum.jspa?forumID=503"><a href="http://www.manning-sandbox.com/forum.jspa?forumID=503">http://www.manning-sandbox.com/forum.jspa?forumID=503</a></a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/09/06/login-remember-me/">Excerpt: Login and Remember-me Discussion</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-06T08:37:16-07:00" pubdate data-updated="true">Sep 6<span>th</span>, 2008</time>
+        
+         | <a href="/2008/09/06/login-remember-me/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2008-09-06-login-remember-me/retina2.jpg" alt="Human retina" /></p>
+
+<p><em><a href="http://www.manning.com/wheeler/">Spring in Practice</a></em> centers on using Spring to implement technical solutions to common problems, but it&rsquo;s also important for developers to understand the problem they&rsquo;re trying to solve before implementing a solution. In the book we work pretty hard to provide that understanding.</p>
+
+<p>Here&rsquo;s an except from the discussion section for a recipe on implementing login forms and remember-me authentication using Spring Security. While discussion sections might treat the problem, the solution or both, this particular discussion digs a little deeper some security/usability tradeoffs to consider when implementing username/password and remember-me authentication.</p>
+
+<blockquote><p>In the background we briefly mentioned that username/password logins are only one approach to authentication. While other authentication mechanisms are commercially available—for example, there are laptops with thumbprint scanners—for most web-based applications, username/password combinations are the most practical approach. It&rsquo;s simply unrealistic to assume that general web users will have card readers, key fobs, biometric scanners and so forth. Such assumptions may be more plausible in controlled environments.</p>
+
+<p>It&rsquo;s useful to understand some of the drawbacks of username/password authentication. The main drawback is that in general, the stronger a user&rsquo;s password is, the harder it is to remember. That in turn increases the chance that the user will either write it down somewhere or else use it for multiple websites, both of which increase the chance that the password will be compromised. Password reuse is problematic partly because a shared password is distributed across many systems (which can be dangerous if that password is not properly managed; see recipes 4.3 and 4.5), and partly because the damage is not limited in the event that the shared password is compromised.</p>
+
+<p>People have devised different approaches to dealing with parts of this problem. One approach is called single sign-on (SSO), and it works nicely in homogeneous computing environments such as corporate intranets. The idea is that the environment (rather than the application) provides for centralized authentication and then that authentication is shared with the applications in that environment. Another approach is the relatively recent OpenID standard, which differs from SSO in being decentralized. With OpenID, a user picks a participating site to be an authentication provider, and then other participating sites use that provider to authenticate the user. This is different than SSO in that with OpenID, different sites require separate logins. While neither SSO nor OpenID does much to limit the damage when a password is compromised (though a password could be reset from a single location), they do have the benefit that they prevent password fatigue without distributing the password across multiple systems.</p>
+
+<p>Remember-me authentication also highlights the tradeoff between security and usability. It&rsquo;s important to recognize that we&rsquo;re really authenticating the browser rather than the user. Because there are various scenarios in which there&rsquo;s a many-to-one relationship between users and browsers (for example, a shared public machine, the family computer, a computer in somebody&rsquo;s unlocked office), we should treat remember-me authentication as not-entirely-convincing. One good approach is to give a remember-me user access to low-risk functionality, but to force a login if the user tries to access higher-risk functionality. Amazon uses exactly this technique: remember-me users can see product recommendations, but to buy something they have to log in.</p>
+
+<p>The upshot is this: add login forms and remember-me to your app only if it makes sense to do so. In some cases it would make even more sense to use SSO, auto-provision the accounts, externalize your authentication with OpenID, and so on. Just because Spring Security makes it easy to add a login form and remember-me doesn&rsquo;t mean that you should. If you include remember-me in particular, keep in mind the design issues we just discussed.</p>
+
+<p>Now that we&rsquo;ve seen how to create a basic, unstyled login form, it&rsquo;s time to get to work on making it look better. The next recipe will show you how.</p></blockquote>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1955,482 +2055,6 @@ xsi:schemaLocation="http://www.springframework.org/schema/webflow
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Build a Shopping Cart With Spring Web Flow 2, Part 1</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-05-05T10:11:08-07:00" pubdate data-updated="true">May 5<span>th</span>, 2008</time>
-        
-         | <a href="/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><div class="intro">
-<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
-</div>
-
-
-<p>This is the first in a three-part series of posts showing how to get started with Spring Web Flow (SWF) 2.0 by building a simple shopping cart application. We&rsquo;ll do this as a series of steps:</p>
-
-<ol>
-<li>First we&#8217;ll just get Spring MVC working.</li>
-<li>We&#8217;ll use Spring Web Flow to create a minimal flow with a single state.</li>
-<li>Finally we&#8217;ll build the app out to contain multiple flows and subflows that make calls against backend logic.</li>
-</ol>
-
-
-<p>SWF 2.0 is at the time of this writing very new, and there are several differences as compared to SWF 1.0.x. We will not however spend much time discussing those differences; instead we&rsquo;ll just focus on SWF 2.0.</p>
-
-<p>To get the most out of this post, you should already be familiar with Spring in general and Spring MVC in particular.</p>
-
-<h3>An overview of Spring Web Flow</h3>
-
-
-<p>Spring Web Flow builds upon Spring MVC to support user-level, application-directed control flows.  For example, an e-commerce application may need to guide the end user through a checkout process that spans several web pages. The flow is not simply a multipage form (Spring MVC itself already supports that); rather it is a multistep <em>process</em> involving standard control flow constructions such as decisions (&ldquo;please confirm or cancel your order&rdquo;), loops (&ldquo;we recommend products x, y, z&hellip; add as many as you like to your order&rdquo;) and subflows (&ldquo;are you a new customer? please create an account&rdquo;). In general, implementing such flows is not trivial.  SWF is an elegant solution to just this sort of problem.</p>
-
-<p>To understand better, contrast application-directed interactions with the user-directed interactions that typically constitute the main part of an application&rsquo;s functionality. In user-directed interactions, the end user picks some function from a set of available functions, provides some parameters around that function, and then asks the application to carry it out.  For instance, the end user tells Photoshop to fill a selected region with <span style="background-color:#0F0">evil green</span>.  The app dutifully does just that, and control returns to the end user.</p>
-
-<p>There are many cases, however, in which we want the application to drive a complex interaction between itself and the end user.  Perhaps the most obvious example is the one I mentioned above: the e-commerce checkout process.  See Figure 1 for one possible flow (and in fact this is the flow we&rsquo;re going to implement):</p>
-
-<div style="margin:20px 0;text-align:center">
-<div><img src="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/flow.jpg" alt="Figure 1. A sample checkout flow." /></div>
-<div class="caption">Figure 1. A sample checkout flow.</div>
-</div>
-
-
-<p>In the checkout flow above, we have a starting state, an end state, and several intermediate states.  In the first state, we show the customer the contents of a shopping cart, along with some recommended products that the customer may want to buy.  The customer can add any of those products to the shopping cart, or he might decide to move forward by indicating whether he is a new or returning customer.  If he&rsquo;s a new customer, he&rsquo;ll need to create an account; otherwise he can just log in with his existing account.  In either case, he&rsquo;ll need to select a payment method, provide shipping information, and so forth.  At any step along the way he can cancel out of the checkout process.</p>
-
-<h4>Benefits of using Spring Web Flow</h4>
-
-
-<p>While you can certainly implement that flow without SWF, there are some challenges involved if you&rsquo;re doing it from scratch.  Let&rsquo;s take a look at some of those.</p>
-
-<p><strong>Understanding flow logic.</strong> For one, because the logic behind the flow itself is reasonably complex, it would be nice to be able to isolate the flow and its logic from the various pieces (like JSP pages, business logic, etc.) that make it up.  But the most straightforward implementation of flow logic would most likely involve distributing the flow logic (such as state transitions) across lots of different files.  So one challenge is that you either have to do a lot of extra work to externalize the flow logic, or else you have to live with that logic being distributed, which makes it much harder to understand.</p>
-
-<p><strong>Reusing flow logic.</strong> Another challenge is related to the fact that a flow has a logical structure that stands on its own, and in many cases you&rsquo;d like to be able to reuse that&mdash;either across multiple apps, or else in multiple places within a single app.  This is hard to accomplish without an easy way to isolate that flow.</p>
-
-<p><strong>Getting the implementation right.</strong> A third challenge is just that it&rsquo;s easy to get the technical details wrong. For instance, what happens if the end user hits the browser&rsquo;s back button in the middle of the flow?  If the previous page had a form, we don&rsquo;t usually want the browser to confuse the user with a warning about resubmitting data or whatever.  Coding up flows from scratch means that you have to handle this sort of thing explicitly.  It would be nice not to have to mess around with this kind of thing&mdash;to have it handled automatically for you.</p>
-
-<p>That&rsquo;s enough of an overview for us to get started.  Let&rsquo;s now look at setting up our sample project.</p>
-
-<h3>Spring MVC setup</h3>
-
-
-<p>Since Spring Web Flow is build on Spring MVC, let&rsquo;s start by getting Spring MVC working.  We&rsquo;ll create a simple home page for our shopping cart, and we&rsquo;ll serve this up using a plain old Spring controller (well, it will be annotated) rather than serving it using Spring Web Flow.  That&rsquo;s because the home page itself isn&rsquo;t part of any particular flow; it simply provides entry points into various flows, such as creating an account, logging in, adding an item to a shopping cart, and checking out.  Besides allowing us to make sure we have Spring MVC working before moving forward, this approach will also allow us to see how to integrate Spring MVC and Spring Web Flow.</p>
-
-<p>For your convenience, here&rsquo;s a download of the minimalistic
-(i.e. only Spring MVC, no SWF) shopping cart we&rsquo;re about to take a look at:</p>
-
-<center><span class="icon archive"><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/mycart1.zip">mycart1.zip</a></span></center>
-
-
-<p>The download above does not include its dependencies.  You will need to grab those separately.  I&rsquo;ve provided the links below.</p>
-
-<h4>Dependencies for mycart1.zip</h4>
-
-
-<p>These are all part of the Spring 2.5.4 distribution. Spring Web Flow 2.0 requires Spring 2.5.4 or higher. <a href="http://www.springframework.org/download">[download]</a></p>
-
-<ul class="square">
-<li><code>spring.jar</code> (located in <code>/spring-framework-2.5.4/dist</code>)</li>
-<li><code>spring-webmvc.jar</code> (located in <code>/spring-framework-2.5.4/dist/modules</code>)</li>
-<li><code>commons-logging.jar</code> (located in <code>/spring-framework-2.5.4/jakarta-commons</code>)</li>
-</ul>
-
-
-<p>We will be adding dependencies as we progress; for the moment we&rsquo;re just getting Spring MVC set up.</p>
-
-<h4>Create a Spring MVC controller</h4>
-
-
-<p>Here&rsquo;s a very simple Spring MVC controller.  We&rsquo;ll be updating this over the course of the article.</p>
-
-<div>
-<span class="code-listing">Code listing:</span> <code>mycart.CartController</code>
-<pre>package mycart;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-@Controller
-public class CartController {
-
-    @RequestMapping("/home.do")
-    public void doHome() {
-    }
-}</pre>
-</div>
-
-
-<p>This controller doesn&rsquo;t do much at all.  Basically we&rsquo;re using annotations to map <code>/home.do</code> requests to a JSP.</p>
-
-<h4>Create a JSP</h4>
-
-
-<p>Here&rsquo;s the home page JSP I just mentioned.  Like <code>CartController</code>, we&rsquo;ll be updating this.</p>
-
-<div>
-<span class="code-listing">Code listing:</span> <code>/WEB-INF/jsp/home.jsp</code>
-<pre>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt; 
-&lt;html&gt;
-    &lt;head&gt;
-        &lt;title&gt;Products for Geeks - GeekWarez&lt;/title&gt;
-    &lt;/head&gt;
-    &lt;body&gt;
-        &lt;h1&gt;Welcome to GeekWarez&lt;/h1&gt;
-    &lt;/body&gt;
-&lt;/html&gt;</pre>
-</div>
-
-
-
-
-<h4>Create web.xml</h4>
-
-
-<p>Here&rsquo;s our <code>web.xml</code> file:</p>
-
-<div>
-<span class="code-listing">Code listing:</span> <code>/WEB-INF/web.xml</code>
-<pre name="code" class="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;web-app xmlns="http://java.sun.com/xml/ns/javaee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-        http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-    version="2.5"&gt;
-    
-    &lt;!-- Spring MVC front controller. Automatically loads mycart-servlet.xml
-         based on servlet name. --&gt;
-    &lt;servlet&gt;
-        &lt;servlet-name&gt;mycart&lt;/servlet-name&gt;
-        &lt;servlet-class&gt;
-            org.springframework.web.servlet.DispatcherServlet
-        &lt;/servlet-class&gt;
-    &lt;/servlet&gt;
-    &lt;servlet-mapping&gt;
-        &lt;servlet-name&gt;mycart&lt;/servlet-name&gt;
-        &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
-    &lt;/servlet-mapping&gt;
-&lt;/web-app&gt;</pre>
-</div>
-
-
-<p>All we&rsquo;re doing here is creating the Spring MVC <code>DispatcherServlet</code> front controller.  Because we&rsquo;ve named it <code>mycart</code>, the default behavior for <code>DispatcherServlet</code> is to look for a Spring application context configuration file at <code>/WEB-INF/mycart-servlet.xml</code>, which we are about to see.</p>
-
-<p>Eventually this front controller will handle not only our &ldquo;normal&rdquo; non-SWF requests, but also our SWF requests.  However I&rsquo;m getting ahead of myself.</p>
-
-<h4>Create the Spring application context file</h4>
-
-
-<p>Here&rsquo;s <code>mycart-servlet.xml</code>, which <code>DispatcherServlet</code> loads as just explained:</p>
-
-<div>
-<span class="code-listing">Code listing:</span> <code>/WEB-INF/mycart-servlet.xml</code>
-<pre name="code" class="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-2.5.xsd"&gt;
-    
-    &lt;!-- This activates post-processors for annotation-based config --&gt;
-    &lt;!-- http://www.infoq.com/articles/spring-2.5-part-1 --&gt;
-    &lt;context:annotation-config/&gt;
-    
-    &lt;context:component-scan base-package="mycart"/&gt;
-    
-    &lt;!-- Enables POJO @Controllers (like CartController) --&gt;
-    &lt;bean class=
-"org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/&gt;
-    
-    &lt;!-- Enables annotated methods on POJO @Controllers (like CartController) --&gt;
-    &lt;bean class=
-"org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/&gt;
-    
-    &lt;!-- Maps a logical view name to a physical resource --&gt;
-    &lt;bean id="viewResolver" class=
-"org.springframework.web.servlet.view.InternalResourceViewResolver"&gt;
-        &lt;property name="prefix" value="/WEB-INF/jsp/"/&gt;
-        &lt;property name="suffix" value=".jsp"/&gt;
-    &lt;/bean&gt;
-&lt;/beans&gt;</pre>
-</div>
-
-
-<p>Nothing special here assuming you already know Spring MVC.</p>
-
-<h3>Milestone 1: Spring MVC is working</h3>
-
-
-<p>At this point you should be able to deploy the application.  Point your browser at</p>
-
-<center><code>http://localhost:8080/mycart1/home.do</code></center>
-
-
-<p>and you should get a very simple home page.  If so, congratulations, Spring MVC is working.</p>
-
-<p>Now it&rsquo;s time to create our first flow using Spring Web Flow.</p>
-
-<div class="outro">
-<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
-</div>
-
-
-
-
-<div class="endnote">Post migrated from my Wheeler Software site.</div>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/05/05/smtp-and-smtp-auth/">SMTP and SMTP-AUTH</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-05-05T05:31:39-07:00" pubdate data-updated="true">May 5<span>th</span>, 2008</time>
-        
-         | <a href="/2008/05/05/smtp-and-smtp-auth/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>This article explains the basics of the Simple Mail Transport Protocol (SMTP) and its extension, SMTP-AUTH. SMTP is the <i>de facto</i> standard application layer protocol for sending e-mail across the Internet, and SMTP-AUTH augments SMTP by supporting client authentication, which allows clients to use an SMTP server as an e-mail relay.</p>
-
-<p>If you haven&rsquo;t played with SMTP over telnet before, it&rsquo;s entertaining and possibly even eye-opening. You&rsquo;ll learn how spammers use SMTP and SMTP-AUTH to achieve their nefarious ends. Hopefully you won&rsquo;t use it for that but this article explains enough of SMTP that you&rsquo;ll understand how to use and abuse it.</p>
-
-<div class="alert warning"><strong>WARNING: OUR TELNET SESSION IS NOT ENCRYPTED.</strong> Even though we use base64 encoding to send the username/password pair to the server, base64 is not encryption. It prevents casual observers from seeing your password, but it can easily be reversed and hence you are basically sending your password in the clear. If you manually start a telnet session such as the one below (and do so only if you are comfortable that you understand the risks involved), I strongly suggest changing your password on the SMTP server immediately afterward.</div>
-
-
-
-
-<h3>Send yourself an e-mail from &lt;insert_sith_lord_here&gt;</h3>
-
-
-<p>Have you ever wanted to receive an e-mail from your favorite Sith Lord? Let&rsquo;s open up a telnet session that does just that. To do that you will need an SMTP server, which as mentioned above allows you to send e-mail over the Internet. You will also need to know your username and password for the SMTP server as most SMTP servers require that. You can get the SMTP server&rsquo;s host and port from your ISP, and presumably you set the username and password up with your ISP as well.</p>
-
-<pre>$ telnet smtp.example.com 25
-
-S: 220 smtp.example.com ESMTP Sendmail 8.13.8/8.13.6; Thu, 27 Mar 2008 23:14:59 -0700
-
-C: EHLO wheelersoftware.com
-
-S: 250-smtp.example.com Hello wheelersoftware.com [204.13.10.15], pleased to meet you
-S: 250-ENHANCEDSTATUSCODES
-S: 250-PIPELINING
-S: 250-EXPN
-S: 250-VERB
-S: 250-8BITMIME
-S: 250-SIZE 20000000
-S: 250-DSN
-S: 250-ETRN
-S: 250-AUTH LOGIN PLAIN
-S: 250-STARTTLS
-S: 250-DELIVERBY
-S: 250 HELP
-
-C: AUTH LOGIN
-
-S: 334 VXNlcm5hbWU6
-
-C: d2lsbGll
-
-S: 334 UGFzc3dvcmQ6
-
-C: ZnVuc210cA==
-
-S: 235 2.0.0 OK Authenticated
-
-C: MAIL FROM:&lt;darth.vader@deathstar.com&gt;
-
-S: 250 2.1.0 &lt;darth.vader@deathstar.com&gt;... Sender ok
-
-C: RCPT TO:&lt;willie@example.com&gt;
-
-S: 250 2.1.5 &lt;willie@example.com&gt;... Recipient ok
-
-C: DATA
-
-S: 354 Enter mail, end with "." on a line by itself
-
-C: Date: Thu, 27 Mar 2008 23:12:49 -0700 (MST)
-C: From: darth.vader@deathstar.com
-C: To: willie@example.com
-C: Subject: Great article
-C: 
-C: Hi Willie,
-C: I enjoyed your article on TCP/IP-based application protocols.
-C: Join me, and together we can rule the galaxy as father and son.
-C: Darth Vader
-C: .
-
-S: 250 2.0.0 m2S6ExD6029743 Message accepted for delivery
-
-C: QUIT
-
-S: 221 2.0.0 smtp.example.com closing connection
-
-[The server closes the connection]</pre>
-
-
-
-
-<h3>Session analysis</h3>
-
-
-
-
-<pre>$ telnet smtp.example.com 25
-
-S: 220 smtp.example.com ESMTP Sendmail 8.13.8/8.13.6; Thu, 27 Mar 2008 23:14:59 -0700</pre>
-
-
-<p>The session begins with me telnetting to an SMTP server using port 25, which is the default SMTP port. If you don&rsquo;t know the location of an SMTP server on your network, you&rsquo;ll need to talk to your local sysadmin or else your ISP.</p>
-
-<p>The server issues a 220 reply code (indicating that the service is ready) and identifies itself as being an ESMTP (Extended SMTP) server.</p>
-
-<pre>C: EHLO wheelersoftware.com
-
-S: 250-smtp.example.com Hello wheelersoftware.com [204.13.10.15], pleased to meet you
-S: 250-ENHANCEDSTATUSCODES
-S: 250-PIPELINING
-S: 250-EXPN
-S: 250-VERB
-S: 250-8BITMIME
-S: 250-SIZE 20000000
-S: 250-DSN
-S: 250-ETRN
-S: 250-AUTH LOGIN PLAIN
-S: 250-STARTTLS
-S: 250-DELIVERBY
-S: 250 HELP</pre>
-
-
-<p>SMTP has a <code>HELO</code> command that one uses to communicate the client host to the SMTP server, but ESMTP servers support <code>EHLO</code> (which stands for &ldquo;Extended HELLO&rdquo;), which returns a list of extensions (commands and keywords) that the ESMTP server supports. For example, the <code>STARTTLS</code> command allows the client to start a TLS (Transport Layer Security) session with the server so that the communication will be encrypted.</p>
-
-<pre>C: AUTH LOGIN
-
-S: 334 VXNlcm5hbWU6
-
-C: d2lsbGll
-
-S: 334 UGFzc3dvcmQ6
-
-C: ZnVuc210cA==
-
-S: 235 2.0.0 OK Authenticated</pre>
-
-
-<p>This is the SMTP-AUTH part. SMTP-AUTH adds to SMTP support for client authentication, and so now I tell the server that I want to log in. The server responds with the humorous (to me, anyway) response &ldquo;VXNlcm5hbWU6&rdquo;, which is the base64 encoding of &ldquo;Username:&rdquo;. (You can encode and decode these using <a href="http://www.motobit.com/util/base64-decoder-encoder.asp">this base64 encoder/decoder</a>; now you can see why I said above that base64 doesn&rsquo;t provide you any real protection.) I provide the base64-encoded version of my username (willie &rarr; d2lsbGll). Then the server asks me for my password; &ldquo;UGFzc3dvcmQ6&rdquo; is the base64 encoding of &ldquo;Password:&rdquo;. So I provide it (funsmtp &rarr; ZnVuc210cA==). Server checks the password and gives me the A-OK.</p>
-
-<pre>C: MAIL FROM:&lt;darth.vader@deathstar.com&gt;
-
-S: 250 2.1.0 &lt;darth.vader@deathstar.com&gt;... Sender ok
-
-C: RCPT TO:&lt;willie@example.com&gt;
-
-S: 250 2.1.5 &lt;willie@example.com&gt;... Recipient ok
-
-C: DATA
-
-S: 354 Enter mail, end with "." on a line by itself
-
-C: Date: Thu, 27 Mar 2008 23:12:49 -0700 (MST)
-C: From: darth.vader@deathstar.com
-C: To: willie@example.com
-C: Subject: Great article
-C: 
-C: Hi Willie,
-C: I enjoyed your article on TCP/IP-based application protocols.
-C: Join me, and together we can rule the galaxy as father and son.
-C: Darth Vader
-C: .
-
-S: 250 2.0.0 m2S6ExD6029743 Message accepted for delivery</pre>
-
-
-<p>Here I&rsquo;m just entering in the e-mail headers and body itself. When I&rsquo;m done, I just enter . on a line by itself, and the server accepts the message for delivery.</p>
-
-<pre>C: QUIT
-
-S: 221 2.0.0 smtp.example.com closing connection</pre>
-
-
-<p>Finally I log out.</p>
-
-<h3>Conclusion</h3>
-
-
-<p>That&rsquo;s it! Nothing new or earth-shattering here, but it&rsquo;s definitely useful to know how the SMTP protocol works and what you can do with it. Happy e-mailing!</p>
-
-<h3>Resources</h3>
-
-
-<ul>
-<li><a href="http://en.wikipedia.org/wiki/Smtp">SMTP - Wikipedia</a>: Nice overview of SMTP, including a sample communications session over telnet.</li>
-<li><a href="http://en.wikipedia.org/wiki/SMTP-AUTH">SMTP-AUTH - Wikipedia</a>: Describes the SMTP-AUTH extension to SMTP, which adds client authentication to the SMTP protocol.</li>
-<li><a href="http://cr.yp.to/smtp.html">SMTP: Simple Mail Transfer Protocol</a></li>
-<li><a href="http://cr.yp.to/smtp/ehlo.html">The EHLO verb and SMTP extensions</a></li>
-<li><a href="http://www.greenend.org.uk/rjk/2000/05/21/smtp-replies.html">SMTP reply codes</a></li>
-</ul>
-
-
-
-
-<div class="endnote">Post migrated from my Wheeler Software site.</div>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -2448,6 +2072,14 @@ S: 221 2.0.0 smtp.example.com closing connection</pre>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
@@ -2457,14 +2089,6 @@ S: 221 2.0.0 smtp.example.com closing connection</pre>
     
       <li class="post">
         <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/05/13/how-to-run-javascript-from-java/">How to run JavaScript from Java</a>
       </li>
     
   </ul>

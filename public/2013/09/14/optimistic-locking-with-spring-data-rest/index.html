@@ -1,0 +1,454 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Optimistic locking with Spring Data REST - Spring in Practice</title>
+  <meta name="author" content="Willie Wheeler">
+
+  
+  <meta name="description" content="I&rsquo;m working on a web service for a document management system, where clients grab documents from the web service, modify them and submit the &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Forum' rel='stylesheet' type='text/css'>
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-31137459-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <ul class="social-links">
+    <li><a href="https://twitter.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/twitter.png" alt="Twitter" /></a></li>
+    <li><a href="https://github.com/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/github.png" alt="GitHub" /></a></li>
+    <li><a href="http://stackoverflow.com/users/41871/willie-wheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/stackoverflow.png" alt="Stack Overflow" /></a></li>
+    <li><a href="http://www.linkedin.com/in/williewheeler"><img src="http://springinpractice.s3.amazonaws.com/blog/theme/icons/linkedin.png" alt="LinkedIn" /></a></li>
+  </ul>
+  <h1><a href="/">Spring in Practice</a></h1>
+  
+    <h2>Willie Wheeler's Spring blog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/archives/">Archives</a></li>
+  <li><a href="/about/">About</a></li>
+  <li><a href="/code-and-setup/">Code &amp; Setup</a></li>
+  <li><a href="/errata/">Errata</a></li>
+  <li><a href="/consulting/">Consulting</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Optimistic Locking With Spring Data REST</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-14T20:43:00-07:00" pubdate data-updated="true">Sep 14<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I&rsquo;m working on a web service for a document management system, where clients grab documents from the web service, modify them and submit the updates. Since multiple clients can all grab the same document at the same time, we needed to implement an <a href="http://c2.com/cgi/wiki?OptimisticLocking">optimistic locking</a> scheme. In this scheme, each document has a version number, and when the client submits an update to the service, the service checks to see whether the submitted version number baseline is still the most recent one in the database. If so, we increment the version number and the update proceeds. Otherwise, we throw an exception indicating a conflict.</p>
+
+<!-- more -->
+
+
+<p>From a technology perspective we&rsquo;re using <a href="http://projects.spring.io/spring-data-rest/">Spring Data REST</a>, <a href="http://projects.spring.io/spring-data-jpa/">Spring Data JPA</a>, JPA and Hibernate to implement the web service. So I originally tried to use <a href="http://docs.oracle.com/javaee/6/api/javax/persistence/Version.html">JPA&rsquo;s @Version annotation</a>. But for reasons I describe <a href="http://stackoverflow.com/questions/18780621/does-spring-data-rest-support-jpa-version">here</a> it doesn&rsquo;t work. <a href="https://twitter.com/mdeinum">Marten Deinum</a> notes further that this isn&rsquo;t really a problem with Spring Data REST <em>per se</em>; it affects e.g. form submissions too. At Marten&rsquo;s suggestion, I created an <a href="https://jira.springsource.org/browse/DATAREST-160">enhancement request</a>, but since I needed something now, I set out to implement optimisitic locking for Spring Data REST without <code>@Version</code>.</p>
+
+<p>The trick is to listen for events that are fired before the update occurs. Spring Data REST fires such events, but so does JPA, and I decided to use JPA&rsquo;s events instead to ensure that the version number get/test/increment happens as part of a single atomic transaction. (My guess is that the Spring Data REST <a href="http://docs.spring.io/spring-data/rest/docs/1.1.0.M1/reference/htmlsingle/#events-chapter">BeforeSaveEvent</a> fires before entering the transaction.)</p>
+
+<p>Here&rsquo;s the code. First, here&rsquo;s an interface for versioned entities.</p>
+
+<pre><code>package myapp.entity;
+
+public interface VersionedEntity {
+
+    Long getVersion();
+
+    void setVersion(Long version);
+}
+</code></pre>
+
+<p>Next we have an abstract base class for versioned entities. I could have done a mixin-style implementation here (using, e.g., <a href="http://www.eclipse.org/aspectj/doc/next/progguide/language-interType.html">AspectJ inter-type declarations</a>), but I decided to keep it simple for now.</p>
+
+<pre><code>package myapp.entity;
+
+import javax.persistence.Column;
+import javax.persistence.EntityListeners;
+import javax.persistence.MappedSuperclass;
+import myapp.repo.listener.OptimisticLockListener;
+
+@MappedSuperclass
+@EntityListeners(OptimisticLockListener.class)
+public abstract class AbstractVersionedEntity implements VersionedEntity {
+
+    @Column(name = "VERSION")
+    private Long version;
+
+    @Override
+    public Long getVersion() { return version; }
+
+    @Override
+    public void setVersion(Long version) { this.version = version; }
+}
+</code></pre>
+
+<p>Notice the <code>@EntityListener</code> annotation. This tells JPA which class will listen for JPA lifecycle events. Here&rsquo;s the <code>OptimisticLockListener</code>.</p>
+
+<pre><code>package myapp.repo.listener;
+
+import javax.persistence.PreUpdate;
+import org.springframework.stereotype.Component;
+import myapp.entity.VersionedEntity;
+import myapp.util.ApplicationContextProvider;
+
+public class OptimisticLockListener {
+
+    @PreUpdate
+    public void preUpdate(Object entity) {
+        if (entity instanceof VersionedEntity) {
+            getChecker().check((VersionedEntity) entity);
+        }
+    }
+
+    private OptimisticLockChecker getChecker() {
+        return ApplicationContextProvider
+            .getApplicationContext()
+            .getBean(OptimisticLockChecker.class);
+    }
+}
+</code></pre>
+
+<p>In the listing above we grab an <code>OptimisticLockChecker</code> and then run the check. I&rsquo;ve implemented that as a separate class because I&rsquo;m going to need the application&rsquo;s JPA <code>EntityManager</code> to do the version check, and I need a managed bean to use <code>@PersistenceContext</code> to inject the <code>EntityManager</code>. Unfortunately, <a href="http://stackoverflow.com/questions/12951701/how-to-get-entity-manager-or-transaction-in-jpa-listener">JPA 2.0 doesn&rsquo;t treat entity listeners as managed beans</a> (apparently that will change in JPA 2.1). That&rsquo;s why there&rsquo;s a separate <code>OptimisticLockChecker</code> class.</p>
+
+<p><a href="https://twitter.com/vguhesan">Venkatt Guhesan</a> offers <code>ApplicationContextProvider</code> as a <a href="http://mythinkpond.wordpress.com/2010/03/22/spring-application-context/">clever way to get the app&rsquo;s context from an unmanaged instance</a>. (Note that we can&rsquo;t simply create a new <code>ClassPathXmlApplicationContext</code> from the Spring configuration files since we want to use the same <code>EntityManagerFactory</code> that the rest of the app is using.) Here&rsquo;s the technique.</p>
+
+<pre><code>package myapp.util;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+public class ApplicationContextProvider implements ApplicationContextAware {
+    private static ApplicationContext applicationContext;
+
+    public static ApplicationContext getApplicationContext() { return applicationContext; }
+
+    @Override
+    public void setApplicationContext(ApplicationContext appContext) throws BeansException {
+        applicationContext = appContext;
+    }
+}
+</code></pre>
+
+<p>Finally, let&rsquo;s look at the <code>OptimisticLockChecker</code> itself.</p>
+
+<pre><code>package myapp.repo.listener;
+
+import javax.persistence.EntityManager;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.PersistenceContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+import myapp.entity.VersionedEntity;
+
+@Component
+public class OptimisticLockChecker {
+    @PersistenceContext private EntityManager entityManager;
+    @Inject private JdbcTemplate jdbcTemplate;
+
+    public void check(VersionedEntity entity) {
+        Long submittedVersion = entity.getVersionId();
+        if (submittedVersion == null) {
+            throw new RuntimeException("Submitted entity must have a version");
+        }
+
+        Class&lt;?&gt; entityClass = entity.getClass();
+
+        Annotation tableAnn = AnnotationUtils.findAnnotation(entityClass, Table.class);
+        String tableName = (String) AnnotationUtils.getValue(tableAnn, "name");
+
+        Field idField = ReflectionUtils.findField(entityClass, "id");
+        Annotation idColAnn = idField.getAnnotation(Column.class);
+        String idColName = (String) AnnotationUtils.getValue(idColAnn, "name");
+
+        String sql = "select version_id from " + tableName
+            + " where " + idColName + "=" + entity.getId();
+        Long latestVersion = jdbcTemplate.queryForObject(sql, Long.class);
+
+        if (submittedVersion != latestVersion) {
+            throw new OptimisticLockException(
+                    "Stale entity: submitted version " + submittedVersion
+                    + ", but latest version is " + latestVersion);
+        }
+
+        entity.setVersion(entity.getVersion() + 1);
+    }
+}
+</code></pre>
+
+<p>Despite appearances, the code is a little tricky because we&rsquo;re trying to compare an entity version in the persistence context with an entity version in the database, and by design JPA hides the database from the developer. There are different ways to achieve this, but the most straightforward and reliable is probably to use <code>JdbcTemplate</code> to get the latest version in the database. We use Spring&rsquo;s <code>AnnotationUtils</code> and <code>ReflectionUtils</code> to grab the table name and ID column name from the <code>@Table</code> and <code>@Column</code> annotations. (Note that the code above is for a <code>@Column</code> annotation defined on the field itself; if you&rsquo;ve defined <code>@Column</code> on the getter, then you can use <code>AnnotationUtils</code> to get at that.)</p>
+
+<p>After that, we compare and either throw an exception or else increment the version number.</p>
+
+<p>Perhaps the Spring Data REST guys will provide more direct support for <code>@Version</code> (or some suitable alternative) at some future point. Until then, I hope the approach above proves useful.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Willie Wheeler</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-14T20:43:00-07:00" pubdate data-updated="true">Sep 14<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/chapter-02-data/'>Chapter 02 - Data</a>, <a class='category' href='/blog/categories/chapter-13-integration/'>Chapter 13 - Integration</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/" data-via="williewheeler" data-counturl="http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2013/09/07/octopress-migration/" title="Previous Post: Octopress migration">&laquo; Octopress migration</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/williewheeler">@williewheeler</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'williewheeler',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Willie Wheeler -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'springinpractice';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/';
+        var disqus_url = 'http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

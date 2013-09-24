@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-23T21:03:43-07:00</updated>
+  <updated>2013-09-23T23:41:03-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,158 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Optimistic locking with Spring Data REST]]></title>
+    <link href="http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/"/>
+    <updated>2013-09-14T20:43:00-07:00</updated>
+    <id>http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest</id>
+    <content type="html"><![CDATA[<p>I&rsquo;m working on a web service for a document management system, where clients grab documents from the web service, modify them and submit the updates. Since multiple clients can all grab the same document at the same time, we needed to implement an <a href="http://c2.com/cgi/wiki?OptimisticLocking">optimistic locking</a> scheme. In this scheme, each document has a version number, and when the client submits an update to the service, the service checks to see whether the submitted version number baseline is still the most recent one in the database. If so, we increment the version number and the update proceeds. Otherwise, we throw an exception indicating a conflict.</p>
+
+<!-- more -->
+
+
+<p>From a technology perspective we&rsquo;re using <a href="http://projects.spring.io/spring-data-rest/">Spring Data REST</a>, <a href="http://projects.spring.io/spring-data-jpa/">Spring Data JPA</a>, JPA and Hibernate to implement the web service. So I originally tried to use <a href="http://docs.oracle.com/javaee/6/api/javax/persistence/Version.html">JPA&rsquo;s @Version annotation</a>. But for reasons I describe <a href="http://stackoverflow.com/questions/18780621/does-spring-data-rest-support-jpa-version">here</a> it doesn&rsquo;t work. <a href="https://twitter.com/mdeinum">Marten Deinum</a> notes further that this isn&rsquo;t really a problem with Spring Data REST <em>per se</em>; it affects e.g. form submissions too. At Marten&rsquo;s suggestion, I created an <a href="https://jira.springsource.org/browse/DATAREST-160">enhancement request</a>, but since I needed something now, I set out to implement optimisitic locking for Spring Data REST without <code>@Version</code>.</p>
+
+<p>The trick is to listen for events that are fired before the update occurs. Spring Data REST fires such events, but so does JPA, and I decided to use JPA&rsquo;s events instead to ensure that the version number get/test/increment happens as part of a single atomic transaction. (My guess is that the Spring Data REST <a href="http://docs.spring.io/spring-data/rest/docs/1.1.0.M1/reference/htmlsingle/#events-chapter">BeforeSaveEvent</a> fires before entering the transaction.)</p>
+
+<p>Here&rsquo;s the code. First, here&rsquo;s an interface for versioned entities.</p>
+
+<pre><code>package myapp.entity;
+
+public interface VersionedEntity {
+
+    Long getVersion();
+
+    void setVersion(Long version);
+}
+</code></pre>
+
+<p>Next we have an abstract base class for versioned entities. I could have done a mixin-style implementation here (using, e.g., <a href="http://www.eclipse.org/aspectj/doc/next/progguide/language-interType.html">AspectJ inter-type declarations</a>), but I decided to keep it simple for now.</p>
+
+<pre><code>package myapp.entity;
+
+import javax.persistence.Column;
+import javax.persistence.EntityListeners;
+import javax.persistence.MappedSuperclass;
+import myapp.repo.listener.OptimisticLockListener;
+
+@MappedSuperclass
+@EntityListeners(OptimisticLockListener.class)
+public abstract class AbstractVersionedEntity implements VersionedEntity {
+
+    @Column(name = "VERSION")
+    private Long version;
+
+    @Override
+    public Long getVersion() { return version; }
+
+    @Override
+    public void setVersion(Long version) { this.version = version; }
+}
+</code></pre>
+
+<p>Notice the <code>@EntityListener</code> annotation. This tells JPA which class will listen for JPA lifecycle events. Here&rsquo;s the <code>OptimisticLockListener</code>.</p>
+
+<pre><code>package myapp.repo.listener;
+
+import javax.persistence.PreUpdate;
+import org.springframework.stereotype.Component;
+import myapp.entity.VersionedEntity;
+import myapp.util.ApplicationContextProvider;
+
+public class OptimisticLockListener {
+
+    @PreUpdate
+    public void preUpdate(Object entity) {
+        if (entity instanceof VersionedEntity) {
+            getChecker().check((VersionedEntity) entity);
+        }
+    }
+
+    private OptimisticLockChecker getChecker() {
+        return ApplicationContextProvider
+            .getApplicationContext()
+            .getBean(OptimisticLockChecker.class);
+    }
+}
+</code></pre>
+
+<p>In the listing above we grab an <code>OptimisticLockChecker</code> and then run the check. I&rsquo;ve implemented that as a separate class because I&rsquo;m going to need the application&rsquo;s JPA <code>EntityManager</code> to do the version check, and I need a managed bean to use <code>@PersistenceContext</code> to inject the <code>EntityManager</code>. Unfortunately, <a href="http://stackoverflow.com/questions/12951701/how-to-get-entity-manager-or-transaction-in-jpa-listener">JPA 2.0 doesn&rsquo;t treat entity listeners as managed beans</a> (apparently that will change in JPA 2.1). That&rsquo;s why there&rsquo;s a separate <code>OptimisticLockChecker</code> class.</p>
+
+<p><a href="https://twitter.com/vguhesan">Venkatt Guhesan</a> offers <code>ApplicationContextProvider</code> as a <a href="http://mythinkpond.wordpress.com/2010/03/22/spring-application-context/">clever way to get the app&rsquo;s context from an unmanaged instance</a>. (Note that we can&rsquo;t simply create a new <code>ClassPathXmlApplicationContext</code> from the Spring configuration files since we want to use the same <code>EntityManagerFactory</code> that the rest of the app is using.) Here&rsquo;s the technique.</p>
+
+<pre><code>package myapp.util;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+public class ApplicationContextProvider implements ApplicationContextAware {
+    private static ApplicationContext applicationContext;
+
+    public static ApplicationContext getApplicationContext() { return applicationContext; }
+
+    @Override
+    public void setApplicationContext(ApplicationContext appContext) throws BeansException {
+        applicationContext = appContext;
+    }
+}
+</code></pre>
+
+<p>Finally, let&rsquo;s look at the <code>OptimisticLockChecker</code> itself.</p>
+
+<pre><code>package myapp.repo.listener;
+
+import javax.persistence.EntityManager;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.PersistenceContext;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+import myapp.entity.VersionedEntity;
+
+@Component
+public class OptimisticLockChecker {
+    @PersistenceContext private EntityManager entityManager;
+    @Inject private JdbcTemplate jdbcTemplate;
+
+    public void check(VersionedEntity entity) {
+        Long submittedVersion = entity.getVersionId();
+        if (submittedVersion == null) {
+            throw new RuntimeException("Submitted entity must have a version");
+        }
+
+        Class&lt;?&gt; entityClass = entity.getClass();
+
+        Annotation tableAnn = AnnotationUtils.findAnnotation(entityClass, Table.class);
+        String tableName = (String) AnnotationUtils.getValue(tableAnn, "name");
+
+        Field idField = ReflectionUtils.findField(entityClass, "id");
+        Annotation idColAnn = idField.getAnnotation(Column.class);
+        String idColName = (String) AnnotationUtils.getValue(idColAnn, "name");
+
+        String sql = "select version_id from " + tableName
+            + " where " + idColName + "=" + entity.getId();
+        Long latestVersion = jdbcTemplate.queryForObject(sql, Long.class);
+
+        if (submittedVersion != latestVersion) {
+            throw new OptimisticLockException(
+                    "Stale entity: submitted version " + submittedVersion
+                    + ", but latest version is " + latestVersion);
+        }
+
+        entity.setVersion(entity.getVersion() + 1);
+    }
+}
+</code></pre>
+
+<p>Despite appearances, the code is a little tricky because we&rsquo;re trying to compare an entity version in the persistence context with an entity version in the database, and by design JPA hides the database from the developer. There are different ways to achieve this, but the most straightforward and reliable is probably to use <code>JdbcTemplate</code> to get the latest version in the database. We use Spring&rsquo;s <code>AnnotationUtils</code> and <code>ReflectionUtils</code> to grab the table name and ID column name from the <code>@Table</code> and <code>@Column</code> annotations. (Note that the code above is for a <code>@Column</code> annotation defined on the field itself; if you&rsquo;ve defined <code>@Column</code> on the getter, then you can use <code>AnnotationUtils</code> to get at that.)</p>
+
+<p>After that, we compare and either throw an exception or else increment the version number.</p>
+
+<p>Perhaps the Spring Data REST guys will provide more direct support for <code>@Version</code> (or some suitable alternative) at some future point. Until then, I hope the approach above proves useful.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Sending cookies with RestTemplate]]></title>
@@ -524,112 +676,6 @@ List&lt;GitHubUser&gt; watchers =
 <p>Here are some Skybase screenshots that show what sort of information I&rsquo;m pulling down from GitHub using Spring Social GitHub:</p>
 
 <p>[gallery columns=&ldquo;2&rdquo;]</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Calling the GitHub API using Spring's RestTemplate]]></title>
-    <link href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/"/>
-    <updated>2012-01-14T07:15:59-08:00</updated>
-    <id>http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate</id>
-    <content type="html"><![CDATA[<p>GitHub has an <a title="GitHub API" href="http://developer.github.com/">RESTful JSON API</a> that we can call from our apps. In this post I&rsquo;ll show how I&rsquo;m grabbing a GitHub repo&rsquo;s watchers and pull them into my own app using Spring&rsquo;s RestTemplate.</p>
-
-<h2>Meet the GitHub API</h2>
-
-<p>First, take a quick look at the <a title="GitHub Repo Watching API" href="http://developer.github.com/v3/repos/watching/">GitHub Repo Watching API</a>. It&rsquo;s pretty simple, and it doesn&rsquo;t require credentials to call. The URL for my <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> project, for example, is <a title="Zkybase watchers" href="https://api.github.com/repos/williewheeler/zkybase/watchers"><a href="https://api.github.com/repos/williewheeler/zkybase/watchers">https://api.github.com/repos/williewheeler/zkybase/watchers</a></a>.</p>
-
-<p>Go ahead and click the watcher link above. You&rsquo;ll see that the response is a JSON array of watcher objects.</p>
-
-<p>Note that since the GitHub API is HTTPS-based, you will need to download the GitHub API certificate (using, e.g., openssl) and then import it into your Java keystore (using keytool) so your Java programs can call the API without running into certificate errors.</p>
-
-<h2>Create a User class for object/JSON mapping</h2>
-
-<p>We&rsquo;re going to use <a title="Jackson JSON processor" href="http://jackson.codehaus.org/">Jackson</a> to map the GitHub JSON to Java objects. We&rsquo;ll need a <code>User</code> class for that. Here it is:</p>
-
-<pre><code>package org.skydingo.zkybase.integrations.github.model;
-
-import org.codehaus.jackson.annotate.JsonProperty;
-
-public class User {
-    private Long id;
-    private String url, login, avatarUrl, gravatarId;
-
-    public Long getId() { return id; }
-
-    public void setId(Long id) { this.id = id; }
-
-    public String getUrl() { return url; }
-
-    public void setUrl(String url) { this.url = url; }
-
-    public String getLogin() { return login; }
-
-    public void setLogin(String login) { this.login = login; }
-
-    @JsonProperty("avatar_url")
-    public String getAvatarUrl() { return avatarUrl; }
-
-    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
-
-    @JsonProperty("gravatar_id")
-    public String getGravatarId() { return gravatarId; }
-
-    public void setGravatarId(String gravatarId) { this.gravatarId = gravatarId; }
-}
-</code></pre>
-
-<p>Nothing too amazing here. Note that I&rsquo;m using <code>@JsonProperty</code> to clarify the mapping from the <code>avatar_url</code> and <code>gravatar_id</code> JSON fields to the <code>avatarUrl</code> and <code>gravatarId</code> Java properties, since Jackson doesn&rsquo;t automatically handle underscores or anything like that.</p>
-
-<p>The Maven dependency for the <code>@JsonProperty</code> annotation is</p>
-
-<pre><code>&lt;dependency&gt;
-    &lt;groupId&gt;org.codehaus.jackson&lt;/groupId&gt;
-    &lt;artifactId&gt;jackson-mapper-asl&lt;/artifactId&gt;
-    &lt;version&gt;1.9.3&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre>
-
-<h2>Get the data using RestTemplate</h2>
-
-<p>Now that we have <code>User</code>, all we need to do is grab the data using <code>RestTemplate</code>. Easy:</p>
-
-<pre><code>package org.skydingo.zkybase.service;
-
-import javax.inject.Inject;
-import org.skydingo.zkybase.integrations.github.model.User;
-import org.skydingo.zkybase.model.Application;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-@Service
-public class ApplicationService {
-    private static final String GITHUB_WATCHER_URI =
-        "https://api.github.com/repos/{user}/{repo}/watchers";
-
-    @Inject private RestTemplate restTemplate;
-
-    public User[] getGithubRepoWatchers(String user, String repo) {
-        return restTemplate.getForObject(GITHUB_WATCHER_URI, User[].class, user, repo);
-    }
-}
-</code></pre>
-
-<p>Recall that GitHub returns an array of watchers. That&rsquo;s why we&rsquo;re using <code>User[].class</code> in the call. <code>RestTemplate</code> substitutes the <code>user</code> and <code>repo</code> values into the <code>GITHUB_WATCHER_URI</code> string for us.</p>
-
-<h2>Spring configuration</h2>
-
-<p>All we need to do is put a <code>RestTemplate</code> instance on the app context:</p>
-
-<pre><code>&lt;bean class="org.springframework.web.client.RestTemplate" /&gt;
-</code></pre>
-
-<h2>Success!</h2>
-
-<p>After a little hacking at the UI:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-14-calling-the-github-api-using-springs-resttemplate/skybase_scm3.png" alt="Zkybase SCM page" /></p>
-
-<p>See <a href="http://springinpractice.com/2012/01/14/skybasegithub-integration/">Zkybase/GitHub integration</a> for more context as to why we&rsquo;d want to integrate our CMDB with GitHub.</p>
 ]]></content>
   </entry>
   

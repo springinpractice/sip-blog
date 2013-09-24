@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Last month I did a talk at Expedia on Spring Data JPA, Spring Data REST and Spring HATEOAS for the Seattle Java User&rsquo;s Group. Here&rsquo;s the &hellip;">
+  <meta name="description" content="I&rsquo;m working on a web service for a document management system, where clients grab documents from the web service, modify them and submit the &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,91 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic Locking With Spring Data REST</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-14T20:43:00-07:00" pubdate data-updated="true">Sep 14<span>th</span>, 2013</time>
+        
+         | <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&rsquo;m working on a web service for a document management system, where clients grab documents from the web service, modify them and submit the updates. Since multiple clients can all grab the same document at the same time, we needed to implement an <a href="http://c2.com/cgi/wiki?OptimisticLocking">optimistic locking</a> scheme. In this scheme, each document has a version number, and when the client submits an update to the service, the service checks to see whether the submitted version number baseline is still the most recent one in the database. If so, we increment the version number and the update proceeds. Otherwise, we throw an exception indicating a conflict.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/09/07/octopress-migration/">Octopress Migration</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-07T19:32:00-07:00" pubdate data-updated="true">Sep 7<span>th</span>, 2013</time>
+        
+         | <a href="/2013/09/07/octopress-migration/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&rsquo;m in the process of migrating the blog from Wordpress to <a href="http://octopress.org/">Octopress</a>. Octopress is a lot easier to hack and in fact was designed for the hacker crowd. Plus I like being able to manage my posts in source control instead of in a database. Makes sense for all kinds of reasons.</p>
+
+<p>It might take a bit for the dust to settle, but that&rsquo;s what&rsquo;s going on.</p>
+
+<p>If you&rsquo;re interested in the XSLT script I wrote to migrate the posts, please see <a href="https://github.com/williewheeler/wordpress2octopress">wordpress2octopress</a>.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -484,117 +569,6 @@ public final class RichTextFilter implements TextFilter {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/05/06/mavenizing-an-empty-github-project-in-eclipse/">Mavenizing an Empty GitHub Project in Eclipse</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-06T12:30:15-07:00" pubdate data-updated="true">May 6<span>th</span>, 2012</time>
-        
-         | <a href="/2012/05/06/mavenizing-an-empty-github-project-in-eclipse/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>This post is for myself more than anything else, just because I keep forgetting the steps involved.</p>
-
-<p>I&rsquo;m using SpringSource Tool Suite 2.9.1.RELEASE, which is based on Eclipse 3.7.2 (Indigo). I have the egit and m2e Eclipse plugins installed.</p>
-
-<h3>The scenario</h3>
-
-
-<p>You have a brand new, pretty-much-empty GitHub project (other than the README, say&mdash;but no Maven stuff yet), and you want to import it into Eclipse as a Maven project.</p>
-
-<h3>The steps</h3>
-
-
-
-
-<ol>
-
-<li>Add the remote GitHub repo to your list of Git repos in Eclipse.</li>
-
-<li>In Eclipse, go to File &rarr; Import &rarr; Git &rarr; Projects from Git. (I&#8217;m on a Mac; the menu may be a little different for other platforms.)</li>
-
-<li>On the &#8220;Select Repository Source&#8221;, choose &#8220;URI&#8221;.</li>
-
-<li>On the &#8220;Source Git Repository&#8221; pane, enter the URI info. It might be something like <code>ssh://git@github.com/williewheeler/sip11.git</code>, for example.</li>
-
-<li>On the &#8220;Branch Selection&#8221; pane, choose the master branch.</li>
-
-<li>On the &#8220;Local Destination&#8221; pane, decide where you want the local copy to live.</li>
-
-<li>Where it asks you to select an import wizard, choose &#8220;Use the New Project wizard&#8221; and click &#8220;Finish&#8221;.</li>
-
-<li>Now you have to choose a New Project wizard. Choose Maven &rarr; Maven Project.</li>
-
-<li>From here just create the project like you would any other new Maven project. Once you&#8217;re done, it will show up in your list of projects in the Package Explorer view, and sharing should be activated.</li>
-
-</ol>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/05/05/combined-my-two-blogs/">Combined My Two Blogs</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-05T14:39:30-07:00" pubdate data-updated="true">May 5<span>th</span>, 2012</time>
-        
-         | <a href="/2012/05/05/combined-my-two-blogs/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>To better focus my Java/Spring blogging, I&rsquo;ve merged my former Wheeler Software blog into this one. There are a few articles that didn&rsquo;t make the cut, but the majority of them did.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -610,6 +584,14 @@ public final class RichTextFilter implements TextFilter {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
+      </li>
+    
+      <li class="post">
+        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
@@ -619,14 +601,6 @@ public final class RichTextFilter implements TextFilter {
     
       <li class="post">
         <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable custom queries with Spring Data JPA</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/05/13/how-to-run-javascript-from-java/">How to run JavaScript from Java</a>
       </li>
     
   </ul>
