@@ -98,11 +98,17 @@ Finally, let's look at the `OptimisticLockChecker` itself.
 
     package myapp.repo.listener;
     
+    import java.lang.reflect.Field;
+    import javax.persistence.Column;
     import javax.persistence.EntityManager;
     import javax.persistence.OptimisticLockException;
     import javax.persistence.PersistenceContext;
+    import javax.persistence.Table;
     import org.springframework.beans.BeanUtils;
+    import org.springframework.core.annotation.AnnotationUtils;
+    import org.springframework.jdbc.core.JdbcTemplate;
     import org.springframework.stereotype.Component;
+    import org.springframework.util.ReflectionUtils;
     import myapp.entity.VersionedEntity;
     
     @Component

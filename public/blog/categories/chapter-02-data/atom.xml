@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 02 - Data | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-02-data/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-24T01:15:41-07:00</updated>
+  <updated>2013-09-24T01:19:49-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -115,11 +115,17 @@ public class ApplicationContextProvider implements ApplicationContextAware {
 
 <pre><code>package myapp.repo.listener;
 
+import java.lang.reflect.Field;
+import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Table;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
 import myapp.entity.VersionedEntity;
 
 @Component
