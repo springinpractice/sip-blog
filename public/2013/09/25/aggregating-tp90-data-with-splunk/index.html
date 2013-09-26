@@ -119,7 +119,7 @@
 <p>Here&rsquo;s how to do it in <a href="http://www.splunk.com/">Splunk</a>. The trick here is the <a href="http://docs.splunk.com/Documentation/Splunk/5.0.5/SearchReference/Eventstats">eventstats</a> command, which makes the sum of the hourly counts available on a per-row basis so we can use it to calculate weights.</p>
 
 <pre><code>index=webRequestSummary earliest=-7d@d latest=@d
-    | eventstats hourlyCount as totalCount
+    | eventstats sum(hourlyCount) as totalCount
     | eval weight = hourlyCount / totalCount
     | eval weightedHourlyTP90 = weight * hourlyTP90
     | sum(weightedHourlyTP90) as weightedAvgTP90
