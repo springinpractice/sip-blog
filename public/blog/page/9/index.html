@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="This article gives a quick summary of how to do autowiring with Spring 2.5 using annotations. We cover the data and services tiers here, but not the &hellip;">
+  <meta name="description" content="Spring 2.5 introduces annotation-based configuration for MVC controllers. In this short article I&rsquo;ll describe at a high level what you need to &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,98 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/02/26/annotation-based-mvc-in-spring-2-5/">Annotation-based MVC in Spring 2.5</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-02-26T14:36:14-08:00" pubdate data-updated="true">Feb 26<span>th</span>, 2008</time>
+        
+         | <a href="/2008/02/26/annotation-based-mvc-in-spring-2-5/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Spring 2.5 introduces annotation-based configuration for MVC controllers. In this short article I&rsquo;ll describe at a high level what you need to do to migrate your Spring 2.0 app over to Spring 2.5, at least as far as MVC is concerned.  For information on migrating the other tiers, please see my article <a href="http://springinpractice.com/2008/02/26/annotation-based-autowiring-in-spring-2-5/">Annotation-based autowiring in Spring 2.5</a>.</p>
+
+<p>First make sure you drop <code>spring-webmvc.jar</code> onto your classpath.  The <code>DispatcherServlet</code> is no longer part of <code>spring.jar</code>; it&rsquo;s in a separate module now.</p>
+
+<p>Any given controller class can be set up in one of two ways. (And you can use both approaches in a single app.) Either the controller can handle a single action or else it can handle multiple actions. Usually a form &ldquo;action&rdquo;, which really includes initially serving up the form and then accepting submissions of that form, would be handled with the first sort of controller, and non-form actions can be combined into a single controller, with actions being represented by methods.</p>
+
+<p>Here&rsquo;s an extremely basic multi-action controller that handles three separate actions (mapped to methods). The actions don&rsquo;t do anything at all other than serve up the requested page.</p>
+
+<pre>package demo;
+    
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+    
+@Controller
+public class SimpleController {
+    
+    @RequestMapping("/index.html")
+    public void indexHandler() { }
+    
+    @RequestMapping("/about.html")
+    public void aboutHandler() { }
+    
+    @RequestMapping("/admin.html")
+    public void adminHandler() { }
+}</pre>
+
+
+<p>Even though this is just about the simplest possible controller, there are still a few important points to highlight, especially if you&rsquo;re coming from earlier versions of Spring. First you will note that the controller is a POJO. It does not extend <code>AbstractController</code> or any of the other controller classes that you would have extended with Spring 2.0 or earlier. Second, notice the annotations. I&rsquo;ve marked the controller itself with a <code>@Controller</code> annotation and the individual methods with <code>@RequestMapping</code> annotations. (I mentioned above that you can also map a controller to a single action; in that case you would attach the <code>@RequestMapping</code> annotation to the controller class itself. I&rsquo;m not doing that here though.) Note also that I&rsquo;m doing the URL mapping with the annotation. Pretty cool to have this option. Finally, though you can&rsquo;t tell from the controller, I&rsquo;m using the request URL to specify the logical view name. Unless you specify otherwise, the <code>DispatcherServlet</code> will automatically assume that <code>/index.html</code> maps to the logical name &ldquo;index&rdquo;, that <code>/admin.html</code> maps to the logical name &ldquo;admin&rdquo;, etc. (Internally, it creates an instance of <code>DefaultRequestToViewNameTranslator</code>, though you don&rsquo;t see this unless you want to.) This is an example of Spring&rsquo;s movement toward the convention-over-configuration philosophy.</p>
+
+<p>Now you need to make sure your application context config file is set up. Here&rsquo;s what I have:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"&gt;
+    
+    &lt;context:component-scan base-package="demo"/&gt;
+    
+    &lt;bean id="viewResolver"
+        class="org.springframework.web.servlet.view.InternalResourceViewResolver"&gt;
+        &lt;property name="prefix" value="/WEB-INF/jsp/"/&gt;
+        &lt;property name="suffix" value=".jsp"/&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;</pre>
+
+
+<p>The <code>&lt;component-scan&gt;</code> thing runs through your classes to find controllers and their annotation-based configuration. It knows which classes are controllers, as you may have guessed, because you used the <code>@Controller</code> annotation to label the controllers.  Spring also supports <code>@Repository</code> for DAO layers, <code>@Service</code> for service layers, and <code>@Component</code> as a general stereotype over <code>@Controller</code>, <code>@Repository</code> and <code>@Service</code>.) The view resolver is just like it was with Spring 2.0.</p>
+
+<p>Those are the basics. Of course there&rsquo;s a lot more you&rsquo;re going to want to do; for example, you&rsquo;ll want to pass in request parameters, process requests, return model objects, etc.  But hopefully you&rsquo;ll find it useful to have a minimalistic example that gets you off the ground. Good luck!</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -413,6 +505,10 @@ authenticationProcessingFilter,exceptionTranslationFilter,filterSecurityIntercep
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
       </li>
     
@@ -426,10 +522,6 @@ authenticationProcessingFilter,exceptionTranslationFilter,filterSecurityIntercep
     
       <li class="post">
         <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
       </li>
     
   </ul>

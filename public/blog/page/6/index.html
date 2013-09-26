@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="I&rsquo;m at SpringOne right now, and very much enjoying the Westin Diplomat. My room is on the 21st floor and it overlooks the Atlantic. My balcony &hellip;">
+  <meta name="description" content="This morning I attended a talk by Juergen Hoeller on what&rsquo;s coming in Spring 3.0. First, he said that we can expect the first milestone release &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,133 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/12/02/new-stuff-in-spring-30/">New Stuff in Spring 3.0</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-12-02T11:59:26-08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2008</time>
+        
+         | <a href="/2008/12/02/new-stuff-in-spring-30/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This morning I attended a talk by Juergen Hoeller on what&rsquo;s coming in Spring 3.0. First, he said that we can expect the first milestone release sometime this week, and said that he expected there to be about three milestone releases I think. RC1 is supposed to be out around March 2009 and final around April 2009.</p>
+
+<p>Echoing something I&rsquo;ve heard Keith Donald say, Juergen said that Spring 3.0 is intended to complete the work that was started in Spring 2.5. Keith described the release as being &ldquo;evolutionary, not revolutionary.&rdquo; That may be, but there&rsquo;s still quite a bit to be excited about.  Here&rsquo;s what I got from the talk today. (Hold onto your hats because I took good notes.)</p>
+
+<h3>Java and JEE compatibility</h3>
+
+
+<p>Spring 3.0 will be the first release that requires Java 5+. From SpringSource&rsquo;s perspective this is nice because they can avail themselves to generics, varargs, etc. But from the app developer&rsquo;s perspective, the idea is that the platform is really pushing use of annotations as the preferred way of doing configuration. So that means Java 5+.</p>
+
+<p>Spring 3.0 will continue to be compatible with J2EE 1.4 and JEE 5. Also, as JEE 6 matures, Spring 3.0 will try to provide early support, but progress on JEE 6 has been somewhat slow and Spring 3.0 should be out before JEE 6. So Spring 3.1 and 3.2 will probably continue work in this direction. Anyway, SpringSource plans to support JSF 2.0, JPA 2.0, Servlet 3.0 when it&rsquo;s ready, etc.)</p>
+
+<h3>Spring EL (Unified EL++)</h3>
+
+
+<p>Juergen described support for expression languages as probably the most important and powerful feature in Spring 3.0. It will be a proprietary EL parser implementation&mdash;one of the few new modules that Spring 3.0 will introduce&mdash;and it sounded like it would like Unified EL but on steroids. They&rsquo;re trying to keep the EL pretty similar to how it works in JSF, and Spring&rsquo;s EL is designed to be stylistically and syntactically compatible with Unified EL. Also, even though right now Spring Web Flow 2 uses external EL implementations (JBoss EL implementation of Unified EL, I think, or else OGNL), SWF 3 will use Spring EL instead of an external implementation.</p>
+
+<p>Here&rsquo;s a code example he gave. This one is for EL in bean definitions:</p>
+
+<pre>&lt;bean class="mycompany.RewardsTestDatabase"&gt;
+    &lt;property name="databaseName" value="#{systemProperties.databaseName}"/&gt;
+    &lt;property name="keyGenerator" value="#{strategyBean.databaseKeyGenerator}"/&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>The idea is this. Just like in other ELs, you will have some implicit objects&mdash;objects that you can reference in your EL either because the objects are global in scope or else because the object lives in your current scope (e.g., request scope, session scope, etc.). So in the example above, <code>systemProperties</code> is a global implicit object, and <code>strategyBean</code> is a bean name. Bean names will be available as EL objects then.</p>
+
+<p>I&rsquo;m assuming that the <code>databaseName</code> and <code>keyGenerator</code> properties will be evaluated each time they are accessed. Otherwise it wouldn&rsquo;t be much of an expression language. I&rsquo;m kind of curious to see how they do this. My guess is that the approach will be to proxy beans with EL-based properties, with the proxies evaluating the reference upon demand.</p>
+
+<p>Juergen gave another example, this time of EL in component annotations. Here it is:</p>
+
+<pre>
+@Repository
+public class RewardsTestDatabase {
+
+    @Value("#{systemProperties.databaseName}")
+    public void setDatabaseName(String dbName) { ... }
+
+    @Value("#{strategyBean.databaseKeyGenerator}")
+    public void setKeyGenerator(KeyGenerator kg) { ... }
+}
+</pre>
+
+
+<p>I <i>believe</i> these two configuration examples are different in a subtle way. The value of the <code>@Value</code> attribute is a default value for the property if a value isn&rsquo;t explicitly defined in the app context. One practical benefit we get has to do with how component scanning currently works. When we component scan, we depend on autowiring to establish injected references. The problem is that if our dependencies are primitive types, autowiring is no longer an option and so we have to go explicit with our bean definitions. With EL-based defaults, we can keep the component scanning, and just set the primitive types using a bean, or maybe using system properties, etc.</p>
+
+<h3>REST support</h3>
+
+
+<p>Another big topic in Spring 3.0 is REST support. Spring Web MVC will provide first-class support for RESTful web services, and not necessarily just XML-based. Keith was saying that there will be a JSON view as well. So the web services would be useful not only in integration efforts but also for example when you have JavaScript widgets that want to make AJAX calls back to the server and get JSON. Anyway, Spring Web MVC&rsquo;s current design is such that it&rsquo;s really easy to tweak it a bit to support REST, and that&rsquo;s what they&rsquo;re doing. So one aspect of this would be to continue to use <code>@RequestMapping</code> to specify an HTTP method, such as <code>RequestMethod.PUT</code>.  Another piece would be to introduce a new <code>@PathVariable</code> annotation that works pretty much like <code>@RequestParam</code> currently works, but handles URL path segments instead of HTTP parameters. Here&rsquo;s a code example that shows how it will work:</p>
+
+<pre>
+@RequestMapping(value = "/show/{id}", method = GET)
+public Reward show(@PathVariable("id") long id) {
+    return this.rewardsAdminService.findReward(id);
+}
+</pre>
+
+
+<p>I like it!</p>
+
+<p>Another feature of the REST support is support for different representations, i.e. content negotiation. They want to use the HTTP <code>Accept</code> header as a new way to do view resolution. So presumably there will be a new <code>ViewResolver</code> implementation that looks at the <code>Accept</code> header and returns, say, an XML view (accepts <code>application/xml</code>), a JSON view (accepts <code>application/json</code>) or an ATOM view (accepts <code>application/atom+xml</code>) according to that header. This would be the preferred way of doing view resolution for the hardcore REST purists. But Spring Web MVC would also support extension-based resolution; e.g. <code>.json</code> maps to a <code>JsonView</code>, etc.</p>
+
+<h3>Some @MVC refinements</h3>
+
+
+<p>They&rsquo;re planning to add a couple of new @MVC annotations besides <code>@RequestParam</code> (which already exists) and the new <code>@PathVariable</code> annotation. These are:</p>
+
+<ul>
+<li><code>@RequestHeader</code>: Grab HTTP request header data.</li>
+<li><code>@CookieValue</code>: Grab cookie value. (Surprise!)</li>
+</ul>
+
+
+<p>These will allow us to get at the data without having to declare the raw <code>HttpServletRequest</code> as we currently have to do.  Here&rsquo;s a code sample:</p>
+
+<pre>
+@RequestMapping("/show")
+public Reward show(@RequestHeader("region") long regionId,
+    @CookieValue("language") String langId) {
+
+    ...
+}
+</pre>
+
+
+<p>There&rsquo;s quite a bit more, but this post is pretty long as it is and I need to hit the sack. I&rsquo;ll try to post a little more tomorrow.</p>
+
+<p>[Update: Here&rsquo;s <a href="http://springinpractice.wordpress.com/2008/12/03/new-stuff-in-spring-30-part-2/">part 2</a>.]</p>
+
+<p>[Update: Here&rsquo;s <a href="http://www.infoq.com/news/2008/12/springone-2008">a related InfoQ article</a>.]</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1778,74 +1905,6 @@ public class UserDetailsAdapter extends User { // 1
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/10/01/some-thoughts-on-the-new-springsource-maintenance-policy/">Some Thoughts on the New SpringSource Maintenance Policy</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-10-01T15:38:35-07:00" pubdate data-updated="true">Oct 1<span>st</span>, 2008</time>
-        
-         | <a href="/2008/10/01/some-thoughts-on-the-new-springsource-maintenance-policy/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>At the risk of getting myself involved in a highly charged political issue, I have some thoughts about the <a title="new SpringSource maintenance policy" href="http://www.springsource.com/products/enterprise/maintenancepolicy">new SpringSource maintenance policy</a> that I wanted to share. Not sure that I know what I&rsquo;m talking about, but I have no doubt that others will let me know if I&rsquo;m totally off-base.</p>
-
-<p>Initially I was a little disappointed when I heard the news about the change. I don&rsquo;t have anything against capitalism, and I think that the Spring developers absolutely ought to benefit financially from all the good work that they&rsquo;ve been doing over the years. The disappointment was really just a function of my being a bit of a cheapskate: I&rsquo;m happy to contribute on the forums, contribute JIRA issues, even the occasional code patch, but I suppose I&rsquo;ve grown too used to being able to download the latest and greatest for free.</p>
-
-<p>But I found out that I misinterpreted the part about &ldquo;major&rdquo; releases in an important way, and now I feel a lot better about things.</p>
-
-<p>I thought that SpringSource was saying that the community would be able to download binaries for 3.0, 4.0, 5.0 etc. for free, as well as 3.x (x &gt; 0) releases as long as the 3.x releases were released within the first three months of the 3.0 release.</p>
-
-<p>I&rsquo;m happy to report that that&rsquo;s totally wrong.</p>
-
-<p>It turns out that the community will have access to binaries for 3.0, 3.1, 3.2, 3.3, etc., as they appear. The for-pay releases will be the 3.1.x (x &gt; 0) releases that come out three months after the initial 3.1 release. Don&rsquo;t take my word for it though. It&rsquo;s <a title="Rod Johnson interview" href="http://java.dzone.com/news/qa-with-rod-johnson-over-sprin">right here</a> and <a title="FAQs" href="http://www.springsource.com/products/enterprise/maintenancepolicy/faq">here too</a>.</p>
-
-<p>I can definitely live with that. Sure, I&rsquo;d prefer to download 3.1.5 for free, but it&rsquo;s not going to kill me to wait for 3.2. I think that there are probably a lot of developers who would feel the same way.</p>
-
-<p>I have to wonder, though, whether SpringSource might do a better job explaining the change. It&rsquo;s pretty easy to read</p>
-
-<blockquote>After a new major version of Spring is released, community maintenance updates will be issued for three months to address initial stability issues.  Subsequent maintenance releases will be available to SpringSource Enterprise customers.  Bug fixes will be folded into the open source development trunk and will be made available in the next major community release of the software.</blockquote>
-
-
-<p>and think that you&rsquo;re going to have to wait a year for an update. I interpret &ldquo;major version&rdquo; as meaning Spring 2, Spring 3, etc. Maybe that&rsquo;s not the way SpringSource thinks of major versions (though that&rsquo;s news to me), but it doesn&rsquo;t really matter what SpringSource thinks &ndash; what matters is what the Spring community thinks, and I can&rsquo;t be the only one who read the above passage thinking that we&rsquo;d have to pay for version 3.3.</p>
-
-<p>My understanding is that this change is about getting enterprises to start paying for Spring while letting smaller shops and individual developers still have access to pretty recent stuff. Enterprises are slower about upgrading versions. So say you&rsquo;re an enterprise and you built an app against version Spring 3.0.2. It&rsquo;s more painful for you to upgrade to version 3.1 than it is to just buy the enterprise license and get your 3.0.x upgrades, so you buy the license. On the other hand, smaller organizations are in many cases fine with going from 3.0.2 to 3.1, as are many individual developers (indeed, I think a lot of individual developers eagerly await new releases), so they can still use it for free without too much inconvenience. No doubt some smaller organizations and developers will be inconvenienced though.</p>
-
-<p>If my understanding is correct, I think SpringSource ought to consider explaining it in roughly that way instead of this:</p>
-
-<blockquote>&#8220;The maintenance policy provides IT teams responsible for building and running mission-critical production systems with the quality, assurance and peace of mind that comes from reliable, predictable and guaranteed support direct from the source,” said Mark Brewer, vice president of enterprise delivery for SpringSource. “And, the policy will always give the developer community access to the same cutting-edge innovations they have come to expect with Spring.&#8221;</blockquote>
-
-
-<p>When developers read the above, they hear &ldquo;blah blah blah.&rdquo; Developers hate that kind of explanation. I assume that since Brewer is VP of enterprise delivery he&rsquo;s addressing enterprise customers more than he is the community, but (1) it&rsquo;s important to address the community since you don&rsquo;t want people defecting from the platform, and (2) there&rsquo;s a way to present the explanation so that it&rsquo;s palatable to enterprises. I am myself in corporate IT leadership, and if somebody told me that the enterprise license allows you to get bugfixes without having to upgrade from 3.0.x to 3.1, I would be able to see value in that.</p>
-
-<p>Anyway, I&rsquo;m glad to discover that the situation is not what I had originally thought, and to my mind SpringSource is striking a reasonable balance between their desire (and right) to build a profitable business around Spring vs. their desire to maintain a supportive developer community. They just need to work on the communication. :&ndash;)</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/7/">&larr; Older</a>
@@ -1863,6 +1922,10 @@ public class UserDetailsAdapter extends User { // 1
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
       </li>
     
@@ -1876,10 +1939,6 @@ public class UserDetailsAdapter extends User { // 1
     
       <li class="post">
         <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
       </li>
     
   </ul>

@@ -431,8 +431,12 @@
         <lastmod>2013-09-24T02:04:28-07:00</lastmod>
     </url>
     <url>
+        <loc>http://springinpractice.com/2013/09/25/aggregating-tp90-data-with-splunk/</loc>
+        <lastmod>2013-09-25T21:00:24-07:00</lastmod>
+    </url>
+    <url>
         <loc>http://springinpractice.com/archives/</loc>
-        <lastmod>2013-09-24T02:04:28-07:00</lastmod>
+        <lastmod>2013-09-25T21:00:24-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/book/</loc>
@@ -444,7 +448,7 @@
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-09-24T02:04:28-07:00</lastmod>
+        <lastmod>2013-09-25T21:00:24-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>

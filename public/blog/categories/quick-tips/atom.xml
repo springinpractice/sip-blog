@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Quick Tips | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/quick-tips/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-24T02:04:35-07:00</updated>
+  <updated>2013-09-25T21:01:06-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,33 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Aggregating TP90 data with Splunk]]></title>
+    <link href="http://springinpractice.com/2013/09/25/aggregating-tp90-data-with-splunk/"/>
+    <updated>2013-09-25T19:38:00-07:00</updated>
+    <id>http://springinpractice.com/2013/09/25/aggregating-tp90-data-with-splunk</id>
+    <content type="html"><![CDATA[<p>One of the challenges around <a href="http://stackoverflow.com/questions/17435438/what-do-we-mean-by-top-percentile-or-tp-based-latency">TP90</a> data is aggregating it. I wrote about this <a href="http://stats.stackexchange.com/questions/49017/options-for-aggregating-dispersion-data">here</a>, and offered a solution based on histograms. Here I&rsquo;m going to describe another approach, this time based on weighted averages.</p>
+
+<!-- more -->
+
+
+<p>To be concrete, suppose we have web page response times, and we&rsquo;ve computed hourly TP90s for them. Now we want to know the TP90 for a week. To get the exact answer, we&rsquo;d need to look at all the response times for the whole week, but that can be pretty expensive for a busy site. The challenge is to estimate the week&rsquo;s TP90 based on the hourlies.</p>
+
+<p>We can do that by computing a <a href="http://en.wikipedia.org/wiki/Weighted_arithmetic_mean">weighted average</a>, where we use counts to establish weights. The weight for any given hour is the number of requests that hour divided by the total number of requests that week. Apply the hourly weights to the hourly TP90s and then sum them all up to get the weighted average over the week.</p>
+
+<p>Here&rsquo;s how to do it in <a href="http://www.splunk.com/">Splunk</a>. The trick here is the <a href="http://docs.splunk.com/Documentation/Splunk/5.0.5/SearchReference/Eventstats">eventstats</a> command, which makes the sum of the hourly counts available on a per-row basis so we can use it to calculate weights.</p>
+
+<pre><code>index=webRequestSummary earliest=-7d@d latest=@d
+    | eventstats hourlyCount as totalCount
+    | eval weight = hourlyCount / totalCount
+    | eval weightedHourlyTP90 = weight * hourlyTP90
+    | sum(weightedHourlyTP90) as weightedAvgTP90
+</code></pre>
+
+<p>That&rsquo;s it.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Renaming node classes when using Spring Data Neo4j]]></title>
@@ -191,50 +218,6 @@ public final class RichTextFilter implements TextFilter {
 </code></pre>
 
 <p>In the configuration above, I used <code>ClassPathResource</code> to find the <code>htmlcleaner.xml</code> resource on the classpath. Then I used the handy <code>&lt;util:property-path&gt;</code> tag to assign the resource&rsquo;s <code>file</code> property its own ID. Finally, I inject the <code>File</code> using constructor injection.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Mavenizing an empty GitHub project in Eclipse]]></title>
-    <link href="http://springinpractice.com/2012/05/06/mavenizing-an-empty-github-project-in-eclipse/"/>
-    <updated>2012-05-06T12:30:15-07:00</updated>
-    <id>http://springinpractice.com/2012/05/06/mavenizing-an-empty-github-project-in-eclipse</id>
-    <content type="html"><![CDATA[<p>This post is for myself more than anything else, just because I keep forgetting the steps involved.</p>
-
-<p>I&rsquo;m using SpringSource Tool Suite 2.9.1.RELEASE, which is based on Eclipse 3.7.2 (Indigo). I have the egit and m2e Eclipse plugins installed.</p>
-
-<h3>The scenario</h3>
-
-
-<p>You have a brand new, pretty-much-empty GitHub project (other than the README, say&mdash;but no Maven stuff yet), and you want to import it into Eclipse as a Maven project.</p>
-
-<h3>The steps</h3>
-
-
-
-
-<ol>
-
-<li>Add the remote GitHub repo to your list of Git repos in Eclipse.</li>
-
-<li>In Eclipse, go to File &rarr; Import &rarr; Git &rarr; Projects from Git. (I'm on a Mac; the menu may be a little different for other platforms.)</li>
-
-<li>On the "Select Repository Source", choose "URI".</li>
-
-<li>On the "Source Git Repository" pane, enter the URI info. It might be something like <code>ssh://git@github.com/williewheeler/sip11.git</code>, for example.</li>
-
-<li>On the "Branch Selection" pane, choose the master branch.</li>
-
-<li>On the "Local Destination" pane, decide where you want the local copy to live.</li>
-
-<li>Where it asks you to select an import wizard, choose "Use the New Project wizard" and click "Finish".</li>
-
-<li>Now you have to choose a New Project wizard. Choose Maven &rarr; Maven Project.</li>
-
-<li>From here just create the project like you would any other new Maven project. Once you're done, it will show up in your list of projects in the Package Explorer view, and sharing should be activated.</li>
-
-</ol>
-
 ]]></content>
   </entry>
   

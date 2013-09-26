@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="I&rsquo;m working on a web service for a document management system, where clients grab documents from the web service, modify them and submit the &hellip;">
+  <meta name="description" content="One of the challenges around TP90 data is aggregating it. I wrote about this here, and offered a solution based on histograms. Here I&rsquo;m going &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,49 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 Data With Splunk</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-25T19:38:00-07:00" pubdate data-updated="true">Sep 25<span>th</span>, 2013</time>
+        
+         | <a href="/2013/09/25/aggregating-tp90-data-with-splunk/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One of the challenges around <a href="http://stackoverflow.com/questions/17435438/what-do-we-mean-by-top-percentile-or-tp-based-latency">TP90</a> data is aggregating it. I wrote about this <a href="http://stats.stackexchange.com/questions/49017/options-for-aggregating-dispersion-data">here</a>, and offered a solution based on histograms. Here I&rsquo;m going to describe another approach, this time based on weighted averages.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2013/09/25/aggregating-tp90-data-with-splunk/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -518,55 +561,6 @@ public final class RichTextFilter implements TextFilter {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/05/07/springs-constructor-namespace-is-a-bad-idea/">Spring&#8217;s Constructor Namespace Is a Bad Idea</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-07T21:26:00-07:00" pubdate data-updated="true">May 7<span>th</span>, 2012</time>
-        
-         | <a href="/2012/05/07/springs-constructor-namespace-is-a-bad-idea/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>The other day I wrote up a post <a href="http://springinpractice.com/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/">explaining how to use Spring&rsquo;s constructor namespace</a>, which is new with Spring 3.1. So the following might be a little surprising:</p>
-
-<p><em>Spring&rsquo;s constructor namespace is a bad idea.</em></p>
-
-<p>I wanted to like it&mdash;honest I did. While I&rsquo;ve always been a little iffy on the whole idea of introspecting on method parameter names, <a href="https://issues.springsource.org/browse/SPR-6500?page=com.atlassian.jira.plugin.system.issuetabpanels:all-tabpanel">Juergen Hoeller answered my concerns</a> with respect to <code>@PathVariable</code> and the like. My worries around <a href="http://en.wikipedia.org/wiki/Principle_of_least_astonishment">least surprise</a> were admittedly academic since I always compile binaries in debug mode.</p>
-
-<p>So I tried the constructor namespace out, and it bit me in exactly the way I expected.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/2012/05/07/springs-constructor-namespace-is-a-bad-idea/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -582,6 +576,10 @@ public final class RichTextFilter implements TextFilter {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
       </li>
     
@@ -595,10 +593,6 @@ public final class RichTextFilter implements TextFilter {
     
       <li class="post">
         <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming node classes when using Spring Data Neo4j</a>
       </li>
     
   </ul>
