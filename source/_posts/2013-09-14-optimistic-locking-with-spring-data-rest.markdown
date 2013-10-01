@@ -73,9 +73,9 @@ Notice the `@EntityListeners` annotation. This tells JPA which class will listen
         }
     }
 
-In the listing above we grab an `OptimisticLockChecker` and then run the check. I've implemented that as a separate class because I'm going to need the application's JPA `EntityManager` to do the version check, and I need a managed bean to use `@PersistenceContext` to inject the `EntityManager`. Unfortunately, [JPA 2.0 doesn't treat entity listeners as managed beans](http://stackoverflow.com/questions/12951701/how-to-get-entity-manager-or-transaction-in-jpa-listener) (apparently that will change in JPA 2.1). That's why there's a separate `OptimisticLockChecker` class.
+In the listing above we grab an `OptimisticLockChecker` and then run the check. I've implemented that as a separate class because I'm going to need the application's `JdbcTemplate` to do the version check, and I need a managed bean to inject the `JdbcTemplate`. Unfortunately, [JPA 2.0 doesn't treat entity listeners as managed beans](http://stackoverflow.com/questions/12951701/how-to-get-entity-manager-or-transaction-in-jpa-listener) (apparently that will change in JPA 2.1). That's why there's a separate `OptimisticLockChecker` class.
 
-[Venkatt Guhesan](https://twitter.com/vguhesan) offers `ApplicationContextProvider` as a [clever way to get the app's context from an unmanaged instance](http://mythinkpond.wordpress.com/2010/03/22/spring-application-context/). (Note that we can't simply create a new `ClassPathXmlApplicationContext` from the Spring configuration files since we want to use the same `EntityManagerFactory` that the rest of the app is using.) Here's the technique.
+[Venkatt Guhesan](https://twitter.com/vguhesan) offers `ApplicationContextProvider` as a [clever way to get the app's context from an unmanaged instance](http://mythinkpond.wordpress.com/2010/03/22/spring-application-context/). Here's the technique.
 
     package myapp.util;
     
@@ -100,7 +100,6 @@ Finally, let's look at the `OptimisticLockChecker` itself.
     
     import java.lang.reflect.Field;
     import javax.persistence.Column;
-    import javax.persistence.EntityManager;
     import javax.persistence.OptimisticLockException;
     import javax.persistence.PersistenceContext;
     import javax.persistence.Table;
@@ -113,7 +112,6 @@ Finally, let's look at the `OptimisticLockChecker` itself.
     
     @Component
     public class OptimisticLockChecker {
-        @PersistenceContext private EntityManager entityManager;
         @Inject private JdbcTemplate jdbcTemplate;
         
         public void check(VersionedEntity entity) {

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-09-25T21:09:45-07:00</updated>
+  <updated>2013-09-30T22:59:27-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -89,9 +89,9 @@ public class OptimisticLockListener {
 }
 </code></pre>
 
-<p>In the listing above we grab an <code>OptimisticLockChecker</code> and then run the check. I&rsquo;ve implemented that as a separate class because I&rsquo;m going to need the application&rsquo;s JPA <code>EntityManager</code> to do the version check, and I need a managed bean to use <code>@PersistenceContext</code> to inject the <code>EntityManager</code>. Unfortunately, <a href="http://stackoverflow.com/questions/12951701/how-to-get-entity-manager-or-transaction-in-jpa-listener">JPA 2.0 doesn&rsquo;t treat entity listeners as managed beans</a> (apparently that will change in JPA 2.1). That&rsquo;s why there&rsquo;s a separate <code>OptimisticLockChecker</code> class.</p>
+<p>In the listing above we grab an <code>OptimisticLockChecker</code> and then run the check. I&rsquo;ve implemented that as a separate class because I&rsquo;m going to need the application&rsquo;s <code>JdbcTemplate</code> to do the version check, and I need a managed bean to inject the <code>JdbcTemplate</code>. Unfortunately, <a href="http://stackoverflow.com/questions/12951701/how-to-get-entity-manager-or-transaction-in-jpa-listener">JPA 2.0 doesn&rsquo;t treat entity listeners as managed beans</a> (apparently that will change in JPA 2.1). That&rsquo;s why there&rsquo;s a separate <code>OptimisticLockChecker</code> class.</p>
 
-<p><a href="https://twitter.com/vguhesan">Venkatt Guhesan</a> offers <code>ApplicationContextProvider</code> as a <a href="http://mythinkpond.wordpress.com/2010/03/22/spring-application-context/">clever way to get the app&rsquo;s context from an unmanaged instance</a>. (Note that we can&rsquo;t simply create a new <code>ClassPathXmlApplicationContext</code> from the Spring configuration files since we want to use the same <code>EntityManagerFactory</code> that the rest of the app is using.) Here&rsquo;s the technique.</p>
+<p><a href="https://twitter.com/vguhesan">Venkatt Guhesan</a> offers <code>ApplicationContextProvider</code> as a <a href="http://mythinkpond.wordpress.com/2010/03/22/spring-application-context/">clever way to get the app&rsquo;s context from an unmanaged instance</a>. Here&rsquo;s the technique.</p>
 
 <pre><code>package myapp.util;
 
@@ -117,7 +117,6 @@ public class ApplicationContextProvider implements ApplicationContextAware {
 
 import java.lang.reflect.Field;
 import javax.persistence.Column;
-import javax.persistence.EntityManager;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Table;
@@ -130,7 +129,6 @@ import myapp.entity.VersionedEntity;
 
 @Component
 public class OptimisticLockChecker {
-    @PersistenceContext private EntityManager entityManager;
     @Inject private JdbcTemplate jdbcTemplate;
 
     public void check(VersionedEntity entity) {
