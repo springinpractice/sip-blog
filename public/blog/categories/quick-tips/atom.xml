@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Quick Tips | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/quick-tips/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-02T02:45:10-07:00</updated>
+  <updated>2013-10-02T02:48:22-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -19,6 +19,9 @@
     <updated>2013-10-02T02:10:00-07:00</updated>
     <id>http://springinpractice.com/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate</id>
     <content type="html"><![CDATA[<p>Here&rsquo;s a quick tip for using Spring&rsquo;s <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html">RestTemplate</a> to authenticate to a RESTful web service that uses <a href="http://en.wikipedia.org/wiki/Basic_access_authentication">HTTP basic authentication</a>.</p>
+
+<!-- more -->
+
 
 <p>There are a couple of things we have to do:</p>
 

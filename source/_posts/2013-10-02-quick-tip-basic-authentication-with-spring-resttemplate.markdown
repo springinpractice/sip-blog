@@ -7,6 +7,8 @@ categories: [ "Chapter 06 - Authentication", "Chapter 13 - Integration", "Quick 
 ---
 Here's a quick tip for using Spring's [RestTemplate](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html) to authenticate to a RESTful web service that uses [HTTP basic authentication](http://en.wikipedia.org/wiki/Basic_access_authentication).
 
+<!-- more -->
+
 There are a couple of things we have to do:
 
 * First we construct an `Authorization` request header that contains (among other things) the user's base 64-encoded credentials.
