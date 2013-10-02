@@ -46,7 +46,7 @@ Next, let's use the `RestTemplate` to issue the request.
 Using RestTemplate to send the request
 --------------------------------------
 
-The key here is to use one of the `RestTemplate`'s `exchange()` methods to exchange a request for a response. Let's imagine that we're going to get account information.
+The approach is similar to what we did with [Sending Cookies with RestTemplate](http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate/). We use one of the `RestTemplate`'s `exchange()` methods to exchange a request for a response. Let's imagine that we want to get account information.
 
     import org.springframework.http.HttpEntity;
     import org.springframework.http.HttpMethod;

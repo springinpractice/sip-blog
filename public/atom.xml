@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-02T03:03:57-07:00</updated>
+  <updated>2013-10-02T03:10:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -63,7 +63,7 @@ headers.add("Authorization", "Basic " + base64Creds);
 
 <h2>Using RestTemplate to send the request</h2>
 
-<p>The key here is to use one of the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> methods to exchange a request for a response. Let&rsquo;s imagine that we&rsquo;re going to get account information.</p>
+<p>The approach is similar to what we did with <a href="http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate/">Sending Cookies with RestTemplate</a>. We use one of the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> methods to exchange a request for a response. Let&rsquo;s imagine that we want to get account information.</p>
 
 <pre><code>import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
