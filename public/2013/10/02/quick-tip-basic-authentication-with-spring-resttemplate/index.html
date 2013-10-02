@@ -109,15 +109,15 @@
 
 <div class="entry-content"><p>Here&rsquo;s a quick tip for using Spring&rsquo;s <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html">RestTemplate</a> to authenticate to a RESTful web service that uses <a href="http://en.wikipedia.org/wiki/Basic_access_authentication">HTTP basic authentication</a>.</p>
 
-<!-- more -->
-
-
 <p>There are a couple of things we have to do:</p>
 
 <ul>
 <li>First we construct an <code>Authorization</code> request header that contains (among other things) the user&rsquo;s base 64-encoded credentials.</li>
 <li>Then we invoke the <code>RestTemplate</code> in such a way as to send that request header to the service.</li>
 </ul>
+
+
+<!-- more -->
 
 
 <p>Let&rsquo;s start with the <code>Authorization</code> header.</p>
