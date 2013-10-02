@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="At the risk of getting myself involved in a highly charged political issue, I have some thoughts about the new SpringSource maintenance policy that I &hellip;">
+  <meta name="description" content="This post was originally written as a recipe for our book Spring in Practice, but we just didn&#8217;t have enough room to include it. It&#8217;s &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,375 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/10/11/hashing-and-salting-passwords-with-spring-security-2/">Hashing and Salting Passwords With Spring Security 2</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-11T12:02:44-07:00" pubdate data-updated="true">Oct 11<span>th</span>, 2008</time>
+        
+         | <a href="/2008/10/11/hashing-and-salting-passwords-with-spring-security-2/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><div class="intro"><span class="icon stickyNote">This post was originally written as a recipe for our book <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, but we just didn&#8217;t have enough room to include it. It&#8217;s still (we think, anyway) a great recipe, so we&#8217;re making it available here free of charge. This will give readers of this website a chance to see the sort of recipe we&#8217;re including in the book.</span>
+
+This material is based upon another post called <a href="http://springinpractice.com/2008/08/31/storing-passwords-securely/">Storing passwords securely</a>.</div>
+
+
+
+
+<h3>Prerequisites</h3>
+
+
+<p><a href="http://www.manning.com/wheeler/">4.3 Save user registrations</a></p>
+
+<h3>Key Technologies</h3>
+
+
+<p>Spring Security, hash functions (e.g., MD5, SHA-1)</p>
+
+<h2>Background</h2>
+
+
+<p>When you&rsquo;re building an application involving user passwords, one of the challenges is to protect the passwords from prying eyes. We generally want to protect user registration data in transit from the browser to the server to prevent eavesdroppers on the network from getting at that data. But it&rsquo;s not enough to protect the data in transit. It&rsquo;s as important to store it securely.</p>
+
+<p>It may not be immediately clear why you need to store the passwords securely. If, for instance, you have a corporate firewall that prevents the bad guys on the outside from getting to your password store, then why bother?</p>
+
+<p>There are a few different answers to that. First, one basic security principle is to take a layered approach. There are no security silver bullets, and so overreliance on any particular process or technology (such as firewalls) creates unnecessary risk. Storing passwords securely gives you protection if a bad guy somehow gets in. (And it happens.)</p>
+
+<p>A second answer is that the question makes the faulty assumption that the bad guys are on the outside. In an organization of any size, you can&rsquo;t be sure that you don&rsquo;t have bad guys on the inside, and the last thing you want them to do is use user passwords to log into your websites, or even other websites. The latter is a real concern since many users tend to use the same (or similar) passwords on multiple sites.</p>
+
+<p>A third answer is that even if your organization is small (maybe it&rsquo;s just you), you&rsquo;d like to be able to tell your users in your privacy policy that their passwords are stored securely, and that no one&mdash;not even the technical folks who administer the site&mdash;has any ability to see the stored passwords. That gives your users greater confidence that their information is safe and that you&rsquo;re taking security seriously.</p>
+
+<p>So let&rsquo;s get to it!</p>
+
+<h2>Problem</h2>
+
+
+<p>You want to store passwords securely to prevent anybody&mdash;even yourself and other technical staff&mdash;from being able to view them.</p>
+
+<h2>Solution</h2>
+
+
+<p>In this recipe we&rsquo;re going to use Spring Security 2 to store passwords securely. We&rsquo;ll also show how to authenticate against secured passwords.</p>
+
+<p>Spring Security makes it fairly easy to store passwords securely. The actual storage mechanism (database, LDAP or other) doesn&rsquo;t really matter since that&rsquo;s abstracted away, which is nice.</p>
+
+<p>Before we jump into the how-to part of the recipe, let&rsquo;s briefly examine hash functions and how they work, since we&rsquo;ll need this background to understand what we&rsquo;re doing in the subsequent discussion.</p>
+
+<h3>Understanding hash functions</h3>
+
+
+<p>The idea behind this recipe is that we want to store passwords in encrypted form in the persistent store. There are in general two different approaches to encryption here: ciphers and hash functions. The two are similar in that each provides a way to encrypt data, but they differ in that only ciphers provide an easy way (assuming you know a secret key) to decrypt the data. Hash functions don&rsquo;t provide for easy decryption; hence they are sometimes referred to as one-way hash functions. All hash functions, however, are one-way.</p>
+
+<p>When storing encrypted passwords, the typical practice is to use a hash function, such as MD5 or SHA-1, to encrypt the password before saving it. The reason for preferring a hash function to a cipher is that we don&rsquo;t usually want anybody to be able to recover the password: we never (or should never) display it on the screen or in e-mails, for example. A string of plaintext encrypted by a hash function is called a <em>hash</em>.</p>
+
+<p>Here are a couple of examples of hashed text:</p>
+
+<ul>
+<li><code>4fe0e930dd0adf9daaba0b7219bbe1f1bbb7809c</code></li>
+<li><code>3af00c6cad11f7ab5db4467b66ce503e</code></li>
+</ul>
+
+
+<p>The first string is an SHA-1 hash of the string <code>dardy</code>, and the second is an MD5 hash of the string <code>friend</code>. You can easily Google for free online hash calculators, both for MD5 and for SHA-1.</p>
+
+<p>You might ask how we can use stored password hashes to authenticate users if we can&rsquo;t recover the plaintext password from the hash. The answer is that we don&rsquo;t compare plaintext passwords, but rather we compare the hashes. When the user submits a username/password pair, we hash the submitted password and compare that hash with the stored hash. If the two match, then we conclude that the submitted password was correct.</p>
+
+<p>We can draw this conclusion due to a special property of hash functions: in general, different plaintext inputs map to different hashes. That is, in general, different plaintext inputs very, very rarely &ldquo;collide.&rdquo; There are of course limits to this non-collision, but for practical purposes we can assume that different passwords will have different hashes. So if the hashes match, then the submitted password was correct.</p>
+
+<p>Sound good? Let&rsquo;s start with the authentication side of things, and then we&rsquo;ll tackle user registrations.</p>
+
+<h3>Configuring your app for authentication against secured passwords</h3>
+
+
+<p>When discussing secure storage of passwords, there are really two different sides to consider. First, during the registration process (or else during account provisioning, if that&rsquo;s how you&rsquo;re doing things), you have to obfuscate the password in some fashion before saving it to the data store. And secondly you have to be able to use those obfuscated passwords during authentication.</p>
+
+<p>We&rsquo;re going to start with the authentication part first, since that&rsquo;s pretty easy to set up. We&rsquo;re going to assume the following:</p>
+
+<ul>
+<li>Your app has an existing user account model is called <code>Account</code>, with a corresponding <code>AccountDao</code> interface and implementation to support CRUD operations.</li>
+<li>You also have a service bean, which we&#8217;ll assume is <code>AccountServiceImpl</code>, that supports user registrations. The registrations store the passwords as plaintext.</li>
+<li>Your app is configured to support Spring Security 2 username/password authentication against plaintext passwords. You&#8217;re using two separate application context files: <code>applicationContext.xml</code> and <code>applicationContext-security.xml</code>, and you&#8217;re using namespace configuration in <code>applicationContext-security.xml</code>.</li>
+</ul>
+
+
+<p>Given the assumptions above, it isn&rsquo;t hard to modify the configuration to use hashed passwords during the login process. Let&rsquo;s see how.</p>
+
+<h3>Create some user accounts in the database with hashed passwords</h3>
+
+
+<p>Create an account or two in your database with SHA-1 hashed passwords. You can use the following website to compute SHA-1 hashes of plaintext passwords:</p>
+
+<p><a href="http://sha1-hash-online.waraxe.us/"><a href="http://sha1-hash-online.waraxe.us/">http://sha1-hash-online.waraxe.us/</a></a></p>
+
+<p>For example, the SHA-1 hash of <code>flower</code> is <code>5a46b8253d07320a14cace9b4dcbf80f93dcef04</code>. When entering your hash into the hash calculator at the link above, be sure not to enter a carriage return character, as that&rsquo;s significant and will completely change the hash. Anyway, create the database records, using the SHA-1 hash as the password.</p>
+
+<h3>Update applicationContext-security.xml to authenticate against hashed passwords</h3>
+
+
+<p>We want to add something called a <code>PasswordEncoder</code> to our Spring configuration. <code>PasswordEncoder</code> is an interface defining a contract for computing hashes. There are different <code>PasswordEncoder</code> implementations according to the hash function you want to apply. Two popular options, for example, are <code>Md5PasswordEncoder</code> for MD5 hashes and <code>ShaPasswordEncoder</code> for (you guessed it) SHA. We&rsquo;ll use SHA here but either choice is legitimate. Don&rsquo;t use <code>Md4PasswordEncoder</code> unless you are working with a legacy system, as it is known to be weak.</p>
+
+<p>The namespace configuration supports <code>PasswordEncoder</code>s. Just add a single line to your <code>authentication-provider</code> element like this:</p>
+
+<pre>&lt;authentication-provider&gt;
+    &lt;password-encoder hash="sha" /&gt;
+    &lt;jdbc-user-service data-source-ref="dataSource" /&gt;
+&lt;/authentication-provider&gt;</pre>
+
+
+<p>Yep, that&rsquo;s it! This configuration sets SHA-1 as our hash algorithm.</p>
+
+<h3>Try it out</h3>
+
+
+<p>Try logging in using the account you just created. Type in the plaintext password, not the hash. The login should work. If so, congratulations, your app authenticates against secure passwords! (You&rsquo;ll need to convert whatever other passwords you have into SHA-1 hashes.)</p>
+
+<p>Now we&rsquo;re going to jump over to the other side, which is storing passwords securely during either the registration or account provisioning process. We&rsquo;ll assume a registration process but the technique is the same in either case.</p>
+
+<h3>Configuring your app to secure passwords during registration</h3>
+
+
+<p>Saving secured passwords is somewhat more involved than authenticating against them. Part of the reason is that we&rsquo;d like to use the same <code>PasswordEncoder</code> instance during registration that we used during login, partly just because it&rsquo;s &ldquo;cleaner&rdquo;, and relatedly, because it allows us to avoid having to coordinate two separate <code>PasswordEncoder</code> instances should we decide to switch from SHA-1 to MD5, or add salt, or whatever. Basically it boils down to our being good adherents to the <a href="http://en.wikipedia.org/wiki/DRY_code">DRY principle</a>.</p>
+
+<p>Unfortunately, the namespace configuration for <code>authentication-provider</code> doesn&rsquo;t accept an externally-defined <code>PasswordEncoder</code> bean; you have to use the <code>password-encoder</code> namespace element inside of <code>authentication-provider</code>. So instead of using the namespace configuration, we&rsquo;re going to drop back to good, old-fashioned bean configuration.</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans:beans xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-2.0.4.xsd"&gt;
+
+    &lt;-- 1 --&gt;
+    &lt;beans:bean id="accountDao" class="example.HbnAccountDao" /&gt;
+    
+    &lt;-- 2 --&gt;
+    &lt;beans:bean id="userDetailsService"
+        class="example.UserDetailsServiceImpl"
+        p:userDao="accountDao" /&gt;
+
+    &lt;-- 3 --&gt;
+    &lt;beans:bean id="passwordEncoder"
+        class="org.springframework.security.providers.encoding.ShaPasswordEncoder" /&gt;
+
+    &lt;-- 4 --&gt;
+    &lt;beans:bean
+        class="org.springframework.security.providers.dao.DaoAuthenticationProvider"
+        p:userDetailsService-ref="userDetailsService"
+        p:passwordEncoder-ref="passwordEncoder"&gt;
+        &lt;custom-authentication-provider /&gt;
+    &lt;/beans:bean&gt;
+&lt;/beans:beans&gt;</pre>
+
+
+<p>In the code above, we begin by creating a data access object for user accounts <span class="cueball">1</span>. Next we create an implementation of Spring&rsquo;s <code>UserDetailsService</code> interface, which we&rsquo;ve called <code>UserDetailsServiceImpl</code> <span class="cueball">2</span>. <code>UserDetailsService</code> is essentially a service provider interface for the <code>DaoAuthenticationProvider</code>; it allows the latter to obtain <code>UserDetails</code> instances for authentication purposes. Third we create the <code>PasswordEncoder</code> itself <span class="cueball">3</span>; in this case we&rsquo;re using <code>ShaPasswordEncoder</code>, which hashes passwords using SHA (the default strength is SHA-1). Finally, we&rsquo;re creating a <code>DaoAuthenticationProvider</code> <span class="cueball">4</span> and injecting it with the <code>userDetailsService</code> and <code>passwordEncoder</code> we created previously. We also include a <code>custom-authentication-provider</code> element to register our authentication provider with an <code>AuthenticationManager</code> hiding in the background.</p>
+
+<p><img src="http://wheelersoftware.s3.amazonaws.com/articles/spring-security-hash-salt-passwords/authn.jpg" alt="Authentication" /></p>
+
+<p>For the curious, the <code>AuthenticationManager</code> in question is <code>ProviderManager</code>, a provider-based implementation of the <code>AuthenticationManager</code> interface, and it is automatically created by the <code>http</code> element unless you&rsquo;ve already defined one explicitly. See the figure above for a class diagram.</p>
+
+<p>That takes care of configuration. Let&rsquo;s see what we need to do in order to save registrations with a hashed password.</p>
+
+<h3>Update AccountServiceImpl to hash the password</h3>
+
+
+<p>There are two updates you&rsquo;ll need to make to your <code>AccountServiceImpl</code> bean. The first one is that you&rsquo;ll need to provide a setter for a <code>PasswordEncoder.</code> And once you create that setter, go back to your application context configuration and make sure you&rsquo;re actually injecting a <code>PasswordEncoder</code> into the <code>AccountServiceImpl</code> bean.</p>
+
+<p>The second update is to modify your <code>registerAccount()</code> method in <code>AccountServiceImpl</code> so that it hashes passwords:</p>
+
+<pre>public void registerAccount(Account account) {
+    accountDao.save(account); // 1
+    String encPassword =
+        passwordEncoder.encodePassword(account.getPassword(), null); // 2
+    account.setPassword(encPassword); // 3
+    accountDao.save(account); // 4
+}</pre>
+
+
+<p>First we save the account with the plaintext password <span class="cueball">1</span>. There&rsquo;s a reason for saving the account before actually hashing the password, but we&rsquo;ll have to wait until later in the recipe for the reason why. Then we hash the password <span class="cueball">2</span>, update it on the account <span class="cueball">3</span>, and save the account with the new password <span class="cueball">4</span>. The account now has a hashed password in the database.</p>
+
+<p>Good job! You&rsquo;re now saving secured passwords into your database, and you&rsquo;re able to authenticate against them.</p>
+
+<p>But I&rsquo;m afraid that it&rsquo;s time for some bad news.</p>
+
+<h3>Meet the dictionary attack</h3>
+
+
+<p>Our new password storage scheme is off to a good start. It certainly prevents casual observers from accidentally seeing user passwords. But it does little to thwart the efforts of a semi-determined attacker. Let&rsquo;s talk about the dictionary attack.</p>
+
+<p>To understand how it works, recall that hashing different strings generally results in different hashes. We can use that fact to create a big lookup table for a dictionary of potential passwords. The lookup table takes a hash and then returns the string that generated it.</p>
+
+<p>As luck would have it, we don&rsquo;t even have to create our own lookup table. Helpful folks on the Internet have already done it for us. For instance, go to</p>
+
+<p><a href="http://tools.benramsey.com/md5/"><a href="http://tools.benramsey.com/md5/">http://tools.benramsey.com/md5/</a></a></p>
+
+<p>and enter the MD5 hash we presented earlier; namely,</p>
+
+<p><code>3af00c6cad11f7ab5db4467b66ce503e</code></p>
+
+<p>Voil&agrave;! You&rsquo;ve unhashed a hash. This is called a <em>dictionary attack</em>.</p>
+
+<p>If an attacker were to acquire a list of hashed passwords, he could make quick work of it using a dictionary of the sort just described. In some contexts that might be very bad.</p>
+
+<h3>Add a little salt to that hash</h3>
+
+
+<p>Ideally we&rsquo;d like to thwart even the semi-determined attacker. To improve our scheme, we now introduce the idea of salt.</p>
+
+<p>The strategy behind salt is to make it much more painful for the attacker to recover hashed passwords. Instead of allowing ourselves to be attacked by a single well-known dictionary, we are going to force the attacker to create a new and unique dictionary for every single password he wants to try to recover. Can he still do it? Sure. But it&rsquo;s just a lot more work now. We&rsquo;ve effectively eliminated merely semi-determined attackers from the pool of attackers. That&rsquo;s nothing to scoff at since their numbers are large.</p>
+
+<p>Here&rsquo;s how we do it. Instead of hashing passwords, we concatenate a string&mdash;called a salt&mdash;to the plaintext password, and then hash the concatenated string. This effectively breaks the standard dictionary attack, because now all of the hashes in your password store are &ldquo;new.&rdquo;</p>
+
+<p>What happens, though, if we use a single, common salt across all users? While this is better than using no salt at all, it&rsquo;s still not hard to overcome if the attacker knows the salt. The attacker simply has to create a single new dictionary, this time concatenating the salt to each individual dictionary word before hashing. Then it&rsquo;s the same as before.</p>
+
+<p>We want to make things harder for him. Instead of using a common salt across all users, we want the salt to be different for each user. That way, the attacker has to create a new dictionary for every single user he wants to attack. Again, he can do it, but it&rsquo;s much more time-consuming.</p>
+
+<p>One good way to create a salt is to use some property of the user. It is better to choose something that won&rsquo;t change, such as a numeric primary key, than it is to choose something that might change, such as an e-mail address. If you use (say) e-mail addresses for salt, and a user changes his e-mail address, he won&rsquo;t be able to log in anymore because the authentication system won&rsquo;t be able to create the correct hash.</p>
+
+<p>Usernames are a reasonable choice as they don&rsquo;t usually change, but a numeric primary key is even better, given the specific scheme Spring Security uses to concatenate the password with the salt. Spring Security uses braces to delimit the salt, and hence disallows braces inside the salt itself. For example, if my password/salt is <code>college/willie</code>, then Spring Security will hash the string <code>college{willie}</code>. You may well want to allow braces in the username (it&rsquo;s common for gamers to include such characters in their usernames). You can avoid the whole issue&mdash;including the added complexity of disallowing braces in usernames&mdash;by using the user&rsquo;s numeric primary key, if the user schema supports that.</p>
+
+<p>So let&rsquo;s do just that.</p>
+
+<h3>Update applicationContext-security.xml to handle salt</h3>
+
+
+<p>All we need to do to <code>applicationContext-security.xml</code> is add a <code>SaltSource</code> bean and inject it into the <code>DaoAuthenticationProvider</code>. We do this in the listing below.</p>
+
+<pre>&lt;beans:bean id="passwordEncoder"
+    class="org.springframework.security.providers.encoding.ShaPasswordEncoder" /&gt;
+&lt;beans:bean id="saltSource"
+    class="org.springframework.security.providers.dao.salt.ReflectionSaltSource"
+    p:userPropertyToUse="id" /&gt;
+&lt;beans:bean
+    class="org.springframework.security.providers.dao.DaoAuthenticationProvider"
+    p:userDetailsService-ref="userDetailsService"
+    p:passwordEncoder-ref="passwordEncoder"
+    p:saltSource-ref="saltSource"&gt;
+    &lt;custom-authentication-provider /&gt;
+&lt;/beans:bean&gt;</pre>
+
+
+<p>We mentioned above that it&rsquo;s possible to use a global salt, but that it&rsquo;s not as good as using a salt that varies from user to user. (For a more detailed explanation, please see my article <a href="http://springinpractice.com/2008/08/31/storing-passwords-securely/">Storing Passwords Securely</a>.) <code>ReflectionSaltSource</code> allows us to use a property of our user (specifically, a property of a <code>UserDetails</code> instance; we&rsquo;ll see that shortly) to provide a salt. As with the <code>PasswordEncoder</code>, we&rsquo;ve defined the <code>SaltSource</code> explicitly as a bean so we can inject it into <code>AccountServiceImpl</code>.</p>
+
+<h3>Update AccountServiceImpl to salt the password</h3>
+
+
+<p>The first step is to add a setter for a <code>SaltSource</code> instance to <code>AccountServiceImpl</code>, and wire it up in your application context file.</p>
+
+<p>Next, we&rsquo;ll once again update <code>registerAccount()</code>.</p>
+
+<pre>public void registerAccount(Account account) {
+    accountDao.save(account);
+    UserDetailsAdapter userDetails = new UserDetailsAdapter(account); // 1
+    String password = userDetails.getPassword();
+    Object salt = saltSource.getSalt(userDetails); // 2
+    account.setPassword(passwordEncoder.encodePassword(password, salt)); // 3
+    accountDao.save(account);
+}</pre>
+
+
+<p>As before, we&rsquo;re saving the account with a plaintext password first. I promised earlier to explain why I&rsquo;m doing that, so here&rsquo;s the explanation. In many cases (such as when using Hibernate), entities aren&rsquo;t assigned IDs until after they&rsquo;re persisted. Since we&rsquo;re basing our salt on the ID, we need to save the account before generating the salt and hash.</p>
+
+<p>Next we wrap the <code>account</code> with a class we wrote to adapt our <code>Account</code> class to the <code>UserDetails</code> interface; namely, <code>UserDetailsAdapter</code> <span class="cueball">1</span> (we&rsquo;ll see it momentarily).</p>
+
+<p>We&rsquo;re using the <code>SaltSource</code> to get the salt from our <code>UserDetailsAdapter</code> <span class="cueball">2</span>. As we saw in the configuration, this salt source uses reflection to grab the account ID and present it to the <code>PasswordEncoder</code> as salt <span class="cueball">3</span>.</p>
+
+<p>The next listing shows our <code>UserDetailsAdapter</code> class, which again is just an example of a <code>UserDetails</code> implementation. I&rsquo;m extending the <code>org.springframework.security.userdetails.User</code> class for convenience, but note that that&rsquo;s a <code>UserDetails</code> implementation.</p>
+
+<pre>package examples;
+
+import java.util.Set;
+
+import org.springframework.security.GrantedAuthority;
+import org.springframework.security.GrantedAuthorityImpl;
+import org.springframework.security.User;
+
+public class UserDetailsAdapter extends User { // 1
+    private final Long id;
+    
+    public UserDetailsAdapter(Account acct) {
+        super(acct.getUsername(), acct.getPassword(), acct.isEnabled(),
+                true, true, true, toAuthorities(acct.getAuthorityNames()));
+        this.id = acct.getId();
+    }
+    
+    private static GrantedAuthority[] toAuthorities(Set&lt;String&gt; authNames) {
+        GrantedAuthority[] auths = new GrantedAuthority[authNames.size()];
+        int i = 0;
+        for (String authName : authNames) {
+            auths[i++] = new GrantedAuthorityImpl(authName);
+        }
+        return auths;
+    }
+    
+    public Long getId() {
+        return id;
+    }
+}</pre>
+
+
+<p>Again, we&rsquo;re just extending <code>User</code> for convenience <span class="cueball">1</span>; the important thing is that our <code>UserDetailsAdapter</code> implements <code>UserDetails</code>, which allows <code>DaoAuthenticationProvider</code> to use it to perform authentication.</p>
+
+<p>There you have it&mdash;salted and hashed passwords. This won&rsquo;t stop the most determined attackers from unmasking your passwords, but it will stop most others.</p>
+
+<h2>Discussion</h2>
+
+
+<p>The ideas in this recipe can also be applied to storing answers to challenge questions in a secure way (for instance, &ldquo;What is your mother&rsquo;s maiden name?&rdquo;). The relevant similarities are that the information should be secured (otherwise it might be used to recover or reset passwords on other websites), and that we typically don&rsquo;t need to decrypt answers to challenge questions. It might be helpful to convert the answers to some kind of canonical form before saving them, such as converting everything to uppercase, removing punctuation and trimming extra whitespace, just to eliminate minor variations in the way that people answer the question.</p>
+
+<p>It is also useful to understand where this recipe does not apply. In most cases where you want to store data securely, you need to be able to decrypt the stored data. A good example is storing credit card numbers securely for Payment Card Industry (PCI) compliance. You need to be able to recover the credit card number so you can apply it to customer orders. One-way hashes, which support encryption but not decryption, will not help you with this.</p>
+
+<p>When you store passwords using hashes, you cannot offer password recovery functionality to end users, because the system doesn&rsquo;t have any way to actually recover the passwords. All you can offer is the ability to reset passwords. This is better from a security perspective anyway since there&rsquo;s always the chance that you might disclose a password to somebody other than the intended recipient, and that somebody might use it to access not only your site but other sites, as we discussed in the background above.</p>
+
+<h2>Resources</h2>
+
+
+<p>If you found this article helpful, you may also find the following useful:</p>
+
+<ul>
+<li><a href="http://springinpractice.com/2008/08/31/storing-passwords-securely/">Storing passwords securely</a> - Another post I wrote about storing passwords securely, but treating the subject more generally as opposed to being Spring-specific. The discussion about hashing and salting is a little more in-depth, and there&#8217;s also a section on key strengthening, which can make your passwords even more secure.</li>
+<li><a href="http://www.manning.com/wheeler/">Spring in Practice</a> - A book that my collaborators and I are writing for Manning Publications about Spring generally. We have lots of information about Spring Security, including chapters on user registrations, authentication and authorization.</li>
+<li><a href="http://springinpractice.wordpress.com/2008/09/06/login-remember-me/">Excerpt: Login and remember-me discussion</a> - An excerpt from Spring in Practice that compares normal username/password authentication with remember-me authentication.</li>
+</ul>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1457,311 +1826,6 @@ public class ShoppingCart implements Serializable {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Build a Shopping Cart With Spring Web Flow 2, Part 3</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-05-07T10:51:39-07:00" pubdate data-updated="true">May 7<span>th</span>, 2008</time>
-        
-         | <a href="/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><div class="intro">
-<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
-</div>
-
-
-
-
-<h3>Building out the application</h3>
-
-
-<p>Now that we&rsquo;ve gotten Spring MVC and SWF working, it&rsquo;s time to build out the shopping cart application.  Please download the following file before continuing:</p>
-
-<center><span class="icon archive"><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/mycart3.zip">mycart3.zip</a></span></center>
-
-
-<p>We won&rsquo;t be looking at every aspect of this application, but I&rsquo;ll highlight the most interesting pieces from a SWF point of view.</p>
-
-<h4>Dependencies for mycart3.zip</h4>
-
-
-<p>Besides the dependencies we had for <code>mycart2.zip</code>, there are four others you&rsquo;ll need:</p>
-
-<ul class="square">
-<li><code>cglib-nodep-2.1_3.jar</code></li>
-<li><code>jstl.jar</code></li>
-<li><code>standard.jar</code></li>
-<li><code>sitemesh-2.3.jar</code> (from <a href="http://www.opensymphony.com/sitemesh/download.action">www.opensymphony.com/sitemesh/download.action</a>)</li>
-</ul>
-
-
-<p>After you download <code>mycart3.zip</code> (and its dependencies), you can deploy it and then point your browser at</p>
-
-<p><p style="text-align:center"><a href="http://localhost:8080/mycart/home.do">http://localhost:8080/mycart/home.do</a></p>
-
-<p>Here are some notes to keep in mind:</p>
-
-<p><ul class="square"></p>
-
-<p><li>My registration and login flows don&rsquo;t actually &ldquo;do&rdquo; anything. They&rsquo;re not hooked up to Spring Security and they&rsquo;re not hooked up to a database.  So when you register you can just hit the submit button,and when you log in you can just hit the login button.  I just wanted to focus on the flows themselves.</li></p>
-
-<p><li>I&rsquo;m using Sitemesh to ensure a unified layout across the pages. Even if you are not familiar with Sitemesh, don&rsquo;t worry: it is very straightforward.  Basically you just put a servlet filter in front of the pages and the filter decorates the pages with a template (<code>/WEB-INF/jsp/pagetemplate.jsp</code> in this case) according to a simple configuration file (<code>/WEB-INF/decorators.xml</code>). If however you don&rsquo;t want to use Sitemesh, simply remove the filter from <code>web.xml</code> and Sitemesh is gone.</li></p>
-
-<p></ul></p>
-
-<p><h3>Multiple flows</h3></p>
-
-<p>Any given app may contain multiple flows, and <code>mycart3</code> is such an app.  We have four different flows:</p>
-
-<p><ul class="square">
-<li><code>addToCart</code>: add an item to a shopping cart</li>
-<li><code>checkout</code>: shopping cart checkout process</li>
-<li><code>login</code>: log into the app</li>
-<li><code>register</code>: register for a new user account</li>
-</ul></p>
-
-<p>In some of the cases we have what we would intuitively consider a flow in that there are multiple states involved; in other cases there is only one state to speak of and so it may seem strange to regard the flow as being a flow.  However we&rsquo;ll see how that can make sense in the following section.</p>
-
-<p>To create multiple flows, you will need to do the following. First, create the flow definition files and put them in your <code>/WEB-INF/flows</code> directory (or wherever you decided to put them).  Then add the flow locations to the flow registry, and the flow URL mappings to your <code>SimpleUrlHandlerMapping</code> (if that&rsquo;s what you&rsquo;re using), in your Spring application context, like so:</p>
-
-<p><div>
-<span class="code-listing">Code listing:</span> <code>/WEB-INF/mycart-servlet.xml</code>
-<pre name="code" class="xml">&hellip;</p>
-
-<p>&lt;bean id=&ldquo;flowUrlMappings&rdquo; class=</p>
-
-<pre><code>    "org.springframework.web.servlet.handler.SimpleUrlHandlerMapping"&amp;gt;
-&amp;lt;property name="mappings"&amp;gt;
-    &amp;lt;value&amp;gt;
-        /addToCart.do=flowController
-        /checkout.do=flowController
-        /account/login.do=flowController
-        /account/register.do=flowController
-    &amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property name="alwaysUseFullPath" value="true"/&amp;gt;
-</code></pre>
-
-<p>&lt;/bean&gt;</p>
-
-<p>&lt;flow:flow-registry id=&ldquo;flowRegistry&rdquo; flow-builder-services=&ldquo;flowBuilderServices&rdquo;&gt;</p>
-
-<pre><code>&amp;lt;flow:flow-location path="/WEB-INF/flows/addToCart.xml"/&amp;gt;
-&amp;lt;flow:flow-location path="/WEB-INF/flows/checkout.xml"/&amp;gt;
-&amp;lt;flow:flow-location path="/WEB-INF/flows/login.xml"/&amp;gt;
-&amp;lt;flow:flow-location path="/WEB-INF/flows/register.xml"/&amp;gt;
-</code></pre>
-
-<p>&lt;/flow:flow-registry&gt;</p>
-
-<p>&hellip;</pre>
-</div></p>
-
-<p>Once you have those in place you should be set up for multiple flows.  Point your links at them and try them out!</p>
-
-<p><h3>Subflows</h3></p>
-
-<p>Going hand-in-hand with the idea of multiple flows is the idea that some flows might be subflows of other flows.  In <code>mycart3</code>,all four flows can be independently accessed, but in addition to that we have the <code>addToCart</code>, <code>login</code> and <code>register</code> flows being subflows to the <code>checkout</code> flow.  See Figure 3.</p>
-
-<p><div style="margin:20px 0;text-align:center"></p>
-
-<pre><code>&lt;div&gt;&lt;img src="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/subflows.jpg" alt="Figure 3. Subflows." /&gt;&lt;/div&gt;
-&lt;div class="caption"&gt;Figure 3. Subflows.&lt;/div&gt;
-</code></pre>
-
-<p></div></p>
-
-<p>Here&rsquo;s the idea.  The three flows we&rsquo;ve identified as subflows are defined as separate flows because clearly there are use cases where it makes sense for them to be accessed outside of a checkout process. For example, we want to be able to add products to a shopping cart while we&rsquo;re browsing the product catalog.  And of course we want people to be able to register and login even if they&rsquo;re not in a checkout process.</p>
-
-<p>But those are also flows that we might want to include as part of a checkout process too.  During checkout, we might want to recommend products to the customer.  Or if the user hasn&rsquo;t yet logged in or registered, we&rsquo;d want them to do that as part of the checkout process rather than forcing them to do that before they could enter the checkout process.</p>
-
-<p>By defining the login, registration and add-to-cart as flows, we make them available both independently (as top-level flows) and also as part of a larger flow (like the checkout flow).  That&rsquo;s why we have these defined as flows even though they are currently implemented as single-state flows.  (It is however easy to imagine these being multi-state flows.  For example, the login flow may ask you to answer a challenge question if it detects that you&rsquo;re coming in from an unusual IP address, or the add-to-cart flow may ask you to enter a quantity before proceeding.)</p>
-
-<p>So here is the checkout flow:</p>
-
-<p><div>
-<span class="code-listing">Code listing:</span> <code>/WEB-INF/flows/checkout.xml</code>
-<pre name="code" class="xml">&lt;?xml version=&ldquo;1.0&rdquo; encoding=&ldquo;UTF-8&rdquo;?&gt;
-&lt;flow xmlns=&ldquo;<a href="http://www.springframework.org/schema/webflow">http://www.springframework.org/schema/webflow</a>&rdquo;</p>
-
-<pre><code>xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.springframework.org/schema/webflow
-    http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd"&amp;gt;
-
-&amp;lt;!-- Get the products one time, at the beginning of the flow --&amp;gt;
-&amp;lt;on-start&amp;gt;
-    &amp;lt;set name="flowScope.products" value="cartService.products"/&amp;gt;
-    &amp;lt;set name="flowScope.shippingOptions" value="cartService.shippingOptions"/&amp;gt;
-&amp;lt;/on-start&amp;gt;
-
-&amp;lt;!-- If not specified, the start state is the first state specified. --&amp;gt;
-&amp;lt;view-state id="viewCart" view="viewcart"&amp;gt;
-    &amp;lt;!-- cart is available to SWF but not stored on the session under that
-         name when using AOP proxy --&amp;gt;
-    &amp;lt;on-render&amp;gt;
-        &amp;lt;!-- Carry cart from Spring app context to request scope --&amp;gt;
-        &amp;lt;set name="requestScope.shoppingCart" value="shoppingCart"/&amp;gt;
-        &amp;lt;set name="requestScope.recommendations" value="cartService.recommendations"/&amp;gt;
-    &amp;lt;/on-render&amp;gt;
-    &amp;lt;transition on="addToCart" to="addProductToCart"/&amp;gt;
-    &amp;lt;transition on="register" to="register"/&amp;gt;
-    &amp;lt;transition on="login" to="login"/&amp;gt;
-&amp;lt;/view-state&amp;gt;
-
-&amp;lt;subflow-state id="addProductToCart" subflow="addToCart"&amp;gt;
-    &amp;lt;!-- This is where we go when the subflow returns. productAdded is
-         the name of an end-state. --&amp;gt;
-    &amp;lt;transition on="productAdded" to="viewCart"/&amp;gt;
-&amp;lt;/subflow-state&amp;gt;
-
-&amp;lt;!-- New customers create a new account before moving forward --&amp;gt;
-&amp;lt;subflow-state id="register" subflow="register"&amp;gt;
-    &amp;lt;transition on="accountAdded" to="paymentAndShipmentOptions"/&amp;gt;
-    &amp;lt;transition on="cancelRegistration" to="viewCart"/&amp;gt;
-&amp;lt;/subflow-state&amp;gt;
-
-&amp;lt;!-- Existing customers log in before moving forward --&amp;gt;
-&amp;lt;subflow-state id="login" subflow="login"&amp;gt;
-    &amp;lt!-- This is where we go when the subflow returns. productAdded is
-         the name of an end-state. --&amp;gt;
-    &amp;lt;transition on="loginOk" to="paymentAndShipmentOptions"/&amp;gt;
-&amp;lt;/subflow-state&amp;gt;
-
-&amp;lt;!-- Payment and shipment options --&amp;gt;
-&amp;lt;view-state id="paymentAndShipmentOptions" view="options"&amp;gt;
-    &amp;lt;transition on="submit" to="confirmOrder"/&amp;gt;
-    &amp;lt;transition on="back" to="viewCart"/&amp;gt;
-&amp;lt;/view-state&amp;gt;
-
-&amp;lt;!-- Confirm order --&amp;gt;
-&amp;lt;view-state id="confirmOrder" view="confirmorder"&amp;gt;
-    &amp;lt;on-render&amp;gt;
-        &amp;lt;set name="requestScope.shoppingCart" value="shoppingCart"/&amp;gt;
-    &amp;lt;/on-render&amp;gt;
-    &amp;lt;transition on="continue" to="thankYou"&amp;gt;
-        &amp;lt;evaluate expression="cartService.submitOrderForPayment()"/&amp;gt;
-    &amp;lt;/transition&amp;gt;
-&amp;lt;/view-state&amp;gt;
-
-&amp;lt;!-- Thank you page --&amp;gt;
-&amp;lt;view-state id="thankYou" view="thanks"&amp;gt;
-    &amp;lt;transition on="continue" to="shop"/&amp;gt;
-&amp;lt;/view-state&amp;gt;
-
-&amp;lt;!-- Exit the flow, letting the user return to shopping --&amp;gt;
-&amp;lt;end-state id="shop" view="externalRedirect:contextRelative:/home.do"/&amp;gt;
-
-&amp;lt;global-transitions&amp;gt;
-    &amp;lt;transition on="cancelCheckout" to="shop"/&amp;gt;
-&amp;lt;/global-transitions&amp;gt;
-</code></pre>
-
-<p>&lt;/flow&gt;</pre>
-</div></p>
-
-<p>In the code above, we are using the <code>&lt;subflow-state&gt;</code> element to call a subflow from a parent flow.  The <code>subflow</code> attribute specifies one of the flows you registered with the flow registry in the Spring configuration.  The flow starts at the subflow&rsquo;s start state, and continues until the subflow hits an end state.  The end state IDs provide keys that you can reference from the calling flow to effect state transitions.  For example, in the flow above,<code>accountAdded</code> is one of the end states for the <code>register</code> flows, and so one of the <code>&lt;transition&gt;</code> elements references that end state.</p>
-
-<p>Recall from <code>register.xml</code> (see <a href="spring-web-flow-2.0-4.html">page 4</a>) that the end states specified a <code>view</code> attribute.  If the <code>register</code> flow is called directly, then SWF will use the <code>view</code> attribute to decide which view to show the user when the flow reaches a given end state.  If, however, the flow is called as part of a subflow (instead of being called directly), SWF will ignore the <code>view</code> attribute and instead follow whatever transition is defined in the calling <code>&lt;subflow-state&gt;</code>.</p>
-
-<p><h3>Using EL to call services</h3></p>
-
-<p>SWF allows you to make calls against service beans using an expression language (EL).  You can use either Unified EL or else OGNL for that, as mentioned earlier in the article.  We happen to be using OGNL though I understand that Unified EL and OGNL are mostly the same,at least where their core syntax is concerned.</p>
-
-<p>There are various places in your flow where you might want to invoke service beans, and SWF provides various mechanisms for doing that.  Here&rsquo;s a table showing how to call services from different locations in your flow definition file:</p>
-
-<p><div class="table-with-caption"></p>
-
-<pre><code>&lt;div class="table"&gt;
-    &lt;table&gt;
-        &lt;tr&gt;
-            &lt;th&gt;Location&lt;/th&gt;
-            &lt;th&gt;How to call the service bean&lt;/th&gt;
-        &lt;/tr&gt;
-        &lt;tr&gt;
-            &lt;td&gt;On flow start&lt;/td&gt;
-            &lt;td&gt;&lt;code&gt;/flow/on-start&lt;/code&gt; element&lt;/td&gt;
-        &lt;/tr&gt;
-        &lt;tr&gt;
-            &lt;td&gt;On state entry&lt;/td&gt;
-            &lt;td&gt;&lt;code&gt;/flow/view-state/on-entry&lt;/code&gt; element&lt;/td&gt;
-        &lt;/tr&gt;
-        &lt;tr&gt;
-            &lt;td&gt;Immediately before rendering a view&lt;/td&gt;
-            &lt;td&gt;&lt;code&gt;/flow/view-state/on-render&lt;/code&gt; element&lt;/td&gt;
-        &lt;/tr&gt;
-        &lt;tr&gt;
-            &lt;td&gt;On state exit&lt;/td&gt;
-            &lt;td&gt;&lt;code&gt;/flow/view-state/on-exit&lt;/code&gt; element&lt;/td&gt;
-        &lt;/tr&gt;
-        &lt;tr&gt;
-            &lt;td&gt;On state transition&lt;/td&gt;
-            &lt;td&gt;&lt;code&gt;/flow/view-state/transition/evaluate&lt;/code&gt; element&lt;/td&gt;
-        &lt;/tr&gt;
-        &lt;tr&gt;
-            &lt;td&gt;On flow end&lt;/td&gt;
-            &lt;td&gt;&lt;code&gt;/flow/on-end&lt;/code&gt; element&lt;/td&gt;
-        &lt;/tr&gt;
-    &lt;/table&gt;
-&lt;/div&gt;
-&lt;div class="caption"&gt;Table 2. How to call service beans from different locations.&lt;/div&gt;
-</code></pre>
-
-<p></div></p>
-
-<p>Note that the above does not represent a 100% complete list of places where you can use EL, but it gives you most of the major cases and also the basic idea.</p>
-
-<p>In <code>checkout.xml</code> we&rsquo;ve used a number of the methods above.  For example, we use <code>&lt;on-start&gt;</code> to grab the product catalog and shipping options from the cart service and place them on the flow scope, which allows them to be used for the duration of the flow.  The <code>value</code> attribute on the <code>set</code> element is specified using EL.  (It looks a lot like JSP EL, if you are familiar with that.)  The <code>cartService</code> bean is available because we defined a Spring bean with that ID.</p>
-
-<p>We also use <code>&lt;on-render&gt;</code> to prepare the <code>viewCart</code> state for rendering.  In this case, we place the user&rsquo;s shopping cart on the request scope so the JSP can easily reference it, and we also pull some recommendations off of the cart service and place those on the request scope as well.  Once again the <code>value</code> attribute is specified using EL.</p>
-
-<p><h3>Global transitions</h3></p>
-
-<p>At the end of <code>checkout.xml</code>, you will see that I&rsquo;ve defined a <code>&lt;global-transitions&gt;</code> element.  This allows me to define a transition that applies to all states in the flow.  In this case, any time the user raises the <code>cancelCheckout</code> event, the global transition I&rsquo;ve defined will kick in and carry the user to the <code>shop</code> state. Pretty handy for transitions that occur in multiple places throughout the flow.</p>
-
-<p><h3>That&rsquo;s our whirlwind tour</h3></p>
-
-<p>That concludes this tutorial on Spring Web Flow 2.0.  We&rsquo;ve really only scratched the surface&mdash;for instance, we haven&rsquo;t even touched the new AJAX support that SWF 2.0 introduces&mdash;but this should give you an overall feel for how things work.  The SWF 2.0 distribution comes with a hotel booking sample application that shows you how to get SWF working with form validation and persistence as well (areas I&rsquo;ve suppressed in this article so that I could focus on flow definition).</p>
-
-<p>If you have suggestions and especially corrections to the article or the code, please leave them below.  SWF 2.0 is new so I have no doubt that you will be able to show me places where I could be doing something better.  Thanks!</p>
-
-<p><h3>Resources</h3></p>
-
-<p>A <a href="http://www.springhispano.org/?q=node/319">Maven version of the download</a> is available. The target link is in Spanish but there&rsquo;s a zip file at the bottom called <code>WebFlowExample.zip</code> that you can download. If you want to read the target link in English, you can use <a href="http://babelfish.yahoo.com/translate_txt">Alta Vista&rsquo;s free Babel Fish translation service</a>.</p>
-
-<p><div class="outro">
-<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
-</div></p>
-
-<p><div class="endnote">Post migrated from my Wheeler Software site.</div></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -1779,6 +1843,10 @@ xsi:schemaLocation="http://www.springframework.org/schema/webflow
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
       </li>
     
@@ -1792,10 +1860,6 @@ xsi:schemaLocation="http://www.springframework.org/schema/webflow
     
       <li class="post">
         <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
       </li>
     
   </ul>

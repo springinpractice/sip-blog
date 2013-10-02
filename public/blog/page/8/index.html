@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="This post is part of a three part series: Part 1 | Part 2 | Part 3 Creating a simple flow: Spring application context configuration Now we have &hellip;">
+  <meta name="description" content="This post is part of a three-part series: Part 1 | Part 2 | Part 3 Building out the application Now that we&rsquo;ve gotten Spring MVC and SWF &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,311 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Build a Shopping Cart With Spring Web Flow 2, Part 3</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-07T10:51:39-07:00" pubdate data-updated="true">May 7<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><div class="intro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
+</div>
+
+
+
+
+<h3>Building out the application</h3>
+
+
+<p>Now that we&rsquo;ve gotten Spring MVC and SWF working, it&rsquo;s time to build out the shopping cart application.  Please download the following file before continuing:</p>
+
+<center><span class="icon archive"><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/mycart3.zip">mycart3.zip</a></span></center>
+
+
+<p>We won&rsquo;t be looking at every aspect of this application, but I&rsquo;ll highlight the most interesting pieces from a SWF point of view.</p>
+
+<h4>Dependencies for mycart3.zip</h4>
+
+
+<p>Besides the dependencies we had for <code>mycart2.zip</code>, there are four others you&rsquo;ll need:</p>
+
+<ul class="square">
+<li><code>cglib-nodep-2.1_3.jar</code></li>
+<li><code>jstl.jar</code></li>
+<li><code>standard.jar</code></li>
+<li><code>sitemesh-2.3.jar</code> (from <a href="http://www.opensymphony.com/sitemesh/download.action">www.opensymphony.com/sitemesh/download.action</a>)</li>
+</ul>
+
+
+<p>After you download <code>mycart3.zip</code> (and its dependencies), you can deploy it and then point your browser at</p>
+
+<p><p style="text-align:center"><a href="http://localhost:8080/mycart/home.do">http://localhost:8080/mycart/home.do</a></p>
+
+<p>Here are some notes to keep in mind:</p>
+
+<p><ul class="square"></p>
+
+<p><li>My registration and login flows don&rsquo;t actually &ldquo;do&rdquo; anything. They&rsquo;re not hooked up to Spring Security and they&rsquo;re not hooked up to a database.  So when you register you can just hit the submit button,and when you log in you can just hit the login button.  I just wanted to focus on the flows themselves.</li></p>
+
+<p><li>I&rsquo;m using Sitemesh to ensure a unified layout across the pages. Even if you are not familiar with Sitemesh, don&rsquo;t worry: it is very straightforward.  Basically you just put a servlet filter in front of the pages and the filter decorates the pages with a template (<code>/WEB-INF/jsp/pagetemplate.jsp</code> in this case) according to a simple configuration file (<code>/WEB-INF/decorators.xml</code>). If however you don&rsquo;t want to use Sitemesh, simply remove the filter from <code>web.xml</code> and Sitemesh is gone.</li></p>
+
+<p></ul></p>
+
+<p><h3>Multiple flows</h3></p>
+
+<p>Any given app may contain multiple flows, and <code>mycart3</code> is such an app.  We have four different flows:</p>
+
+<p><ul class="square">
+<li><code>addToCart</code>: add an item to a shopping cart</li>
+<li><code>checkout</code>: shopping cart checkout process</li>
+<li><code>login</code>: log into the app</li>
+<li><code>register</code>: register for a new user account</li>
+</ul></p>
+
+<p>In some of the cases we have what we would intuitively consider a flow in that there are multiple states involved; in other cases there is only one state to speak of and so it may seem strange to regard the flow as being a flow.  However we&rsquo;ll see how that can make sense in the following section.</p>
+
+<p>To create multiple flows, you will need to do the following. First, create the flow definition files and put them in your <code>/WEB-INF/flows</code> directory (or wherever you decided to put them).  Then add the flow locations to the flow registry, and the flow URL mappings to your <code>SimpleUrlHandlerMapping</code> (if that&rsquo;s what you&rsquo;re using), in your Spring application context, like so:</p>
+
+<p><div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/mycart-servlet.xml</code>
+<pre name="code" class="xml">&hellip;</p>
+
+<p>&lt;bean id=&ldquo;flowUrlMappings&rdquo; class=</p>
+
+<pre><code>    "org.springframework.web.servlet.handler.SimpleUrlHandlerMapping"&amp;gt;
+&amp;lt;property name="mappings"&amp;gt;
+    &amp;lt;value&amp;gt;
+        /addToCart.do=flowController
+        /checkout.do=flowController
+        /account/login.do=flowController
+        /account/register.do=flowController
+    &amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+&amp;lt;property name="alwaysUseFullPath" value="true"/&amp;gt;
+</code></pre>
+
+<p>&lt;/bean&gt;</p>
+
+<p>&lt;flow:flow-registry id=&ldquo;flowRegistry&rdquo; flow-builder-services=&ldquo;flowBuilderServices&rdquo;&gt;</p>
+
+<pre><code>&amp;lt;flow:flow-location path="/WEB-INF/flows/addToCart.xml"/&amp;gt;
+&amp;lt;flow:flow-location path="/WEB-INF/flows/checkout.xml"/&amp;gt;
+&amp;lt;flow:flow-location path="/WEB-INF/flows/login.xml"/&amp;gt;
+&amp;lt;flow:flow-location path="/WEB-INF/flows/register.xml"/&amp;gt;
+</code></pre>
+
+<p>&lt;/flow:flow-registry&gt;</p>
+
+<p>&hellip;</pre>
+</div></p>
+
+<p>Once you have those in place you should be set up for multiple flows.  Point your links at them and try them out!</p>
+
+<p><h3>Subflows</h3></p>
+
+<p>Going hand-in-hand with the idea of multiple flows is the idea that some flows might be subflows of other flows.  In <code>mycart3</code>,all four flows can be independently accessed, but in addition to that we have the <code>addToCart</code>, <code>login</code> and <code>register</code> flows being subflows to the <code>checkout</code> flow.  See Figure 3.</p>
+
+<p><div style="margin:20px 0;text-align:center"></p>
+
+<pre><code>&lt;div&gt;&lt;img src="http://wheelersoftware.s3.amazonaws.com/articles/spring-web-flow-2.0/subflows.jpg" alt="Figure 3. Subflows." /&gt;&lt;/div&gt;
+&lt;div class="caption"&gt;Figure 3. Subflows.&lt;/div&gt;
+</code></pre>
+
+<p></div></p>
+
+<p>Here&rsquo;s the idea.  The three flows we&rsquo;ve identified as subflows are defined as separate flows because clearly there are use cases where it makes sense for them to be accessed outside of a checkout process. For example, we want to be able to add products to a shopping cart while we&rsquo;re browsing the product catalog.  And of course we want people to be able to register and login even if they&rsquo;re not in a checkout process.</p>
+
+<p>But those are also flows that we might want to include as part of a checkout process too.  During checkout, we might want to recommend products to the customer.  Or if the user hasn&rsquo;t yet logged in or registered, we&rsquo;d want them to do that as part of the checkout process rather than forcing them to do that before they could enter the checkout process.</p>
+
+<p>By defining the login, registration and add-to-cart as flows, we make them available both independently (as top-level flows) and also as part of a larger flow (like the checkout flow).  That&rsquo;s why we have these defined as flows even though they are currently implemented as single-state flows.  (It is however easy to imagine these being multi-state flows.  For example, the login flow may ask you to answer a challenge question if it detects that you&rsquo;re coming in from an unusual IP address, or the add-to-cart flow may ask you to enter a quantity before proceeding.)</p>
+
+<p>So here is the checkout flow:</p>
+
+<p><div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/flows/checkout.xml</code>
+<pre name="code" class="xml">&lt;?xml version=&ldquo;1.0&rdquo; encoding=&ldquo;UTF-8&rdquo;?&gt;
+&lt;flow xmlns=&ldquo;<a href="http://www.springframework.org/schema/webflow">http://www.springframework.org/schema/webflow</a>&rdquo;</p>
+
+<pre><code>xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.springframework.org/schema/webflow
+    http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd"&amp;gt;
+
+&amp;lt;!-- Get the products one time, at the beginning of the flow --&amp;gt;
+&amp;lt;on-start&amp;gt;
+    &amp;lt;set name="flowScope.products" value="cartService.products"/&amp;gt;
+    &amp;lt;set name="flowScope.shippingOptions" value="cartService.shippingOptions"/&amp;gt;
+&amp;lt;/on-start&amp;gt;
+
+&amp;lt;!-- If not specified, the start state is the first state specified. --&amp;gt;
+&amp;lt;view-state id="viewCart" view="viewcart"&amp;gt;
+    &amp;lt;!-- cart is available to SWF but not stored on the session under that
+         name when using AOP proxy --&amp;gt;
+    &amp;lt;on-render&amp;gt;
+        &amp;lt;!-- Carry cart from Spring app context to request scope --&amp;gt;
+        &amp;lt;set name="requestScope.shoppingCart" value="shoppingCart"/&amp;gt;
+        &amp;lt;set name="requestScope.recommendations" value="cartService.recommendations"/&amp;gt;
+    &amp;lt;/on-render&amp;gt;
+    &amp;lt;transition on="addToCart" to="addProductToCart"/&amp;gt;
+    &amp;lt;transition on="register" to="register"/&amp;gt;
+    &amp;lt;transition on="login" to="login"/&amp;gt;
+&amp;lt;/view-state&amp;gt;
+
+&amp;lt;subflow-state id="addProductToCart" subflow="addToCart"&amp;gt;
+    &amp;lt;!-- This is where we go when the subflow returns. productAdded is
+         the name of an end-state. --&amp;gt;
+    &amp;lt;transition on="productAdded" to="viewCart"/&amp;gt;
+&amp;lt;/subflow-state&amp;gt;
+
+&amp;lt;!-- New customers create a new account before moving forward --&amp;gt;
+&amp;lt;subflow-state id="register" subflow="register"&amp;gt;
+    &amp;lt;transition on="accountAdded" to="paymentAndShipmentOptions"/&amp;gt;
+    &amp;lt;transition on="cancelRegistration" to="viewCart"/&amp;gt;
+&amp;lt;/subflow-state&amp;gt;
+
+&amp;lt;!-- Existing customers log in before moving forward --&amp;gt;
+&amp;lt;subflow-state id="login" subflow="login"&amp;gt;
+    &amp;lt!-- This is where we go when the subflow returns. productAdded is
+         the name of an end-state. --&amp;gt;
+    &amp;lt;transition on="loginOk" to="paymentAndShipmentOptions"/&amp;gt;
+&amp;lt;/subflow-state&amp;gt;
+
+&amp;lt;!-- Payment and shipment options --&amp;gt;
+&amp;lt;view-state id="paymentAndShipmentOptions" view="options"&amp;gt;
+    &amp;lt;transition on="submit" to="confirmOrder"/&amp;gt;
+    &amp;lt;transition on="back" to="viewCart"/&amp;gt;
+&amp;lt;/view-state&amp;gt;
+
+&amp;lt;!-- Confirm order --&amp;gt;
+&amp;lt;view-state id="confirmOrder" view="confirmorder"&amp;gt;
+    &amp;lt;on-render&amp;gt;
+        &amp;lt;set name="requestScope.shoppingCart" value="shoppingCart"/&amp;gt;
+    &amp;lt;/on-render&amp;gt;
+    &amp;lt;transition on="continue" to="thankYou"&amp;gt;
+        &amp;lt;evaluate expression="cartService.submitOrderForPayment()"/&amp;gt;
+    &amp;lt;/transition&amp;gt;
+&amp;lt;/view-state&amp;gt;
+
+&amp;lt;!-- Thank you page --&amp;gt;
+&amp;lt;view-state id="thankYou" view="thanks"&amp;gt;
+    &amp;lt;transition on="continue" to="shop"/&amp;gt;
+&amp;lt;/view-state&amp;gt;
+
+&amp;lt;!-- Exit the flow, letting the user return to shopping --&amp;gt;
+&amp;lt;end-state id="shop" view="externalRedirect:contextRelative:/home.do"/&amp;gt;
+
+&amp;lt;global-transitions&amp;gt;
+    &amp;lt;transition on="cancelCheckout" to="shop"/&amp;gt;
+&amp;lt;/global-transitions&amp;gt;
+</code></pre>
+
+<p>&lt;/flow&gt;</pre>
+</div></p>
+
+<p>In the code above, we are using the <code>&lt;subflow-state&gt;</code> element to call a subflow from a parent flow.  The <code>subflow</code> attribute specifies one of the flows you registered with the flow registry in the Spring configuration.  The flow starts at the subflow&rsquo;s start state, and continues until the subflow hits an end state.  The end state IDs provide keys that you can reference from the calling flow to effect state transitions.  For example, in the flow above,<code>accountAdded</code> is one of the end states for the <code>register</code> flows, and so one of the <code>&lt;transition&gt;</code> elements references that end state.</p>
+
+<p>Recall from <code>register.xml</code> (see <a href="spring-web-flow-2.0-4.html">page 4</a>) that the end states specified a <code>view</code> attribute.  If the <code>register</code> flow is called directly, then SWF will use the <code>view</code> attribute to decide which view to show the user when the flow reaches a given end state.  If, however, the flow is called as part of a subflow (instead of being called directly), SWF will ignore the <code>view</code> attribute and instead follow whatever transition is defined in the calling <code>&lt;subflow-state&gt;</code>.</p>
+
+<p><h3>Using EL to call services</h3></p>
+
+<p>SWF allows you to make calls against service beans using an expression language (EL).  You can use either Unified EL or else OGNL for that, as mentioned earlier in the article.  We happen to be using OGNL though I understand that Unified EL and OGNL are mostly the same,at least where their core syntax is concerned.</p>
+
+<p>There are various places in your flow where you might want to invoke service beans, and SWF provides various mechanisms for doing that.  Here&rsquo;s a table showing how to call services from different locations in your flow definition file:</p>
+
+<p><div class="table-with-caption"></p>
+
+<pre><code>&lt;div class="table"&gt;
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Location&lt;/th&gt;
+            &lt;th&gt;How to call the service bean&lt;/th&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;On flow start&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/on-start&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;On state entry&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/view-state/on-entry&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Immediately before rendering a view&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/view-state/on-render&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;On state exit&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/view-state/on-exit&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;On state transition&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/view-state/transition/evaluate&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;On flow end&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;/flow/on-end&lt;/code&gt; element&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+&lt;/div&gt;
+&lt;div class="caption"&gt;Table 2. How to call service beans from different locations.&lt;/div&gt;
+</code></pre>
+
+<p></div></p>
+
+<p>Note that the above does not represent a 100% complete list of places where you can use EL, but it gives you most of the major cases and also the basic idea.</p>
+
+<p>In <code>checkout.xml</code> we&rsquo;ve used a number of the methods above.  For example, we use <code>&lt;on-start&gt;</code> to grab the product catalog and shipping options from the cart service and place them on the flow scope, which allows them to be used for the duration of the flow.  The <code>value</code> attribute on the <code>set</code> element is specified using EL.  (It looks a lot like JSP EL, if you are familiar with that.)  The <code>cartService</code> bean is available because we defined a Spring bean with that ID.</p>
+
+<p>We also use <code>&lt;on-render&gt;</code> to prepare the <code>viewCart</code> state for rendering.  In this case, we place the user&rsquo;s shopping cart on the request scope so the JSP can easily reference it, and we also pull some recommendations off of the cart service and place those on the request scope as well.  Once again the <code>value</code> attribute is specified using EL.</p>
+
+<p><h3>Global transitions</h3></p>
+
+<p>At the end of <code>checkout.xml</code>, you will see that I&rsquo;ve defined a <code>&lt;global-transitions&gt;</code> element.  This allows me to define a transition that applies to all states in the flow.  In this case, any time the user raises the <code>cancelCheckout</code> event, the global transition I&rsquo;ve defined will kick in and carry the user to the <code>shop</code> state. Pretty handy for transitions that occur in multiple places throughout the flow.</p>
+
+<p><h3>That&rsquo;s our whirlwind tour</h3></p>
+
+<p>That concludes this tutorial on Spring Web Flow 2.0.  We&rsquo;ve really only scratched the surface&mdash;for instance, we haven&rsquo;t even touched the new AJAX support that SWF 2.0 introduces&mdash;but this should give you an overall feel for how things work.  The SWF 2.0 distribution comes with a hotel booking sample application that shows you how to get SWF working with form validation and persistence as well (areas I&rsquo;ve suppressed in this article so that I could focus on flow definition).</p>
+
+<p>If you have suggestions and especially corrections to the article or the code, please leave them below.  SWF 2.0 is new so I have no doubt that you will be able to show me places where I could be doing something better.  Thanks!</p>
+
+<p><h3>Resources</h3></p>
+
+<p>A <a href="http://www.springhispano.org/?q=node/319">Maven version of the download</a> is available. The target link is in Spanish but there&rsquo;s a zip file at the bottom called <code>WebFlowExample.zip</code> that you can download. If you want to read the target link in English, you can use <a href="http://babelfish.yahoo.com/translate_txt">Alta Vista&rsquo;s free Babel Fish translation service</a>.</p>
+
+<p><div class="outro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/">Part 3</a></span>
+</div></p>
+
+<p><div class="endnote">Post migrated from my Wheeler Software site.</div></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1931,405 +2236,6 @@ public final class ViewMessagesController {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/02/29/web-services-with-spring-2-5-and-apache-cxf-2-0/">Web Services With Spring 2.5 and Apache CXF 2.0</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-02-29T12:19:27-08:00" pubdate data-updated="true">Feb 29<span>th</span>, 2008</time>
-        
-         | <a href="/2008/02/29/web-services-with-spring-2-5-and-apache-cxf-2-0/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>In this tutorial I explain how to get a web service up and running using Spring 2.5 and Apache CXF 2.0, which is the <a href="http://xfire.codehaus.org/XFire+and+Celtix+Merge">combination of Celtix and XFire</a> and is considered XFire 2.0.  (I don&rsquo;t know what the Celtix team would say about that, but that&rsquo;s what the <a href="http://xfire.codehaus.org/">XFire site</a> says.)  Here I just treat the web service itself; to learn about consuming the web service using Spring and CXF, please see the article <a href="http://springinpractice.com/2008/03/10/make-web-services-transparent-with-spring-2-5-and-apache-cxf-2-0/">Make web services transparent with Spring 2.5 and Apache CXF 2.0</a>.</p>
-
-<p>CXF supports both WSDL-first and Java-first web service development.  This article takes the Java-first approach.</p>
-
-<h3>Project setup</h3>
-
-
-<p>The first thing you&rsquo;ll need to do is <a href="http://incubator.apache.org/cxf/download.html">download CXF from the Apache CXF site</a>.  At the time of this writing the project is in incubator status and the latest version is 2.0.4.  That&rsquo;s the version I&rsquo;m using.</p>
-
-<p>You&rsquo;ll also find it useful to know about the section of the CXF user documentation that deals with <a href="http://cwiki.apache.org/CXF20DOC/writing-a-service-with-spring.html">writing a service with Spring</a>, but currently the docs describe how to integrate with Spring 2.0, and since I want to integrate with Spring 2.5, there are some differences worth highlighting along the way.</p>
-
-<p>Also, the docs describe a &ldquo;Hello, World&rdquo; web service that just returns a string, and in this tutorial we want to go a <i>little</i> further than that and actually do a class databinding.</p>
-
-<p>Here are the service-side dependencies you&rsquo;ll need.  Inside the distribution there is a file called <code>WHICH_JARS</code> that describes in a little more detail what the JARs are for and which ones you&rsquo;ll really need, if you&rsquo;re interested in that.  But the following is essentially the list given in the user docs.</p>
-
-<h4>CXF itself</h4>
-
-
-
-
-<ul class="square">
-    <li><code>cxf-2.0.4-incubator.jar</code></li>
-</ul>
-
-
-
-
-<h4>CXF dependencies</h4>
-
-
-<p>Note that for CXF 2.0.4 the documented dependencies are almost but not quite the same as the JARs that are actually included in the distribution, once again, at the time of this writing (February 2008).  Specifically the <code>stax</code>, <code>neethi</code> and <code>XMLSchema</code> JARs are not the ones listed.  Here&rsquo;s the corrected list for CXF 2.0.4:</p>
-
-<ul class="square">
-<li><code>commons-logging-1.1.jar</code></li>
-<li><code>geronimo-activation_1.1_spec-1.0-M1.jar</code> (or Sun&#8217;s Activation jar)</li>
-<li><code>geronimo-annotation_1.0_spec-1.1.jar</code> (JSR 250)</li>
-<li><code>geronimo-javamail_1.4_spec-1.0-M1.jar</code> (or Sun&#8217;s JavaMail jar)</li>
-<li><code>geronimo-servlet_2.5_spec-1.1-M1.jar</code> (or Sun&#8217;s Servlet jar)</li>
-<li><code>geronimo-stax-api_1.0_spec-1.0.jar</code></li>
-<li><code>geronimo-ws-metadata_2.0_spec-1.1.1.jar (JSR 181)</code></li>
-<li><code>jaxb-api-2.0.jar</code></li>
-<li><code>jaxb-impl-2.0.5.jar</code></li>
-<li><code>jaxws-api-2.0.jar</code></li>
-<li><code>neethi-2.0.2.jar</code></li>
-<li><code>saaj-api-1.3.jar</code></li>
-<li><code>saaj-impl-1.3.jar</code></li>
-<li><code>wsdl4j-1.6.1.jar</code></li>
-<li><code>wstx-asl-3.2.1.jar</code></li>
-<li><code>XmlSchema-1.3.2.jar</code></li>
-<li><code>xml-resolver-1.2.jar</code></li>
-</ul>
-
-
-
-
-<h4>Aegis dependencies</h4>
-
-
-<p>In addition to the above, you will need to add <code>jdom-1.0.jar</code> since Aegis databinding uses it.</p>
-
-<h4>Spring dependencies</h4>
-
-
-<p>In this case ignore what&rsquo;s in the CXF documentation, because we&rsquo;re integrating with Spring 2.5 instead of Spring 2.0.  I&rsquo;m going to assume that you have Spring 2.5 already set up on your web services project, including Hibernate or anything else that your web services will need on the implementation side.</p>
-
-<p>Just in case you were wondering, you don&rsquo;t need the Spring MVC module&rsquo;s <code>DispatcherServlet</code> as CXF comes with its own servlet, <code>org.apache.cxf.transport.servlet.CXFServlet</code>.</p>
-
-<p>OK, that should be good for basic project setup.  Let&rsquo;s write a simple service.</p>
-
-<h3>Let&#8217;s write a simple web service</h3>
-
-
-<p>Let&rsquo;s go basic but realistic and implement a &ldquo;contact us&rdquo; web service.  The idea is that lots of different applications and/or web sites need to have a web-based form to allow end users to contact an admin team (business, tech support, development, whatever) responsible for monitoring such communications.  We&rsquo;ll implement a web service so that multiple applications can share it easily.  There will be two operations:</p>
-
-<ul class="square">
-    <li><b>View the list of submitted messages:</b> This allows the admin team to see what the end users are saying.</li>
-    <li><b>Post a message:</b> This allows end users to ask a question, tell us how great we are, demand their money back, etc.</li>
-</ul>
-
-
-
-
-<h4>Create the object model</h4>
-
-
-<p>As we want to explore more than the barest &ldquo;Hello, World&rdquo; functionality, let&rsquo;s create a <code>Message</code> class that we can pass to the service and that we can get from the service.  This will allow us to play a bit with Java/XML databindings.</p>
-
-<p>Here&rsquo;s the <code>Message</code> class:</p>
-
-<pre>package contactus;
-
-import org.apache.cxf.aegis.type.java5.IgnoreProperty;
-
-public final class Message {
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String text;
-    
-    public Message() { }
-    
-    public Message(String firstName, String lastName, String email, String text) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.text = text;
-    }
-
-    public String getFirstName() { return firstName; }
-
-    public void setFirstName(String firstName) { this.firstName = firstName; }
-
-    public String getLastName() { return lastName; }
-
-    public void setLastName(String lastName) { this.lastName = lastName; }
-    
-    @IgnoreProperty
-    public String getLastNameFirstName() { return lastName + ", " + firstName; }
-    
-    public String getEmail() { return email; }
-
-    public void setEmail(String email) { this.email = email; }
-
-    public String getText() { return text; }
-
-    public void setText(String text) { this.text = text; }
-}</pre>
-
-
-<p>In real life I might have a bunch of Hibernate annotations in there (I&rsquo;m a fan of annotation-based configuration), and I would create a DAO.  But as this is a tutorial, we&rsquo;ll keep it simple.</p>
-
-<p>If you look carefully, however, you can see that I did in fact include an annotation. The <code>@IgnoreProperty</code> annotation is part of the Aegis databinding mechanism, which comes with CXF but is not the default.  (JAXB is the default.)  I ended up using Aegis instead of JAXB because JAXB was giving me trouble when I tried to return complex data types like <code>Message</code> from a web service.  Maybe it works and maybe it doesn&rsquo;t&mdash;I don&rsquo;t know&mdash;but when I plugged Aegis in it worked immediately and now I intend to use Aegis.  (More on JAXB/Aegis a little later.)  Anyway, <code>@IgnoreProperty</code> tells Aegis that I don&rsquo;t want <code>getLastNameFirstName()</code> to show up in the auto-generated WSDL.  It&rsquo;s just a read-only convenience method.</p>
-
-<h4>Create the service interface</h4>
-
-
-<p>Now we define a service interface.</p>
-
-<pre>package contactus;
-
-import java.util.List;
-
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
-@WebService
-public interface ContactUsService {
-    
-    List&lt;Message&gt; getMessages();
-    
-    void postMessage(@WebParam(name = "message") Message message);
-}</pre>
-
-
-<p>The <code>@WebService</code> and <code>@WebParam</code> are <a href="http://java.sun.com/javaee/5/docs/api/javax/jws/package-summary.html">JAX-WS annotations</a>.  The first indicates that the interface defines a web service interface (we&rsquo;ll use it to autogenerate a WSDL) and the second allows us to use an HTTP parameter called &ldquo;message&rdquo; to reference the operation&rsquo;s argument instead of having to call it &ldquo;arg0&rdquo;, which is the default.</p>
-
-<h4>Create the service implementation</h4>
-
-
-<p>Here&rsquo;s our simple implementation of the <code>ContactUsService</code> interface.</p>
-
-<pre>package contactus;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jws.WebService;
-
-@WebService(endpointInterface = "contactus.ContactUsService")
-public final class ContactUsServiceImpl implements ContactUsService {
-
-    @Override
-    public List&lt;Message&gt; getMessages() {
-        List&lt;Message&gt; messages = new ArrayList&lt;Message&gt;();
-        messages.add(new Message(
-                "Willie", "Wheeler", "willie.wheeler@xyz.com", "Great job"));
-        messages.add(new Message(
-                "Dardy", "Chen", "dardy.chen@xyz.com", "I want my money back"));
-        return messages;
-    }
-
-    @Override
-    public void postMessage(Message message) {
-        System.out.println(message);
-    }
-}</pre>
-
-
-<p>Here the <code>@WebService</code> annotation is marking this class as a web service implementation, and also specifying that the WSDL should be generated using the <code>ContactUsService</code> interface.</p>
-
-<p>With that, we have the Java backend for the web service. Let&rsquo;s move on to configuration.</p>
-
-<h3>Configure your web service</h3>
-
-
-<p>We need to create <code>web.xml</code> and a Spring application context file.</p>
-
-<h4>web.xml configuration</h4>
-
-
-
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-
-&lt;web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://java.sun.com/xml/ns/javaee"
-    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-    id="services" version="2.5"&gt;
-    
-    &lt;context-param&gt;
-        &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
-        &lt;param-value&gt;/WEB-INF/appContext.xml&lt;/param-value&gt;
-    &lt;/context-param&gt;
-    &lt;listener&gt;
-        &lt;listener-class&gt;
-            org.springframework.web.context.ContextLoaderListener
-        &lt;/listener-class&gt;
-    &lt;/listener&gt;
-    &lt;servlet&gt;
-        &lt;servlet-name&gt;CXFServlet&lt;/servlet-name&gt;
-        &lt;servlet-class&gt;
-            org.apache.cxf.transport.servlet.CXFServlet
-        &lt;/servlet-class&gt;
-    &lt;/servlet&gt;
-    &lt;servlet-mapping&gt;
-        &lt;servlet-name&gt;CXFServlet&lt;/servlet-name&gt;
-        &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
-    &lt;/servlet-mapping&gt;
-&lt;/web-app&gt;</pre>
-
-
-<p>Nothing surprising here.  The main thing worth mentioning is that we&rsquo;re using the <code>CXFServlet</code> to process all requests, which we&rsquo;re assuming are all requests for web services.</p>
-
-<p>As you might guess from the <code>web.xml</code> file above, we need to create a Spring application context file called <code>appContext.xml</code>.</p>
-
-<h4>appContext.xml configuration</h4>
-
-
-
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-
-&lt;beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:cxf="http://cxf.apache.org/core"
-    xmlns:jaxws="http://cxf.apache.org/jaxws"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
-        http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
-        http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd"
-    default-autowire="byName"&gt;
-
-    &lt;!-- Load CXF modules from cxf.jar --&gt;
-    &lt;import resource="classpath:META-INF/cxf/cxf.xml" /&gt;
-    &lt;import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" /&gt;
-    &lt;import resource="classpath:META-INF/cxf/cxf-servlet.xml" /&gt;
-    
-    &lt;!-- Enable message logging using the CXF logging feature --&gt;
-    &lt;cxf:bus&gt;
-        &lt;cxf:features&gt;
-            &lt;cxf:logging/&gt;
-        &lt;/cxf:features&gt;
-    &lt;/cxf:bus&gt;
-    
-    &lt;!-- The service bean --&gt;
-    &lt;bean id="contactUsServiceImpl" class="contactus.ContactUsServiceImpl"/&gt;
-
-    &lt;!-- Aegis data binding --&gt;
-    &lt;bean id="aegisBean"
-        class="org.apache.cxf.aegis.databinding.AegisDatabinding"
-        scope="prototype"/&gt; 
-    &lt;bean id="jaxws-and-aegis-service-factory"
-        class="org.apache.cxf.jaxws.support.JaxWsServiceFactoryBean"
-        scope="prototype"&gt;
-        &lt;property name="dataBinding" ref="aegisBean"/&gt;
-        &lt;property name="serviceConfigurations"&gt;
-            &lt;list&gt;
-              &lt;bean class="org.apache.cxf.jaxws.support.JaxWsServiceConfiguration"/&gt;
-              &lt;bean class="org.apache.cxf.aegis.databinding.AegisServiceConfiguration"/&gt;
-              &lt;bean class="org.apache.cxf.service.factory.DefaultServiceConfiguration"/&gt; 
-            &lt;/list&gt;
-        &lt;/property&gt;
-    &lt;/bean&gt;
- 
-    &lt;!-- Service endpoint --&gt;
-    &lt;!-- See http://incubator.apache.org/cxf/faq.html regarding CXF + Spring AOP --&gt;
-    &lt;jaxws:endpoint id="contactUsService"
-            implementorClass="contactus.ContactUsServiceImpl"
-            implementor="#contactUsServiceImpl"
-            address="/contactus"&gt;
-        &lt;jaxws:serviceFactory&gt;
-            &lt;ref bean="jaxws-and-aegis-service-factory"/&gt;
-        &lt;/jaxws:serviceFactory&gt;
-    &lt;/jaxws:endpoint&gt;
-&lt;/beans&gt;</pre>
-
-
-<p>Let&rsquo;s talk about <code>appContext.xml</code>.</p>
-
-<p>The first three imports just import some bean definitions from the CXF JAR file.  I don&rsquo;t know the details and I don&rsquo;t think we&rsquo;re supposed to care about the details.</p>
-
-<p>The bus config just puts logging in.  That&rsquo;s optional.  If you run this in a production environment you probably want to turn that off because it&rsquo;s verbose.</p>
-
-<p>The service bean definition is just telling Spring about the service bean we wrote. We&rsquo;re going to put a web service endpoint in front of it.</p>
-
-<p>The next piece on Aegis specifies the databinding mechanism we want to use for mapping back and forth between Java and XML.  I mentioned earlier that I tried using the default JAXB but was having problems getting it to work, so someone recommended to me to try Aegis and that worked like a charm.</p>
-
-<p>Finally we define the web service endpoint.  The <code>#contactUsServiceImpl</code> piece connects the endpoint up to the service bean.  (Yes, the hash mark is required.) We use the JAX-WS/Aegis service factory that we defined earlier so we can use the Aegis databinding.</p>
-
-<p>I&rsquo;m not using transactions or persistence in my simple service bean.  In a realistic service you are going to have transactions and persistence.  To make CXF play nicely with AOP (and hence Spring&rsquo;s declarative transactions) you are going to need to include the <code>implementorClass</code> attribute as I&rsquo;ve done.  For more details on that see the CXF FAQs at <a href="http://incubator.apache.org/cxf/faq.html"><a href="http://incubator.apache.org/cxf/faq.html">http://incubator.apache.org/cxf/faq.html</a></a>.</p>
-
-<h4>A validation annoyance in Eclipse</h4>
-
-
-<p>Though it in no way reflects a fault with Eclipse itself, if you are using Eclipse 3.3 you may be getting some annoying validation errors in the IDE, such as &ldquo;<code>cvc-complex-type.2.4.c: The matching wildcard is strict, but no declaration can be found for element &lsquo;jaxws:endpoint&rsquo;.</code>&rdquo;  This is because the schema locations for the <code><a href="http://cxf.apache.org/core">http://cxf.apache.org/core</a></code> and <code><a href="http://cxf.apache.org/jaxws">http://cxf.apache.org/jaxws</a></code> keys don&rsquo;t actually point at real XSDs, so the validator won&rsquo;t recognize elements from the <code>cxf</code> and <code>jaxws</code> namespaces.  (That&rsquo;s why I say it isn&rsquo;t Eclipse&rsquo;s fault.)  This doesn&rsquo;t create a problem with the actual build, but the IDE will complain as it tries to validate the Spring app context files against the missing XSDs.  I haven&rsquo;t yet discovered the &ldquo;right&rdquo; solution to this problem (I&rsquo;d be delighted to have somebody tell me) but there are three workarounds I know about:</p>
-
-<ul class="square">
-    <li>You can map the <code>http://www.springframework.org/schema/beans</code> key to the <code>http://www.springframework.org/schema/beans/spring-beans.xsd</code> location (notice that I&#8217;ve removed the <code>-2.5</code> part).  That gets rid of the validation errors though now you&#8217;re using the Spring 2.0 beans schema.  That may be OK for you.</li>
-    <li>You can turn off XML validation.  That seems pretty drastic but it&#8217;s an option (and in fact it&#8217;s what I&#8217;ve myself done).</li>
-    <li>You can just ignore the errors.  Can&#8217;t&#8230; bring&#8230; myself&#8230; to&#8230; do&#8230; it&#8230; .</li>
-</ul>
-
-
-<p>There may be something you can do with Window &rarr; Preferences &rarr; Web and XML &rarr; XML Catalog but I didn&rsquo;t see it: even if you put the <code>core.xsd</code> and <code>jaxws.xsd</code> in the catalog, those XSDs in turn reference other schema locations that don&rsquo;t resolve to an XSD and it looks like a lot of work to me.</p>
-
-<p>Anyway as I say if somebody knows the right way to handle this please let me know and I&rsquo;ll gladly update the article and credit you. :&ndash;)</p>
-
-<h3>Let &#8216;er rip</h3>
-
-
-<p>At this point you should have a working web service. Try it out. The URLs are:</p>
-
-<ul class="square">
-    <li><code>[path to CXFServlet]</code> - List of web services</li>
-    <li><code>[path to CXFServlet]/contactus?wsdl</code> - WSDL for the Contact Us service</li>
-    <li><code>[path to CXFServlet]/contactus/getMessages</code> - getMessages operation. Take a look at
-    this and notice that, as promised, the individual messages don&#8217;t contain the
-    <code>firstNameLastName</code> property, since we told Aegis to <code>@IgnoreProperty</code>.</li>
-    <li><code>[path to CXFServlet]/contactus/postMessage?message=...</code> - postMessage operation</li>
-</ul>
-
-
-<p>So for example if you are running an out-of-the-box Tomcat instance then your URLs would be</p>
-
-<ul class="square">
-    <li><code>http://localhost:8080/mywebservices</code></li>
-    <li><code>http://localhost:8080/mywebservices/contactus?wsdl</code></li>
-    <li><code>http://localhost:8080/mywebservices/contactus/getMessages</code></li>
-    <li><code>http://localhost:8080/mywebservices/contactus/postMessage?message=...</code></li>
-</ul>
-
-
-<p>replacing <code>mywebservices</code> with whatever you happened to use for your context root.</p>
-
-<p>That&rsquo;s it!  If you want to learn how to consume web services using Spring 2.5 and CXF, please see my follow-up article <a href="http://springinpractice.com/2008/03/10/make-web-services-transparent-with-spring-2-5-and-apache-cxf-2-0/">Make web services transparent with Spring 2.5 and Apache CXF 2.0</a>.</p>
-
-<p><strong>Update (2008-09-03):</strong> Sam Brodkin was kind enough to create <a href="http://www.jroller.com/brodkin/entry/a_maven_project_for_willie">a Maven project</a> for this article. Thanks Sam!</p>
-
-<div class="endnote">Post migrated from my Wheeler Software site.</div>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/9/">&larr; Older</a>
@@ -2347,6 +2253,10 @@ public final class ContactUsServiceImpl implements ContactUsService {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
       </li>
     
@@ -2360,10 +2270,6 @@ public final class ContactUsServiceImpl implements ContactUsService {
     
       <li class="post">
         <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
       </li>
     
   </ul>

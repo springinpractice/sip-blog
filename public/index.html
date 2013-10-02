@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="One of the challenges around TP90 data is aggregating it. I wrote about this here, and offered a solution based on histograms. Here I&rsquo;m going &hellip;">
+  <meta name="description" content="Here&rsquo;s a quick tip for using Spring&rsquo;s RestTemplate to authenticate to a RESTful web service that uses HTTP basic authentication. There &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,103 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick Tip: Basic Authentication With Spring RestTemplate</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-02T02:10:00-07:00" pubdate data-updated="true">Oct 2<span>nd</span>, 2013</time>
+        
+         | <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Here&rsquo;s a quick tip for using Spring&rsquo;s <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html">RestTemplate</a> to authenticate to a RESTful web service that uses <a href="http://en.wikipedia.org/wiki/Basic_access_authentication">HTTP basic authentication</a>.</p>
+
+<p>There are a couple of things we have to do:</p>
+
+<ul>
+<li>First we construct an <code>Authorization</code> request header that contains (among other things) the user&rsquo;s base 64-encoded credentials.</li>
+<li>Then we invoke the <code>RestTemplate</code> in such a way as to send that request header to the service.</li>
+</ul>
+
+
+<p>Let&rsquo;s start with the <code>Authorization</code> header.</p>
+
+<h2>Authorization header</h2>
+
+<p>For the sake of example, suppose that the username is <code>willie</code> and the password is `p@ssword&#8217;. The first step is to base 64 encode the string</p>
+
+<pre><code>willie:p@ssword
+</code></pre>
+
+<p>In general we want to do this programmatically. The <a href="http://commons.apache.org/proper/commons-codec/">Apache Commons Codec library</a> is useful for doing this:</p>
+
+<pre><code>import org.apache.commons.codec.binary.Base64;
+
+...
+
+String plainCreds = "willie:p@ssword";
+byte[] plainCredsBytes = plainCreds.getBytes();
+byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+String base64Creds = new String(base64CredsBytes);
+</code></pre>
+
+<p>Now let&rsquo;s construct our HTTP request headers, including the <code>Authorization</code> header:</p>
+
+<pre><code>import org.springframework.http.HttpHeaders;
+
+...
+
+HttpHeaders headers = new HttpHeaders();
+headers.add("Authorization", "Basic " + base64Creds);
+</code></pre>
+
+<p>Next, let&rsquo;s use the <code>RestTemplate</code> to issue the request.</p>
+
+<h2>Using RestTemplate to send the request</h2>
+
+<p>The key here is to use one of the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> methods to exchange a request entity for a response entity. Let&rsquo;s imagine that we&rsquo;re going to get account information..</p>
+
+<pre><code>import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
+
+...
+
+HttpEntity&lt;String&gt; request = new HttpEntity&lt;String&gt;(headers);
+ResponseEntity&lt;Account&gt; response = restTemplate.exchange(url, HttpMethod.POST, request, Account.class);
+Account account = response.getBody();
+</code></pre>
+
+<p>In both the request and response, the type parameters represent the body. In the request we aren&rsquo;t sending anything in the body, so we just use <code>String</code> as a default, and pass the headers along by themselves. In the response we expect an account, so that&rsquo;s why we have <code>Account</code> and <code>Account.class</code> there.</p>
+
+<p>Happy basic authenticating.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -518,49 +615,6 @@ public final class RichTextFilter implements TextFilter {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">Pagination and Sorting With Spring Data JPA</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-11T01:31:00-07:00" pubdate data-updated="true">May 11<span>th</span>, 2012</time>
-        
-         | <a href="/2012/05/11/pagination-and-sorting-with-spring-data-jpa/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>In an <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">earlier post</a> I introduced Spring Data JPA, which makes it really easy to create a DAO layer. I didn&rsquo;t get into too much depth, so this time I want to explore a couple of cool features that the DAOs support: pagination and sorting.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -576,6 +630,10 @@ public final class RichTextFilter implements TextFilter {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
       </li>
     
@@ -589,10 +647,6 @@ public final class RichTextFilter implements TextFilter {
     
       <li class="post">
         <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/05/08/spring-in-practice-now-available/">Spring in Practice now available</a>
       </li>
     
   </ul>
