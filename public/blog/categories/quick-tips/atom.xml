@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Quick Tips | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/quick-tips/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-02T02:41:41-07:00</updated>
+  <updated>2013-10-02T02:45:10-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -32,12 +32,9 @@
 
 <h2>Authorization header</h2>
 
-<p>For the sake of example, suppose that the username is <code>willie</code> and the password is `p@ssword'. The first step is to base 64 encode the string</p>
+<p>For the sake of example, suppose that the username is <code>willie</code> and the password is <code>p@ssword</code>.</p>
 
-<pre><code>willie:p@ssword
-</code></pre>
-
-<p>In general we want to do this programmatically. The <a href="http://commons.apache.org/proper/commons-codec/">Apache Commons Codec library</a> is useful for doing this:</p>
+<p>The first step is to base 64 encode the string <code>willie:p@ssword</code>. In general we want to do this programmatically. The <a href="http://commons.apache.org/proper/commons-codec/">Apache Commons Codec library</a> is useful for doing this:</p>
 
 <pre><code>import org.apache.commons.codec.binary.Base64;
 

@@ -3,7 +3,7 @@ layout: post
 title: "Quick tip: Basic authentication with Spring RestTemplate"
 date: 2013-10-02 02:10
 comments: true
-categories: ["Quick Tips"]
+categories: [ "Chapter 06 - Authentication", "Chapter 13 - Integration", "Quick Tips" ]
 ---
 Here's a quick tip for using Spring's [RestTemplate](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html) to authenticate to a RESTful web service that uses [HTTP basic authentication](http://en.wikipedia.org/wiki/Basic_access_authentication).
 
@@ -17,11 +17,9 @@ Let's start with the `Authorization` header.
 Authorization header
 --------------------
 
-For the sake of example, suppose that the username is `willie` and the password is `p@ssword'. The first step is to base 64 encode the string
+For the sake of example, suppose that the username is `willie` and the password is `p@ssword`.
 
-    willie:p@ssword
-
-In general we want to do this programmatically. The [Apache Commons Codec library](http://commons.apache.org/proper/commons-codec/) is useful for doing this:
+The first step is to base 64 encode the string `willie:p@ssword`. In general we want to do this programmatically. The [Apache Commons Codec library](http://commons.apache.org/proper/commons-codec/) is useful for doing this:
 
     import org.apache.commons.codec.binary.Base64;
     

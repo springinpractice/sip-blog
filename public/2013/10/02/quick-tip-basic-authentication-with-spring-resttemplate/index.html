@@ -121,12 +121,9 @@
 
 <h2>Authorization header</h2>
 
-<p>For the sake of example, suppose that the username is <code>willie</code> and the password is `p@ssword&#8217;. The first step is to base 64 encode the string</p>
+<p>For the sake of example, suppose that the username is <code>willie</code> and the password is <code>p@ssword</code>.</p>
 
-<pre><code>willie:p@ssword
-</code></pre>
-
-<p>In general we want to do this programmatically. The <a href="http://commons.apache.org/proper/commons-codec/">Apache Commons Codec library</a> is useful for doing this:</p>
+<p>The first step is to base 64 encode the string <code>willie:p@ssword</code>. In general we want to do this programmatically. The <a href="http://commons.apache.org/proper/commons-codec/">Apache Commons Codec library</a> is useful for doing this:</p>
 
 <pre><code>import org.apache.commons.codec.binary.Base64;
 
@@ -194,7 +191,7 @@ Account account = response.getBody();
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>
+    <a class='category' href='/blog/categories/chapter-06-authentication/'>Chapter 06 - Authentication</a>, <a class='category' href='/blog/categories/chapter-13-integration/'>Chapter 13 - Integration</a>, <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>
   
 </span>
 
