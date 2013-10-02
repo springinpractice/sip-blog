@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Quick Tips | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/quick-tips/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-02T02:49:23-07:00</updated>
+  <updated>2013-10-02T03:03:57-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -63,15 +63,17 @@ headers.add("Authorization", "Basic " + base64Creds);
 
 <h2>Using RestTemplate to send the request</h2>
 
-<p>The key here is to use one of the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> methods to exchange a request entity for a response entity. Let&rsquo;s imagine that we&rsquo;re going to get account information..</p>
+<p>The key here is to use one of the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> methods to exchange a request for a response. Let&rsquo;s imagine that we&rsquo;re going to get account information.</p>
 
 <pre><code>import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 ...
 
 HttpEntity&lt;String&gt; request = new HttpEntity&lt;String&gt;(headers);
-ResponseEntity&lt;Account&gt; response = restTemplate.exchange(url, HttpMethod.POST, request, Account.class);
+ResponseEntity&lt;Account&gt; response = restTemplate.exchange(url, HttpMethod.GET, request, Account.class);
 Account account = response.getBody();
 </code></pre>
 

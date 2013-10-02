@@ -46,15 +46,17 @@ Next, let's use the `RestTemplate` to issue the request.
 Using RestTemplate to send the request
 --------------------------------------
 
-The key here is to use one of the `RestTemplate`'s `exchange()` methods to exchange a request entity for a response entity. Let's imagine that we're going to get account information..
+The key here is to use one of the `RestTemplate`'s `exchange()` methods to exchange a request for a response. Let's imagine that we're going to get account information.
 
     import org.springframework.http.HttpEntity;
+    import org.springframework.http.HttpMethod;
     import org.springframework.http.ResponseEntity;
+    import org.springframework.web.client.RestTemplate;
     
     ...
     
     HttpEntity<String> request = new HttpEntity<String>(headers);
-    ResponseEntity<Account> response = restTemplate.exchange(url, HttpMethod.POST, request, Account.class);
+    ResponseEntity<Account> response = restTemplate.exchange(url, HttpMethod.GET, request, Account.class);
     Account account = response.getBody();
 
 In both the request and response, the type parameters represent the body. In the request we aren't sending anything in the body, so we just use `String` as a default, and pass the headers along by themselves. In the response we expect an account, so that's why we have `Account` and `Account.class` there.
