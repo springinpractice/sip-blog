@@ -7,7 +7,7 @@ categories: [ "Chapter 13 - Integration", "Quick Tips" ]
 ---
 Some web services return JSON error objects when there's a problem. [GitHub's API](http://developer.github.com/v3/#client-errors) is a good case in point, but the approach is not uncommon. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate.
 
-A challenge when using Spring's `RestTemplate` is that there's not an obvious way to handle these. Normally when we use the `RestTemplate`, we indicate a specific type of response payload we expect to see, and so if an error object comes back instead, then it's not clear what to do.
+A challenge when using Spring's [RestTemplate](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html) is that there's not an obvious way to handle these. Normally when we use the `RestTemplate`, we indicate a specific type of response payload we expect to see, and so if an error object comes back instead, then it's not clear what to do.
 
 One possible approach is to add error fields to the various resource data transfer objects (DTOs). While this can work, I'm not a big fan of this approach as it fails to separate the resource modeling and error reporting concerns, which I take to be distinct.
 
@@ -21,7 +21,7 @@ The concept is to read the response body as a string instead of reading it as an
 How to do it
 ------------
 
-First we need a special `RestTemplate` configuration. By default `RestTemplate` contains a `DefaultResponseErrorHandler`, which throws an exception when there's an HTTP error. This doesn't work for us, because the exception bubbles out of the `RestTemplate` call, thus abandoning the error object we want to read. So we just need to replace it with a version that doesn't throw the exception. Here's one:
+First we need a special `RestTemplate` configuration. By default `RestTemplate` contains a default [ResponseErrorHandler](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/ResponseErrorHandler.html) implementation called [DefaultResponseErrorHandler](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/DefaultResponseErrorHandler.html), which throws an exception when there's an HTTP error. This doesn't work for us, because the exception bubbles out of the `RestTemplate` call, thus abandoning the error object we want to read. So we just need to replace it with a custom handler that doesn't throw the exception. Here's one:
 
     package myapp.client;
     
@@ -70,7 +70,7 @@ Now we need to configure the `RestTemplate` to use our custom `ResponseErrorHand
         </property>
     </bean>
 
-We're going to need an object mapper too (I'm assuming Jackson 2 here, though in principle the same approach should work for JAXB or Jackson 1 as well). So here's that:
+We're going to need an object mapper too (I'm assuming [Jackson 2](http://wiki.fasterxml.com/JacksonHome) here, though in principle the same approach should work for JAXB or Jackson 1 as well). So here's that:
 
     <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
 

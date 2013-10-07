@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-07T02:02:22-07:00</updated>
+  <updated>2013-10-07T02:07:53-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -20,7 +20,7 @@
     <id>http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate</id>
     <content type="html"><![CDATA[<p>Some web services return JSON error objects when there&rsquo;s a problem. <a href="http://developer.github.com/v3/#client-errors">GitHub&rsquo;s API</a> is a good case in point, but the approach is not uncommon. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate.</p>
 
-<p>A challenge when using Spring&rsquo;s <code>RestTemplate</code> is that there&rsquo;s not an obvious way to handle these. Normally when we use the <code>RestTemplate</code>, we indicate a specific type of response payload we expect to see, and so if an error object comes back instead, then it&rsquo;s not clear what to do.</p>
+<p>A challenge when using Spring&rsquo;s <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html">RestTemplate</a> is that there&rsquo;s not an obvious way to handle these. Normally when we use the <code>RestTemplate</code>, we indicate a specific type of response payload we expect to see, and so if an error object comes back instead, then it&rsquo;s not clear what to do.</p>
 
 <p>One possible approach is to add error fields to the various resource data transfer objects (DTOs). While this can work, I&rsquo;m not a big fan of this approach as it fails to separate the resource modeling and error reporting concerns, which I take to be distinct.</p>
 
@@ -32,7 +32,7 @@
 
 <h2>How to do it</h2>
 
-<p>First we need a special <code>RestTemplate</code> configuration. By default <code>RestTemplate</code> contains a <code>DefaultResponseErrorHandler</code>, which throws an exception when there&rsquo;s an HTTP error. This doesn&rsquo;t work for us, because the exception bubbles out of the <code>RestTemplate</code> call, thus abandoning the error object we want to read. So we just need to replace it with a version that doesn&rsquo;t throw the exception. Here&rsquo;s one:</p>
+<p>First we need a special <code>RestTemplate</code> configuration. By default <code>RestTemplate</code> contains a default <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/ResponseErrorHandler.html">ResponseErrorHandler</a> implementation called <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/DefaultResponseErrorHandler.html">DefaultResponseErrorHandler</a>, which throws an exception when there&rsquo;s an HTTP error. This doesn&rsquo;t work for us, because the exception bubbles out of the <code>RestTemplate</code> call, thus abandoning the error object we want to read. So we just need to replace it with a custom handler that doesn&rsquo;t throw the exception. Here&rsquo;s one:</p>
 
 <pre><code>package myapp.client;
 
@@ -84,7 +84,7 @@ public class RestUtil {
 &lt;/bean&gt;
 </code></pre>
 
-<p>We&rsquo;re going to need an object mapper too (I&rsquo;m assuming Jackson 2 here, though in principle the same approach should work for JAXB or Jackson 1 as well). So here&rsquo;s that:</p>
+<p>We&rsquo;re going to need an object mapper too (I&rsquo;m assuming <a href="http://wiki.fasterxml.com/JacksonHome">Jackson 2</a> here, though in principle the same approach should work for JAXB or Jackson 1 as well). So here&rsquo;s that:</p>
 
 <pre><code>&lt;bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" /&gt;
 </code></pre>
