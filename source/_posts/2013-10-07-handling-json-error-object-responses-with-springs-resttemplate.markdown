@@ -58,7 +58,8 @@ Just for completeness, here's `RestUtil`:
         
         public static boolean isError(HttpStatus status) {
             HttpStatus.Series series = status.series();
-            return (HttpStatus.Series.CLIENT_ERROR.equals(series) || HttpStatus.Series.SERVER_ERROR.equals(series));
+            return (HttpStatus.Series.CLIENT_ERROR.equals(series)
+                    || HttpStatus.Series.SERVER_ERROR.equals(series));
         }
     }
 
@@ -83,7 +84,8 @@ Inject the `RestTemplate` and `ObjectMapper` into your client code. Now here's h
         HttpHeaders headers = new HttpHeaders();
         headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
         HttpEntity<String> request = new HttpEntity<String>(headers);
-        ResponseEntity<String> response = restTemplate.exchange(DOODAD_URL, HttpMethod.GET, request, String.class);
+        ResponseEntity<String> response =
+                restTemplate.exchange(DOODAD_URL, HttpMethod.GET, request, String.class);
         String responseBody = response.getBody();
         try {
             if (RestUtil.isError(response.getStatusCode())) {

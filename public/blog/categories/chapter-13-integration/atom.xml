@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-07T02:07:53-07:00</updated>
+  <updated>2013-10-07T02:09:36-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -70,7 +70,8 @@ public class RestUtil {
 
     public static boolean isError(HttpStatus status) {
         HttpStatus.Series series = status.series();
-        return (HttpStatus.Series.CLIENT_ERROR.equals(series) || HttpStatus.Series.SERVER_ERROR.equals(series));
+        return (HttpStatus.Series.CLIENT_ERROR.equals(series)
+                || HttpStatus.Series.SERVER_ERROR.equals(series));
     }
 }
 </code></pre>
@@ -98,7 +99,8 @@ public DoodadResources getDoodads() {
     HttpHeaders headers = new HttpHeaders();
     headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
     HttpEntity&lt;String&gt; request = new HttpEntity&lt;String&gt;(headers);
-    ResponseEntity&lt;String&gt; response = restTemplate.exchange(DOODAD_URL, HttpMethod.GET, request, String.class);
+    ResponseEntity&lt;String&gt; response =
+            restTemplate.exchange(DOODAD_URL, HttpMethod.GET, request, String.class);
     String responseBody = response.getBody();
     try {
         if (RestUtil.isError(response.getStatusCode())) {
