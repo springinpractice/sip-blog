@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-07T02:09:36-07:00</updated>
+  <updated>2013-10-07T02:11:21-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -25,6 +25,9 @@
 <p>One possible approach is to add error fields to the various resource data transfer objects (DTOs). While this can work, I&rsquo;m not a big fan of this approach as it fails to separate the resource modeling and error reporting concerns, which I take to be distinct.</p>
 
 <p>So let&rsquo;s look at a different approach&mdash;one that does in fact separate resource modeling from error reporting.</p>
+
+<!-- more -->
+
 
 <h2>The idea</h2>
 

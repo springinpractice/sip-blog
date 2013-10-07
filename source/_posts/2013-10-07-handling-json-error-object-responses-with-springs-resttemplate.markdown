@@ -13,6 +13,8 @@ One possible approach is to add error fields to the various resource data transf
 
 So let's look at a different approach&mdash;one that does in fact separate resource modeling from error reporting.
 
+<!-- more -->
+
 The idea
 --------
 
