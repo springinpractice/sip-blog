@@ -106,4 +106,11 @@ Notice that the call to `exchange()` specifies that we want to map the response 
 
 If there's no error, then we can parse the response body into the expected response type, if there is one, and return it. Here we return a `DoodadResources`.
 
-That's at least one way to do it. If you have a better way, I'd be interested to hear about it.
+Conclusion
+----------
+
+Note that since we're capturing the JSON as a string, we're essentially buffering the entire response before parsing it into the actual object (whether expected or error). This may be inappropriate in cases involving large response payloads. Streaming works better there.
+
+Personally I'd like to see a version of `RestTemplate.exchange()` that supports two response types instead of just one: one for the expected response type and one for the error response type. This would avoid the need to handle error objects ourselves, and would also allow the `RestTemplate` to parse the response body (via Jackson) without having to buffer the entire thing first.
+
+Anyway, that's at least one way to do it. If there are better ways I'd very much appreciate hearing about them.

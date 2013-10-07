@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Quick Tips | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/quick-tips/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-07T02:11:21-07:00</updated>
+  <updated>2013-10-07T02:22:46-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -123,7 +123,13 @@ public DoodadResources getDoodads() {
 
 <p>If there&rsquo;s no error, then we can parse the response body into the expected response type, if there is one, and return it. Here we return a <code>DoodadResources</code>.</p>
 
-<p>That&rsquo;s at least one way to do it. If you have a better way, I&rsquo;d be interested to hear about it.</p>
+<h2>Conclusion</h2>
+
+<p>Note that since we&rsquo;re capturing the JSON as a string, we&rsquo;re essentially buffering the entire response before parsing it into the actual object (whether expected or error). This may be inappropriate in cases involving large response payloads. Streaming works better there.</p>
+
+<p>Personally I&rsquo;d like to see a version of <code>RestTemplate.exchange()</code> that supports two response types instead of just one: one for the expected response type and one for the error response type. This would avoid the need to handle error objects ourselves, and would also allow the <code>RestTemplate</code> to parse the response body (via Jackson) without having to buffer the entire thing first.</p>
+
+<p>Anyway, that&rsquo;s at least one way to do it. If there are better ways I&rsquo;d very much appreciate hearing about them.</p>
 ]]></content>
   </entry>
   
