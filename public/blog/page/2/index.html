@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="In an earlier post I introduced Spring Data JPA, which makes it really easy to create a DAO layer. I didn&rsquo;t get into too much depth, so this &hellip;">
+  <meta name="description" content="Here&rsquo;s a quick tip for you. Sometimes you need to inject a java.io.File from your classpath into a bean, but you don&rsquo;t want to have to &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,59 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/">Injecting a File From the Classpath Into a Bean</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-12T23:29:00-07:00" pubdate data-updated="true">May 12<span>th</span>, 2012</time>
+        
+         | <a href="/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Here&rsquo;s a quick tip for you.</p>
+
+<p>Sometimes you need to inject a <code>java.io.File</code> from your classpath into a bean, but you don&rsquo;t want to have to spell out the absolute path (even in a configuration file). Never fear. It&rsquo;s easy:</p>
+
+<pre><code>&lt;bean id="tagProviderResource" class="org.springframework.core.io.ClassPathResource"&gt;
+    &lt;constructor-arg value="/htmlcleaner.xml" /&gt;
+&lt;/bean&gt;
+
+&lt;util:property-path id="tagProviderFile" path="tagProviderResource.file" /&gt;
+
+&lt;bean id="tagProvider" class="org.htmlcleaner.ConfigFileTagProvider"&gt;
+    &lt;constructor-arg ref="tagProviderFile" /&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p>In the configuration above, I used <code>ClassPathResource</code> to find the <code>htmlcleaner.xml</code> resource on the classpath. Then I used the handy <code>&lt;util:property-path&gt;</code> tag to assign the resource&rsquo;s <code>file</code> property its own ID. Finally, I inject the <code>File</code> using constructor injection.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -536,51 +589,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/04/08/sending-cookies-with-resttemplate/">Sending Cookies With RestTemplate</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-04-08T14:06:18-07:00" pubdate data-updated="true">Apr 8<span>th</span>, 2012</time>
-        
-         | <a href="/2012/04/08/sending-cookies-with-resttemplate/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Sometimes it is necessary to send cookies along with requests to a RESTful API. One such example is the JIRA 4.3 API, which requires sending the <code>JSESSIONID</code> to JIRA for session management and authentication purposes. REST purists point out that such usages are not properly RESTful (see <a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/" target="_blank"><a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/">http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/</a></a> for a good discussion), and indeed the <code>RestTemplate</code> doesn&rsquo;t directly support sending cookies.</p>
-
-<p>But in the real world, we need to make things work, and so in this quick post I&rsquo;ll show how to send cookies with <code>RestTemplate</code>.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/2012/04/08/sending-cookies-with-resttemplate/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/3/">&larr; Older</a>
@@ -598,6 +606,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
       </li>
     
@@ -611,10 +623,6 @@
     
       <li class="post">
         <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
   </ul>

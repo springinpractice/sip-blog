@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="This post was originally written as a recipe for our book Spring in Practice, but we just didn&#8217;t have enough room to include it. It&#8217;s &hellip;">
+  <meta name="description" content="This post is part of a three-part series: Part 1 | Part 2 | Part 3 Many professional software engineers see concurrent programming as something of &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,146 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Concurrent Programming for Practicing Software Engineers, Part 1</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-13T08:25:07-07:00" pubdate data-updated="true">Oct 13<span>th</span>, 2008</time>
+        
+         | <a href="/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><div class="intro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Part 3</a></span>
+</div>
+
+
+<p><a href="http://www.flickr.com/photos/12495774@N02/2405297371/"><img src="http://wheelersoftware.s3.amazonaws.com/articles/concurrent-programming/race.jpg" align="right" /></a></p>
+
+<p>Many professional software engineers see concurrent programming as something of an arcane art, and indeed it&rsquo;s possible to make it several years into a career without a good grasp of threads. The reasons seem clear enough:</p>
+
+<ul class="square">
+
+<li>Most problems don&#8217;t require a strong understanding of concurrency. I&#8217;d even argue that many web applications, which are often <em>highly</em> concurrent, don&#8217;t require a strong understanding of concurrency: sometimes there isn&#8217;t significant data sharing; sometimes the burden of managing concurrency, isolation and deadlocks is pushed back to a transactional data store; sometimes the consequences of races are minor or completely insignificant; etc.</li>
+
+<li>Even when a problem does require some knowledge of concurrency, a lack of knowledge manifests itself only sporadically and generally in ways that are difficult to reproduce, which allows people to mistake their 99.9999% solution for a 100% solution. Even in cases where the developer is under no such delusion, he may believe that his 99.9999% solution &#8220;works&#8221;. He fails to notice that 99.9999% may not be so high when you&#8217;re talking about long-running applications running on processors that execute billions of cycles per second, and that sometimes the consequences of that 1-in-1,000,000 screwup are <a href="http://en.wikipedia.org/wiki/Therac-25">disastrous</a>.</li>
+
+<li>The &#8220;behavioral&#8221; structure of a program, as embodied by its threads, is largely orthogonal to the program&#8217;s &#8220;static&#8221; structure, as embodied by packages, classes and methods. Since code is organized around the latter, developers can &#8220;see&#8221; and understand it. Since code is not organized around the behavioral structure (for example, the code does not contain explicit representations of the paths of individual threads), developers have a harder time seeing and understanding it.</li>
+
+</ul>
+
+
+<p>There are times when you really do need to understand how threads work in order to implement required functionality or else <a href="#">avoid simple but potentially serious mistakes</a>.</p>
+
+<h4>What we&#8217;ll cover</h4>
+
+
+<p>In this three-part series of posts we&rsquo;re going to cover several important concurrent programming concepts that every professional software developer needs to understand: serialism, parallelism, race conditions, synchronization, deadlocks and global lock orderings. The concepts form a logical progression that looks a little like an arms race: some problems lend themselves to a parallel solution, but parallelism gives rise to race conditions. We counter race conditions with synchronization (among other techniques), but synchronization leads to deadlocks (among other problems). And so we counter deadlocks with global lock orderings (among other techniques).</p>
+
+<p>You&rsquo;ll note that I said &ldquo;among other problems&rdquo; and &ldquo;among other techniques&rdquo;. The treatment here doesn&rsquo;t pretend to be comprehensive. There are lots of important topics in concurrent programming, such as proper encapsulation, contention-induced (rather than compute-induced) performance issues, read/write locking, minimizing lock scope, fine- vs. coarse-grained locks, timeouts, forking and joining and on and on (and on). I believe however that the topics we&rsquo;re about to treat provide a nice context against which developers can more easily learn other topics. I&rsquo;ll probably write about some of the other topics eventually.</p>
+
+<p>By the end of the series you&rsquo;ll have a basic foundation in multithreaded programming, one that I consider to be required for practicing software engineers.</p>
+
+<p>Our presentation is Java-centric, but developers from other languages (especially C#) should still find the discussion useful.</p>
+
+<h3>What is a thread?</h3>
+
+
+<p>Let&rsquo;s begin by introducing the star of the show, the thread. The following is probably more accurately considered a description rather than a definition, even though it reads a little like the latter.</p>
+
+<p>A thread is a sequential flow of control with its own program counter and call stack. It shares state, memory and resources with other threads in the same process. Since each thread gets its own call stack, local variables aren&rsquo;t shared. Instance and class variables, however, are shared across threads. It&rsquo;s also possible to define variables that exist outside of methods but are still local to a specific thread, and these are called <a href="http://en.wikipedia.org/wiki/Thread-local_storage">thread-local</a> variables.</p>
+
+<p>OK, so that&rsquo;s what a thread is. What can we do with them?</p>
+
+<h3>Serialism and parallelism</h3>
+
+
+<p>In software development we&rsquo;re asked to solve different kinds of problem. We may be asked to write code that takes a bunch of information about a loan applicant and produces a verdict as to whether that applicant should get the loan. Maybe we have to write a web-based shopping cart. Or maybe we have to write code to make a guy&rsquo;s arms and legs flail about in a realistic fashion when he falls off a cliff in a video game.</p>
+
+<p>For any given problem there are typically multiple ways to solve it, and different ways to categorize the solutions. One useful way of distinguishing solutions is to separate <em>serial</em> from <em>parallel</em> solutions. Let&rsquo;s look at that distinction in more detail.</p>
+
+<h4>Serial approaches to solving problems</h4>
+
+
+<p>Some problems have solutions that are essentially a single series of steps. If you&rsquo;re writing a home affordability calculator, for example, the steps might be as follows:</p>
+
+<ol>
+<li>Collect data from the user, such as their annual salary, the amount of the down payment, their monthly bill payments, whatever.</li>
+<li>Crunch some numbers.</li>
+<li>Show the maximum dollar amount the user can afford and an ad for a local Realtor.</li>
+</ol>
+
+
+<p>Our recipe for solving the &ldquo;home affordability problem&rdquo; is said to be <em>serial</em> because it&rsquo;s essentially just a series of steps to carry out. We might even go so far as to describing the problem itself as a serial problem, which is just a shorthand way of saying that the most plausible and reasonable solutions to the problem are serial solutions. Either way, the essence of serialism is that we have a series of steps that a single control flow can carry out.</p>
+
+<p>Now let&rsquo;s look at the alternative to serialism, which would be parallelism.</p>
+
+<h4>Parallel approaches to solving problems</h4>
+
+
+<p>Some problems are amenable to solutions involving multiple concurrent control flows, which is to say that they have <em>parallel</em> solutions. To take a non-computing example, say you have a room with toys scattered all over the floor. You want the room clean. As potential participants to the cleanup effort you have yourself and three kids. A possibly-relevant piece of background information is that one child is entirely responsible for the mess.</p>
+
+<p>Readers with young children will no doubt recognize this classic problem from the field of parenting algorithms. Fortunately, well-known serial and parallel solutions are available. The best approach in any given case depends strongly upon your goals:</p>
+
+<ol>
+
+<li>If you&#8217;re trying to emphasize fairness and personal responsibility, you might opt for the obvious serial solution even though it&#8217;s slower. (In reality this isn&#8217;t a serial solution; it inevitably involves close supervisory involvement by a supervisory parent thread. We can ignore that detail.)</li>
+
+<li>If you&#8217;re in a big hurry because you need to get the kids off to school, you might choose the obvious parallel solution, despite the unfairness.</li>
+
+<li>If you&#8217;re in an even bigger hurry you might choose the &#8220;other&#8221; serial solution. (Hint: it doesn&#8217;t involve any kids.)</li>
+
+</ol>
+
+
+<p>Whether we&rsquo;re talking about serialism or parallelism, there is a recurring concept, which is that of a flow of control. In the serial case we have exactly one flow. In the parallel case we have more.</p>
+
+<p>Computer scientists, hardware engineers and software engineers spend a lot of time with the distinction between serialism and parallelism. Let&rsquo;s look at why that is.</p>
+
+<h4>Serialism vs. parallelism: why do we care?</h4>
+
+
+<p>In a word, performance. In many cases&mdash;not all, but many&mdash;parallel solutions are simply faster than serial solutions, owing to the &ldquo;many hands make light work&rdquo; effect. And from a practical perspective, that&rsquo;s the main reason we care about concurrency (i.e., parallelism) despite its many attendant complications.</p>
+
+<p>The <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">next post in our series</a> explains what some of those complications are and some ways to overcome them.</p>
+
+<div class="outro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Part 3</a></span>
+</div>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1563,269 +1703,6 @@ mailSender.send(message);</pre>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/05/08/session-scoped-beans-in-spring/">Session-scoped Beans in Spring</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-05-08T05:50:20-07:00" pubdate data-updated="true">May 8<span>th</span>, 2008</time>
-        
-         | <a href="/2008/05/08/session-scoped-beans-in-spring/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>This tutorial will show you how to define session-scoped beans in Spring.  The idea here is that you have a web application, and you have various objects that exist on a per-session basis, such as maybe a user profile or a shopping cart. You&rsquo;d like to make those available to some service bean, say, without having to manually pull them off the session and pass them as method arguments every time.  First I&rsquo;ll show you how to do that.  After that I&rsquo;ll talk a little bit about whether I think it&rsquo;s a good idea.</p>
-
-<p>Here&rsquo;s the code for this article: <a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-session-scoped-beans/ssb-example.zip">ssb-example.zip</a></p>
-
-<p>The code uses annotation-based autowiring. If you are unfamiliar with that and it&rsquo;s not reasonably clear what I&rsquo;m doing with the code, you might want to see my articles <a href="#">Annotation-Based Autowiring in Spring 2.5</a> and <a href="#">Annotation-Based MVC in Spring 2.5</a>.</p>
-
-<h3>Dependencies</h3>
-
-
-<p>I&rsquo;m using Java 6 (though Java 5 should work too) and Spring 2.5.4 (though Spring 2.5.x should work generally).  You will need the following JARs:</p>
-
-<ul>
-    <li><code>cglib-nodep-2.1_3.jar</code></li>
-    <li><code>commons-logging.jar</code></li>
-    <li><code>spring.jar</code></li>
-    <li><code>spring-webmvc.jar</code></li>
-</ul>
-
-
-
-
-<h3>Java classes</h3>
-
-
-<p>We have four classes: a controller, a service interface, a service implementation, and a model class.</p>
-
-<p>First, the controller:</p>
-
-<pre>package ssbexample;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
-
-@Controller
-public class MyController {
-    private String SHOPPING_CART_KEY = "shoppingCart";
-    
-    private MyService service;
-
-    public MyService getService() {
-        return service;
-    }
-
-    public void setService(MyService service) {
-        this.service = service;
-    }
-    
-    @RequestMapping("/viewcart.do")
-    public ModelMap viewCart() {
-        return new ModelMap(SHOPPING_CART_KEY, service.getShoppingCart());
-    }
-    
-    @RequestMapping("/additem.do")
-    public ModelAndView addItem() {
-        service.addItem();
-        ShoppingCart cart = service.getShoppingCart();
-        return new ModelAndView("/viewcart", SHOPPING_CART_KEY, cart);
-    }
-}</pre>
-
-
-<p>The thing to notice about the controller code is that I&rsquo;m grabbing the shopping cart from the service bean itself, rather than pulling it off of the session directly.  That means that the service bean is somehow able to return a session-specific shopping cart.  (And we&rsquo;ll see how to do that shortly.)  We&rsquo;re also able to tell the service to add an item (to the cart), and the service once again knows exactly which cart to add the item to.</p>
-
-<p>Now here&rsquo;s the service interface:</p>
-
-<pre>package ssbexample;
-
-public interface MyService {
-    
-    ShoppingCart getShoppingCart();
-    
-    void addItem();
-}</pre>
-
-
-<p>Here&rsquo;s the service implementation:</p>
-
-<pre>package ssbexample;
-
-import org.springframework.stereotype.Service;
-
-@Service("service")
-public class MyServiceImpl implements MyService {
-    private ShoppingCart shoppingCart;
-
-    public ShoppingCart getShoppingCart() {
-        return shoppingCart;
-    }
-    
-    public void setShoppingCart(ShoppingCart shoppingCart) {
-        this.shoppingCart = shoppingCart;
-    }
-    
-    public void addItem() {
-        shoppingCart.addItem();
-    }
-}</pre>
-
-
-<p>Notice that with the shopping cart getter and setter, we have a way to inject a shopping cart into the service bean.  But we have only a single service bean instance, so it looks a little bit like magic right now.</p>
-
-<p>And finally, here&rsquo;s the model class itself (a simple shopping cart):</p>
-
-<pre>package ssbexample;
-
-import java.io.Serializable;
-
-public class ShoppingCart implements Serializable {
-    private int numItems;
-    
-    public ShoppingCart() {
-    }
-    
-    public int getNumItems() {
-        return numItems;
-    }
-    
-    public void addItem() {
-        numItems++;
-    }
-}</pre>
-
-
-<p>As you may have guessed, the shopping cart is the object we want to save on the session.  I&rsquo;ve implemented <code>Serializable</code> so the servlet container can save the session when you shut it down. (Tomcat does that, anyway.)</p>
-
-<h3>The JSP</h3>
-
-
-<p>We have just one JSP.</p>
-
-<pre>&lt;html&gt;
-    &lt;head&gt;
-        &lt;title&gt;View Shopping Cart&lt;/title&gt;
-    &lt;/head&gt;
-    &lt;body&gt;
-        &lt;h1&gt;View Shopping Cart&lt;/h1&gt;
-        &lt;p&gt;Your shopping cart currently contains ${shoppingCart.numItems} items.&lt;/p&gt;
-        &lt;p&gt;&lt;a href="additem.do"&gt;Add item to cart&lt;/a&gt;&lt;/p&gt;
-    &lt;/body&gt;
-&lt;/html&gt;</pre>
-
-
-
-
-<h3>web.xml configuration file</h3>
-
-
-<p>Nothing special here:</p>
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;web-app xmlns="http://java.sun.com/xml/ns/javaee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-        http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-    version="2.5"&gt;
-    
-    &lt;servlet&gt;
-        &lt;servlet-name&gt;front&lt;/servlet-name&gt;
-        &lt;servlet-class&gt;
-            org.springframework.web.servlet.DispatcherServlet
-        &lt;/servlet-class&gt;
-    &lt;/servlet&gt;
-    &lt;servlet-mapping&gt;
-        &lt;servlet-name&gt;front&lt;/servlet-name&gt;
-        &lt;url-pattern&gt;*.do&lt;/url-pattern&gt;
-    &lt;/servlet-mapping&gt;
-&lt;/web-app&gt;</pre>
-
-
-<p>Now let&rsquo;s look at our Spring configuration file, which is where the aforementioned magic happens.</p>
-
-<h3>Spring application context</h3>
-
-
-<p>Here&rsquo;s our Spring config:</p>
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:aop="http://www.springframework.org/schema/aop"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-        http://www.springframework.org/schema/aop
-        http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-2.5.xsd"
-    default-autowire="byName"&gt;
-    
-    &lt;!-- Scan for controllers and services --&gt;
-    &lt;context:component-scan base-package="ssbexample"/&gt;
-    
-    &lt;!-- Create a proxy to generate session-scoped shopping carts --&gt;
-    &lt;bean id="shoppingCart" class="ssbexample.ShoppingCart" scope="session"&gt;
-        &lt;!-- This requires CGLIB --&gt;
-        &lt;aop:scoped-proxy/&gt;
-    &lt;/bean&gt;
-    
-    &lt;!-- Maps a logical view name to a physical resource --&gt;
-    &lt;bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"&gt;
-        &lt;property name="prefix" value="/WEB-INF/jsp/"/&gt;
-        &lt;property name="suffix" value=".jsp"/&gt;
-    &lt;/bean&gt;
-&lt;/beans&gt;</pre>
-
-
-<p>As I noted at the outset, we&rsquo;re autowiring here, so I&rsquo;ll just point out that the <code>shoppingCart</code> bean is automatically injected into the <code>service</code> bean (identified by the <code>@Service(&ldquo;service&rdquo;)</code> annotation inside <code>ssbexample.MyServiceImpl</code>) since I have <code>default-autowire=&ldquo;byName&rdquo;</code> set in the Spring config.</p>
-
-<p>On the <code>shoppingCart</code> bean, we have the scope set to <code>session</code>, which is probably unsurprising.  But that&rsquo;s not the whole story.</p>
-
-<p>The interesting thing about the injection is that we&rsquo;re not injecting any particular shopping cart into the service bean.  Rather we&rsquo;re injecting a web-aware proxy into the service bean.  That&rsquo;s what <code>&lt;aop:scoped-proxy/&gt;</code> is for.  The proxy, being web-aware, can see individual user sessions.  So when any particular user asks for a shopping cart, the proxy grabs the shopping cart off the current session and returns it.</p>
-
-<p>Note that in order to use session scope, you have to be using a web-aware Spring application context, such as <code>XmlWebApplicationContext</code>.  Otherwise there&rsquo;s no way for the scoped proxy to reference a current session.</p>
-
-<h3>Discussion</h3>
-
-
-<p>I think that this is a pretty nice tool to have in your toolbox. Using this technique, you can move the creation of session-scoped beans into the Spring application context, instead of having to create those manually in the code, and then having to place them manually on the session.  And it does make the service API cleaner, because you can avoid having to include important objects (like a shopping cart) in all the method signatures.  So I like that about session-scoped beans.</p>
-
-<p>The main reservation I have is that despite appearances, there&rsquo;s an important sense in which using session scoping ties the code to Spring, which goes against the whole Spring philosophy of being noninvasive.  Usually service beans are designed and implemented such that a single service bean serves multiple clients, each with its own client session.  And as long as we&rsquo;re able to inject a web-aware shopping cart proxy into the shopping cart slot, we haven&rsquo;t abandoned that.  But that&rsquo;s the problem: if we decide to move away from Spring, we may find ourselves without easy access to a web-aware shopping cart proxy, and so we&rsquo;re forced to redesign the service bean in some way (such as changing the service methods to include a shopping cart parameter).</p>
-
-<p>I don&rsquo;t think this concern invalidates the approach, but it&rsquo;s important to understand its ramifications.</p>
-
-<p><span class="icon stickyNote">Post migrated from my Wheeler Software site.</span></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -1843,6 +1720,10 @@ public class ShoppingCart implements Serializable {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
       </li>
     
@@ -1856,10 +1737,6 @@ public class ShoppingCart implements Serializable {
     
       <li class="post">
         <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
   </ul>

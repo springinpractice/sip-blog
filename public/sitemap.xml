@@ -441,8 +441,14 @@
         <lastmod>2013-10-02T03:10:40-07:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/
+        </loc>
+        <lastmod>2013-10-07T02:01:52-07:00</lastmod>
+    </url>
+    <url>
         <loc>http://springinpractice.com/archives/</loc>
-        <lastmod>2013-10-02T03:10:40-07:00</lastmod>
+        <lastmod>2013-10-07T02:01:52-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/book/</loc>
@@ -454,7 +460,7 @@
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-10-02T03:10:40-07:00</lastmod>
+        <lastmod>2013-10-07T02:01:52-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>

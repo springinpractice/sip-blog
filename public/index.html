@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Here&rsquo;s a quick tip for using Spring&rsquo;s RestTemplate to authenticate to a RESTful web service that uses HTTP basic authentication. There &hellip;">
+  <meta name="description" content="Some web services return JSON error objects when there&rsquo;s a problem. GitHub&rsquo;s API is a good case in point, but the approach is not &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,144 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON Error Object Responses With Spring&#8217;s RestTemplate</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-07T01:14:00-07:00" pubdate data-updated="true">Oct 7<span>th</span>, 2013</time>
+        
+         | <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Some web services return JSON error objects when there&rsquo;s a problem. <a href="http://developer.github.com/v3/#client-errors">GitHub&rsquo;s API</a> is a good case in point, but the approach is not uncommon. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate.</p>
+
+<p>A challenge when using Spring&rsquo;s <code>RestTemplate</code> is that there&rsquo;s not an obvious way to handle these. Normally when we use the <code>RestTemplate</code>, we indicate a specific type of response payload we expect to see, and so if an error object comes back instead, then it&rsquo;s not clear what to do.</p>
+
+<p>One possible approach is to add error fields to the various resource data transfer objects (DTOs). While this can work, I&rsquo;m not a big fan of this approach as it fails to separate the resource modeling and error reporting concerns, which I take to be distinct.</p>
+
+<p>So let&rsquo;s look at a different approach&mdash;one that does in fact separate resource modeling from error reporting.</p>
+
+<h2>The idea</h2>
+
+<p>The concept is to read the response body as a string instead of reading it as an object, and then deserialize the body either as the expected response type or else as an error object, depending on whether the status code was in the HTTP 400 or 500 series (client and server errors, respectively).</p>
+
+<h2>How to do it</h2>
+
+<p>First we need a special <code>RestTemplate</code> configuration. By default <code>RestTemplate</code> contains a <code>DefaultResponseErrorHandler</code>, which throws an exception when there&rsquo;s an HTTP error. This doesn&rsquo;t work for us, because the exception bubbles out of the <code>RestTemplate</code> call, thus abandoning the error object we want to read. So we just need to replace it with a version that doesn&rsquo;t throw the exception. Here&rsquo;s one:</p>
+
+<pre><code>package myapp.client;
+
+import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.web.client.ResponseErrorHandler;
+import myapp.util.RestUtil;
+
+public class MyResponseErrorHandler implements ResponseErrorHandler {
+    private static final Logger log = LoggerFactory.getLogger(MyResponseErrorHandler.class);
+
+    @Override
+    public void handleError(ClientHttpResponse response) throws IOException {
+        log.error("Response error: {} {}", response.getStatusCode(), response.getStatusText());
+    }
+
+    @Override
+    public boolean hasError(ClientHttpResponse response) throws IOException {
+        return RestUtil.isError(response.getStatusCode());
+    }
+}
+</code></pre>
+
+<p>In the code above, the <code>handleError()</code> method simply logs the error. It doesn&rsquo;t throw an exception, since again we don&rsquo;t want to prevent <code>RestTemplate</code> from reading the error object into a string.</p>
+
+<p>Just for completeness, here&rsquo;s <code>RestUtil</code>:</p>
+
+<pre><code>package myapp.util;
+
+import org.springframework.http.HttpStatus;
+
+public class RestUtil {
+
+    public static boolean isError(HttpStatus status) {
+        HttpStatus.Series series = status.series();
+        return (HttpStatus.Series.CLIENT_ERROR.equals(series) || HttpStatus.Series.SERVER_ERROR.equals(series));
+    }
+}
+</code></pre>
+
+<p>Now we need to configure the <code>RestTemplate</code> to use our custom <code>ResponseErrorHandler</code>:</p>
+
+<pre><code>&lt;bean class="org.springframework.web.client.RestTemplate"&gt;
+    &lt;property name="errorHandler"&gt;
+        &lt;bean class="myapp.client.MyResponseErrorHandler" /&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p>We&rsquo;re going to need an object mapper too (I&rsquo;m assuming Jackson 2 here, though in principle the same approach should work for JAXB or Jackson 1 as well). So here&rsquo;s that:</p>
+
+<pre><code>&lt;bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" /&gt;
+</code></pre>
+
+<p>Inject the <code>RestTemplate</code> and <code>ObjectMapper</code> into your client code. Now here&rsquo;s how to use them to deal with error objects:</p>
+
+<pre><code>@Inject private RestTemplate restTemplate;
+@Inject private ObjectMapper objectMapper;
+
+public DoodadResources getDoodads() {
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
+    HttpEntity&lt;String&gt; request = new HttpEntity&lt;String&gt;(headers);
+    ResponseEntity&lt;String&gt; response = restTemplate.exchange(DOODAD_URL, HttpMethod.GET, request, String.class);
+    String responseBody = response.getBody();
+    try {
+        if (RestUtil.isError(response.getStatusCode())) {
+            MyErrorResource error = objectMapper.readValue(responseBody, MyErrorResource.class);
+            throw new RestClientException("[" + error.getCode() + "] " + error.getMessage());
+        } else {
+            DoodadResources doodads = objectMapper.readValue(responseBody, DoodadResources.class);
+            return doodads;
+        }
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+}
+</code></pre>
+
+<p>Notice that the call to <code>exchange()</code> specifies that we want to map the response body to a string, which can handle any JSON (or XML) response. Then we use <code>RestUtil</code> again to process the response differently depending on the status series. For errors we parse the response body into a <code>MyErrorResource</code> and use it to throw an exception with an app-specific error code (not simply an HTTP status code) and a descriptive message. Of course we can do whatever we want with the detailed error information; this is just an example.</p>
+
+<p>If there&rsquo;s no error, then we can parse the response body into the expected response type, if there is one, and return it. Here we return a <code>DoodadResources</code>.</p>
+
+<p>That&rsquo;s at least one way to do it. If you have a better way, I&rsquo;d be interested to hear about it.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -516,59 +654,6 @@ public final class RichTextFilter implements TextFilter {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/">Injecting a File From the Classpath Into a Bean</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-12T23:29:00-07:00" pubdate data-updated="true">May 12<span>th</span>, 2012</time>
-        
-         | <a href="/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Here&rsquo;s a quick tip for you.</p>
-
-<p>Sometimes you need to inject a <code>java.io.File</code> from your classpath into a bean, but you don&rsquo;t want to have to spell out the absolute path (even in a configuration file). Never fear. It&rsquo;s easy:</p>
-
-<pre><code>&lt;bean id="tagProviderResource" class="org.springframework.core.io.ClassPathResource"&gt;
-    &lt;constructor-arg value="/htmlcleaner.xml" /&gt;
-&lt;/bean&gt;
-
-&lt;util:property-path id="tagProviderFile" path="tagProviderResource.file" /&gt;
-
-&lt;bean id="tagProvider" class="org.htmlcleaner.ConfigFileTagProvider"&gt;
-    &lt;constructor-arg ref="tagProviderFile" /&gt;
-&lt;/bean&gt;
-</code></pre>
-
-<p>In the configuration above, I used <code>ClassPathResource</code> to find the <code>htmlcleaner.xml</code> resource on the classpath. Then I used the handy <code>&lt;util:property-path&gt;</code> tag to assign the resource&rsquo;s <code>file</code> property its own ID. Finally, I inject the <code>File</code> using constructor injection.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -584,6 +669,10 @@ public final class RichTextFilter implements TextFilter {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
       </li>
     
@@ -597,10 +686,6 @@ public final class RichTextFilter implements TextFilter {
     
       <li class="post">
         <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
   </ul>

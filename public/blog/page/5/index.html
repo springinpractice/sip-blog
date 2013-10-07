@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Spring Security features a tag that allows us to show or hide JSP content based on access rules we can define. Here&rsquo;s an example: &lt;security: &hellip;">
+  <meta name="description" content="The problem: hardcoded role-based authorization One of the challenges around using Spring Security is that the examples&mdash;both in the &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,96 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2010/10/27/quick-tip-spring-security-role-based-authorization-and-permissions/">Quick Tip: Spring Security Role-based Authorization and Permissions</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2010-10-27T05:40:13-07:00" pubdate data-updated="true">Oct 27<span>th</span>, 2010</time>
+        
+         | <a href="/2010/10/27/quick-tip-spring-security-role-based-authorization-and-permissions/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>The problem: hardcoded role-based authorization</h3>
+
+
+<p>One of the challenges around using Spring Security is that the examples&mdash;both in the documentation and on the web&mdash;tend to promote an overly-simple approach to role-based authorization, hardcoding roles in the source in a non-configurable fashion. For example:</p>
+
+<pre style="margin:20px 0;">
+@PreAuthorize("hasRole('facultyMember')")
+public Newsletter getFacultyNews() { ... }
+</pre>
+
+
+<p>(Assume for the sake of example that ACL-based authorization is overkill for the method in question. The user either has permission to read faculty newsletters or not.)</p>
+
+<p>The problem is that when we decide to make a change&mdash;for example, maybe teaching assistants should be allowed to read the faculty newsletters too&mdash;we have to go into the code to make a change:</p>
+
+<pre style="margin:20px 0;">
+@PreAuthorize("hasRole('facultyMember') or hasRole('teachingAssistant')")
+public Newsletter getFacultyNews() { ... }
+</pre>
+
+
+<p>For domain object security there&rsquo;s no problem because the permissions are cleanly separated from roles. We can map associate individual permissions on domain objects with users and roles as we wish. So the code contains annotations like</p>
+
+<pre style="margin:20px 0;">
+@PreAuthorize("hasPermission(#message, write)")
+public void editMessage(Message message) { ... }
+</pre>
+
+
+<p>and all is good. We probably won&rsquo;t need to change the relationship between the permission and the method itself; we&rsquo;ll only need to change who (which users/roles) actually has the write permission on the message in question, and we can do that in the database. So that is nice, and we want the same thing for role-based authorization.</p>
+
+<h3>Solution: use granted authorities to model <i>permissions</i>, not roles</h3>
+
+
+<p>Here we assume an authentication source that models the desired relationship between users, roles and permissions. The typical relationship would be a many-many relationship between users and roles, and a many-many relationship between roles and permissions. For example:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/refcard106/sample_user_schema.png" alt="Sample custom user schema" /></p>
+
+<p>It would be possible to have a direct relationship between users and permissions too (say to allow for the assignment of fine-grained permissions to specific users in addition to assigning roles), if that were desired.</p>
+
+<p>The schema can be part of some standard authentication source or it can be a custom <code>UserDetailsService</code>; it doesn&rsquo;t matter.</p>
+
+<p>At the end of the day we need to transform our user representation into a <code>UserDetails</code>, and the trick is to map <i>permissions</i>&mdash;not roles&mdash;to <code>GrantedAuthority</code> objects to support the <code>getAuthorities()</code> contract on the <code>UserDetails</code> interface. We still have roles, but they matter only insofar as they help to bundle permissions up into convenient packages. The <code>UserDetails</code> implementation will probably expose the roles, but the <code>UserDetails</code> interface simply exposes the permissions (not the roles) via the <code>getAuthorities()</code> method.</p>
+
+<p>It&rsquo;s really that simple, and the final result is that we can avoid hardcoding roles in the code:</p>
+
+<pre style="margin:20px 0;">
+@PreAuthorize("hasRole('PERM_READ_FACULTY_NEWS')")
+public Newsletter getFacultyNews() { ... }
+</pre>
+
+
+<p>As an aside, the predicate name <code>hasRole</code> rather than <code>hasAuthority</code> is a minor annoyance since permissions aren&rsquo;t roles. The backing check is against a <code>GrantedAuthority</code> and so <code>hasRole()</code> seems to reflect either the intended or the typical use of <code>GrantedAuthority</code>.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -979,433 +1069,6 @@ create table acl_entry (
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2009/02/02/getting-started-with-hibernate-validator/">Getting Started With Hibernate Validator</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2009-02-02T07:00:16-08:00" pubdate data-updated="true">Feb 2<span>nd</span>, 2009</time>
-        
-         | <a href="/2009/02/02/getting-started-with-hibernate-validator/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>In this tutorial we&rsquo;re going to learn how to get started with Hibernate Validator, which as its name suggests is a validation framework associated with the Hibernate project. This article is really a follow-up to <a href="http://springinpractice.com/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/">my earlier article on using the Bean Validation Framework</a> (part of the larger <a href="https://springmodules.dev.java.net/">Spring Modules</a> project), which is a competing framework that seems to have lost the battle for Spring&rsquo;s &ldquo;preferred validation provider&rdquo; status to Hibernate Validator. Both Uri Boness (in an e-mail correspondence) and Juergen Hoeller (at SpringOne) agreed that people should start moving toward Hibernate Validator since that will eventually support the emerging <a href="http://jcp.org/en/jsr/detail?id=303">JSR 303</a> standard.</p>
-
-<p>Hibernate Validator is nice because it (like the Bean Validation Framework) supports declarative validation via <a href="http://java.sun.com/j2se/1.5.0/docs/guide/language/annotations.html">Java 5 annotations</a>. Let&rsquo;s say you create a bean class, like an <code>Account</code> or a <code>PurchaseOrder</code> or whatever. With Hibernate Validator you can attach validation annotations to the bean properties and that will define the validation constraints for the bean. Moreover, unlike earlier approaches to validation (such as Struts Validation), Hibernate Validator isn&rsquo;t tied to the web tier, and so if you want to validate your beans from within your service beans, or within your DAOs, or even just before you ORM them into your database, no sweat. You can do just that.</p>
-
-<p>Anyway, for now we&rsquo;re just going to look at some of the basics: how to specify annotation constraints and how to check for constraint violations. We&rsquo;re not going to worry about integrating Hibernate Validator with Spring&rsquo;s native validation framework (so that, for instance, we might render Hibernate Validator error messages out using Spring Web MVC taglibs) though I&rsquo;ll probably write another article on that sometime in the future if people are interested.</p></p>
-
-<p>For this article we&rsquo;re using Java 5 or higher (we need Java 5 annotations) and Hibernate Validator 3.1.0. For your convenience I&rsquo;ve created a <a href="http://maven.apache.org/">Maven 2</a> project that you can download: <a href="http://wheelersoftware.s3.amazonaws.com/articles/hibernate-validator/hibernate-validator-demo.zip">hibernate-validator-demo.zip</a></p>
-
-<p>OK, let&rsquo;s jump into some examples of annotated bean classes.</p>
-
-<h3>Specifying validation constraints with Hibernate Validator annotations</h3>
-
-
-<p>Here are a couple of examples of annotated bean classes: a <code>User</code> class and an <code>Address</code> class. Note that the two objects are related in a parent-child fashion.</p>
-
-<p>First, here is the <code>User</code> bean class:</p>
-
-<pre>package com.wheelersoftware.demos.hibernatevalidator;
-
-import org.hibernate.validator.Email;
-import org.hibernate.validator.Length;
-import org.hibernate.validator.NotEmpty;
-import org.hibernate.validator.Valid;
-
-public class User {
-    private String username;
-    private String firstName;
-    private String lastName;
-    private Address address;
-    private String email;
-    private String password;
-
-    @NotEmpty
-    @Length(max = 20)
-    public String getUsername() { return username; }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    @NotEmpty
-    @Length(max = 20)
-    public String getFirstName() { return firstName; }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    @NotEmpty
-    @Length(max = 20)
-    public String getLastName() { return lastName; }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    @Valid
-    public Address getAddress() { return address; }
-
-    public void setAddress(Address address) {
-        this.address = address;
-    }
-
-    @NotEmpty
-    @Email
-    public String getEmail() { return email; }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    @NotEmpty
-    @Length(max = 20)
-    public String getPassword() { return password; }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-}</pre>
-
-
-<p>Let&rsquo;s talk a little about what&rsquo;s going on with the code above. As we noted earlier, we have a bean class (here, a class that represents user accounts of some sort) and we&rsquo;re using annotations to specify validation constraints. For a full list of the built-in constraints, see the <a href="http://www.hibernate.org/hib_docs/validator/reference/en/html/validator-defineconstraints.html#validator-defineconstraints-builtin">official Hibernate Validator documentation</a>, but we&rsquo;ll just focus on a small handful for right now.</p>
-
-<p>First notice that we&rsquo;ve attached our annotations to the getter methods. This is how we specify the validation constraints that attach to the associated properties.</p>
-
-<p>We&rsquo;ve used <code>@NotEmpty</code> in several places. This annotation means that the annotated property can&rsquo;t be null and it can&rsquo;t be the empty string either. There&rsquo;s also a <code>@NotNull</code> annotation that we could have used if we&rsquo;d wanted to, but in this case I wanted to prevent the empty string from being used as values.</p>
-
-<p>Another annotation that appears multiple times is the <code>@Length</code> annotation. We can specify associated minimum and maximum lengths by using the <code>min</code> and <code>max</code> elements, respectively, though in the example above we&rsquo;ve specified only maximum lengths. (In the example that follows we&rsquo;ll see how to specify a minimum length as well.) So for example we&rsquo;ve specified that passwords can&rsquo;t be any longer than 20 characters.</p>
-
-<p>A third annotation is the <code>@Email</code> annotation. As you would guess, this indicates that the property must contain a valid e-mail address.</p>
-
-<p>The fourth and final annotation of the ones that appear above is the <code>@Valid</code> annotation. This tells Hibernate Validator that it should validate the associated object&mdash;here an associated <code>Address</code> object&mdash;using whatever validation annotations we define on the <code>Address</code> class.</p>
-
-<p>And that&rsquo;s our segue into our second example, the <code>Address</code> bean class, which appears below.</p>
-
-<pre>package com.wheelersoftware.demos.hibernatevalidator;
-
-import org.hibernate.validator.Length;
-import org.hibernate.validator.NotEmpty;
-import org.hibernate.validator.Pattern;
-
-public class Address {
-    private String street1;
-    private String street2;
-    private String city;
-    private String state;
-    private String zip;
-
-    @NotEmpty
-    @Length(max = 40)
-    public String getStreet1() { return street1; }
-
-    public void setStreet1(String street1) {
-        this.street1 = street1;
-    }
-
-    // No validation constraints
-    public String getStreet2() { return street2; }
-
-    public void setStreet2(String street2) {
-        this.street2 = street2;
-    }
-
-    @NotEmpty
-    @Length(max = 40)
-    public String getCity() { return city; }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    @NotEmpty
-    @Length(max = 3)
-    public String getState() { return state; }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    @NotEmpty
-    @Length(min = 5, max = 5, message = "{zip.length}")
-    @Pattern(regex = "[0-9]+")
-    public String getZip() { return zip; }
-
-    public void setZip(String zip) {
-        this.zip = zip;
-    }
-}</pre>
-
-
-<p>Our validation annotations for <code>Address</code> are pretty similar to what we saw for <code>User</code>, but there are a few differences worth mentioning. First, notice that we don&rsquo;t have to attach validation constraints to every property. It&rsquo;s OK, for example, for <code>street2</code> to be null or anything else, so we simply refrain from defining validation constraints for this property.</p>
-
-<p>Second, we&rsquo;re using a <code>@Pattern</code> annotation for the <code>zip</code> property. This allows us to specify regular expression match patterns.</p>
-
-<p>The third and final difference is the <code>@Length</code> annotation we&rsquo;ve defined for the <code>zip</code> property. Besides including a <code>min</code> element (which, when combined with the <code>max</code> element, indicates that the ZIP code must be exactly five characters long), we&rsquo;ve also included a <code>message</code> element. We can use this element to do either of two things. First, we can use it to define a hardcoded message to display when the given validation constraint fails. That&rsquo;s not what we&rsquo;re doing here. Instead we&rsquo;re doing the second thing we can do, which is specify a message key using the brace syntax: <code>message = {key_name}</code>. The idea is that we&rsquo;ll eventually use this message key to look up a message in a resource bundle, thus externalizing the message. Later in the tutorial we&rsquo;ll map the <code>zip.length</code> message key to an actual message using a resource bundle.</p>
-
-<p>That&rsquo;s it for the validation constraints themselves. Now let&rsquo;s see how we can tell Hibernate Validator to use them to perform our bean validation.</p>
-
-<h3>How to tell Hibernate Validator to validate annotated beans</h3>
-
-
-<p>It&rsquo;s fairly straightforward to get Hibernate Validator to validate our annotated beans. The following listing presents some demo code for doing exactly this. Let&rsquo;s take a look.</p>
-
-<pre>package com.wheelersoftware.demos.hibernatevalidator;
-
-import org.hibernate.validator.ClassValidator;
-import org.hibernate.validator.InvalidValue;
-
-public final class Demo {
-    private static ClassValidator&lt;User&gt;
-        userValidator = new ClassValidator&lt;User&gt;(User.class);
-
-    public static void main(String[] args) {
-        validateUser(createUser());
-    }
-
-    private static User createUser() {
-        User user = new User();
-        user.setFirstName("123456789012345678901");
-        user.setEmail("aol.com");
-
-        Address addr = new Address();
-        addr.setStreet1("");
-        addr.setCity("Moreno Valley");
-        addr.setState("CA");
-        addr.setZip("QWERTY");
-        user.setAddress(addr);
-
-        return user;
-    }
-
-    private static void validateUser(User user) {
-        InvalidValue[] invalidValues = userValidator.getInvalidValues(user);
-        for (InvalidValue value : invalidValues) {
-            System.out.println("========");
-            System.out.println(value);
-            System.out.println("message=" + value.getMessage());
-            System.out.println("propertyName=" + value.getPropertyName());
-            System.out.println("propertyPath=" + value.getPropertyPath());
-            System.out.println("value=" + value.getValue());
-        }
-    }
-}</pre>
-
-
-<p>There are really only a few interesting things happening here. First, we create a <code>ClassValidator&lt;User&gt;</code> instance for validating our <code>User</code> beans. We have to associate the <code>ClassValidator</code> with a type (here, <code>User</code>) because this is where Hibernate Validator goes in and reads all the annotations off of the bean class in question.</p>
-
-<p>Next, we have to create the bean we want to validate. Usually this would come from a user form (for example, a web-based form, or maybe a Swing-based form) though that&rsquo;s not necessarily the case. Here we just create a bean manually, and we intentionally make a lot of the fields invalid so we can see how Hibernate Validator responds.</p>
-
-<p>Finally we make the call <code>userValidator.getInvalidValues(user)</code>. This generates an array of <code>InvalidValue</code> instances&mdash;one for each validation constraint violation. Let&rsquo;s examine the <code>InvalidValue</code> class in more detail.</p>
-
-<h3>Understanding InvalidValue</h3>
-
-
-<p>To understand <code>InvalidValue</code> it will help to run the demo. So do that right now. You should see output that looks something like this:</p>
-
-<pre>26 [main] INFO org.hibernate.validator.Version - Hibernate Validator 3.1.0.GA
-45 [main] INFO org.hibernate.annotations.common.Version - Hibernate Commons Annotations 3.1.0.GA
-========
-username may not be null or empty
-message=may not be null or empty
-propertyName=username
-propertyPath=username
-value=null
-========
-firstName length must be between 0 and 20
-message=length must be between 0 and 20
-propertyName=firstName
-propertyPath=firstName
-value=123456789012345678901
-========
-lastName may not be null or empty
-message=may not be null or empty
-propertyName=lastName
-propertyPath=lastName
-value=null
-========
-email not a well-formed email address
-message=not a well-formed email address
-propertyName=email
-propertyPath=email
-value=aol.com
-========
-password may not be null or empty
-message=may not be null or empty
-propertyName=password
-propertyPath=password
-value=null
-========
-street1 may not be null or empty
-message=may not be null or empty
-propertyName=street1
-propertyPath=address.street1
-value=
-========
-zip {zip.length}
-message={zip.length}
-propertyName=zip
-propertyPath=address.zip
-value=QWERTY
-========
-zip must match "[0-9]+"
-message=must match "[0-9]+"
-propertyName=zip
-propertyPath=address.zip
-value=QWERTY</pre>
-
-
-<p>If you look at the source code for <code>Demo.validateUser()</code> you&rsquo;ll see that we&rsquo;re printing out each <code>InvalidValue</code> instance itself (the first line) as well as the values of the <code>message</code>, <code>propertyName</code>, <code>propertyPath</code> and <code>value</code> properties (the rest of the lines). When we print out the instance itself, we get Hibernate Validator&rsquo;s attempt at a user-friendly validation eror message. It starts with the property name and then appends the message; examples include</p>
-
-<ul class="square">
-<li><code>email not a well-formed e-mail address</code></li>
-<li><code>password may not be null or empty</code></li>
-<li><code>zip must match "[0-9]+"</code></li>
-</ul>
-
-
-<p>Each <code>message</code> value (such as <code>may not be null or empty</code>) is a default associated with a validation annotation (such as <code>@NotEmpty</code>). Note that in the case of the length violation for the <code>zip</code> property, we&rsquo;re seeing not the default length message, but instead the new message key name (namely, <code>zip.length</code>) we specified in listing 2. We&rsquo;ll see how to map <code>zip.length</code> to an actual message using a resource bundle in a little bit. For now we&rsquo;re seeing just the key name because we haven&rsquo;t yet associated a message with the key.</p>
-
-<p>The <code>propertyName</code> property specifies the name of the bean property whose value is invalid. For example, if we provide a bad ZIP code, then <code>propertyName</code> is <code>zip</code>.</p>
-
-<p>The <code>propertyPath</code> property is similar to <code>propertyName</code> property, except that with <code>propertyPath</code> we get to see the path from the top-level bean down to the invalid property. You can see the difference, for instance, with the invalid ZIP code: <code>propertyName</code> is <code>zip</code> but <code>propertyValue</code> is <code>address.zip</code>.</p>
-
-<p>Finally, <code>value</code> is just the bad value that violated the validation constraint in the first place.</p>
-
-<p>While we can use <code>InvalidValue</code> itself as a source of semi-user-friendly messages, it&rsquo;s clear that the defaults leave something to be desired. After all, <code>zip must match &ldquo;[0-9]+&rdquo;</code> wouldn&rsquo;t be what most users would consider user-friendly. We can however provide a resource bundle to improve the error messages and that&rsquo;s what we&rsquo;ll look at now.</p>
-
-<h3>Improving validation error messages using ValidatorMessages.properties</h3>
-
-
-<p>With Hibernate Validator we can override the default messages associated with the various validation annotations. We can also provide highly specific error messages associated with property/constraint pairs. We do this using resource bundles. Though it&rsquo;s possible to provide Hibernate Validator with arbitrary resource bundles, the easiest approach is to create a <code>ValidatorMessages.properties</code> resource bundle on the classpath and use that. Hibernate Validator knows to look for that particular bundle (including any associated localizations) and use it as a message source. The next listing presents a simple example.</p>
-
-<pre>validator.notEmpty=may not be null or empty!
-validator.length=must be {max} or fewer characters.
-zip.length=Please enter a {max}-character ZIP code.</pre>
-
-
-<p>The first two lines of listing 3 provide alternatives for the <code>validator.notEmpty</code> and <code>validator.length</code> message keys. The key names are defined by the validation annotations themselves, so consult the Javadocs for the annotations if you need the key names (though you should be able to figure them out using the examples above).</p>
-
-<p>Notice the <code>{max}</code> that appears in the message for the <code>validator.length</code> key. You can reference annotation elements from messages using the brace syntax. Consult the Javadocs for the various annotations&mdash;or else the Hibernate Validator reference manual&mdash;for a complete list of annotations and annotation elements.</p>
-
-<p>The third line also specifies a message, but this time we&rsquo;re associating a message with the <code>zip.length</code> custom key we defined in listing 2. Note that here we don&rsquo;t use the braces for the key name. And also note that we can still reference annotation elements using the brace syntax. The custom message key approach is useful when you want to be very specific about the error message you provide to the end user.</p>
-
-<p>Here&#8217;s what it looks like when you run it:</p>
-
-
-
-
-<pre>29 [main] INFO org.hibernate.validator.Version - Hibernate Validator 3.1.0.GA
-59 [main] INFO org.hibernate.annotations.common.Version - Hibernate Commons Annotations 3.1.0.GA
-========
-username may not be null or empty!
-message=may not be null or empty!
-propertyName=username
-propertyPath=username
-value=null
-========
-firstName must be 20 or fewer characters.
-message=must be 20 or fewer characters.
-propertyName=firstName
-propertyPath=firstName
-value=123456789012345678901
-========
-lastName may not be null or empty!
-message=may not be null or empty!
-propertyName=lastName
-propertyPath=lastName
-value=null
-========
-email not a well-formed email address
-message=not a well-formed email address
-propertyName=email
-propertyPath=email
-value=aol.com
-========
-password may not be null or empty!
-message=may not be null or empty!
-propertyName=password
-propertyPath=password
-value=null
-========
-street1 may not be null or empty!
-message=may not be null or empty!
-propertyName=street1
-propertyPath=address.street1
-value=
-========
-zip Please enter a 5-character ZIP code.
-message=Please enter a 5-character ZIP code.
-propertyName=zip
-propertyPath=address.zip
-value=QWERTY
-========
-zip must match "[0-9]+"
-message=must match "[0-9]+"
-propertyName=zip
-propertyPath=address.zip
-value=QWERTY</pre>
-
-
-
-
-<h3>Discussion</h3>
-
-
-<p>That wraps it up for this tutorial. It&rsquo;s a good idea to get familiar with Hibernate Validator for a number of reasons:</p>
-
-<ul class="square">
-<li>Annotation-based declarative annotations are an intuitive and convenient way to specify validation constraints.</li>
-<li>Hibernate Validator isn&#8217;t tied to any particular application tier.</li>
-<li>It will support the JSR 303 standard once that finalizes.</li>
-</ul>
-
-
-<p>We haven&rsquo;t explored everything that Hibernate Validator has to offer. For instance, it&rsquo;s possible to configure it such that Hibernate ORM automatically runs Hibernate Validator when performing persistence operations.</p>
-
-<p>One slight annoyance that I&rsquo;ve found is that there doesn&rsquo;t seem to be built-in way to substitute the bad value into the message itself. Sometimes I like to have messages like</p>
-
-<p><code>willie2gmail.com is not a valid e-mail address</code></p>
-
-<p>I suppose that I could create messages like</p>
-
-<p><code>{1} is not a valid e-mail address</code></p>
-
-<p>and then perform the substitution when processing the <code>InvalidValue</code> array, but it would be nice to be able to do this out of the box. Maybe there&rsquo;s a way to do it after all, but if so, I haven&rsquo;t found it.</p>
-
-<p>Also, the documentation for Hibernate Validator is a little thin, both with respect to the reference manual and the Javadocs. Hopefully as JSR 303 matures we&rsquo;ll see improvements in this area. In the meantime, this tutorial will be my contribution to helping people understand Hibernate Validator.</p>
-
-<div class="endnote">Post migrated from my Wheeler Software site.</div>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/6/">&larr; Older</a>
@@ -1423,6 +1086,10 @@ value=QWERTY</pre>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
       </li>
     
@@ -1436,10 +1103,6 @@ value=QWERTY</pre>
     
       <li class="post">
         <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
   </ul>

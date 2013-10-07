@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="[Here&rsquo;s part 1 if you missed it.] As promised, here&rsquo;s the rest of my notes dump on what&rsquo;s new in Spring 3.0, or really Spring 3.x &hellip;">
+  <meta name="description" content="In this tutorial we&rsquo;re going to learn how to get started with Hibernate Validator, which as its name suggests is a validation framework &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,433 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2009/02/02/getting-started-with-hibernate-validator/">Getting Started With Hibernate Validator</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2009-02-02T07:00:16-08:00" pubdate data-updated="true">Feb 2<span>nd</span>, 2009</time>
+        
+         | <a href="/2009/02/02/getting-started-with-hibernate-validator/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In this tutorial we&rsquo;re going to learn how to get started with Hibernate Validator, which as its name suggests is a validation framework associated with the Hibernate project. This article is really a follow-up to <a href="http://springinpractice.com/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/">my earlier article on using the Bean Validation Framework</a> (part of the larger <a href="https://springmodules.dev.java.net/">Spring Modules</a> project), which is a competing framework that seems to have lost the battle for Spring&rsquo;s &ldquo;preferred validation provider&rdquo; status to Hibernate Validator. Both Uri Boness (in an e-mail correspondence) and Juergen Hoeller (at SpringOne) agreed that people should start moving toward Hibernate Validator since that will eventually support the emerging <a href="http://jcp.org/en/jsr/detail?id=303">JSR 303</a> standard.</p>
+
+<p>Hibernate Validator is nice because it (like the Bean Validation Framework) supports declarative validation via <a href="http://java.sun.com/j2se/1.5.0/docs/guide/language/annotations.html">Java 5 annotations</a>. Let&rsquo;s say you create a bean class, like an <code>Account</code> or a <code>PurchaseOrder</code> or whatever. With Hibernate Validator you can attach validation annotations to the bean properties and that will define the validation constraints for the bean. Moreover, unlike earlier approaches to validation (such as Struts Validation), Hibernate Validator isn&rsquo;t tied to the web tier, and so if you want to validate your beans from within your service beans, or within your DAOs, or even just before you ORM them into your database, no sweat. You can do just that.</p>
+
+<p>Anyway, for now we&rsquo;re just going to look at some of the basics: how to specify annotation constraints and how to check for constraint violations. We&rsquo;re not going to worry about integrating Hibernate Validator with Spring&rsquo;s native validation framework (so that, for instance, we might render Hibernate Validator error messages out using Spring Web MVC taglibs) though I&rsquo;ll probably write another article on that sometime in the future if people are interested.</p></p>
+
+<p>For this article we&rsquo;re using Java 5 or higher (we need Java 5 annotations) and Hibernate Validator 3.1.0. For your convenience I&rsquo;ve created a <a href="http://maven.apache.org/">Maven 2</a> project that you can download: <a href="http://wheelersoftware.s3.amazonaws.com/articles/hibernate-validator/hibernate-validator-demo.zip">hibernate-validator-demo.zip</a></p>
+
+<p>OK, let&rsquo;s jump into some examples of annotated bean classes.</p>
+
+<h3>Specifying validation constraints with Hibernate Validator annotations</h3>
+
+
+<p>Here are a couple of examples of annotated bean classes: a <code>User</code> class and an <code>Address</code> class. Note that the two objects are related in a parent-child fashion.</p>
+
+<p>First, here is the <code>User</code> bean class:</p>
+
+<pre>package com.wheelersoftware.demos.hibernatevalidator;
+
+import org.hibernate.validator.Email;
+import org.hibernate.validator.Length;
+import org.hibernate.validator.NotEmpty;
+import org.hibernate.validator.Valid;
+
+public class User {
+    private String username;
+    private String firstName;
+    private String lastName;
+    private Address address;
+    private String email;
+    private String password;
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getUsername() { return username; }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getFirstName() { return firstName; }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getLastName() { return lastName; }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    @Valid
+    public Address getAddress() { return address; }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    @NotEmpty
+    @Email
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @NotEmpty
+    @Length(max = 20)
+    public String getPassword() { return password; }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}</pre>
+
+
+<p>Let&rsquo;s talk a little about what&rsquo;s going on with the code above. As we noted earlier, we have a bean class (here, a class that represents user accounts of some sort) and we&rsquo;re using annotations to specify validation constraints. For a full list of the built-in constraints, see the <a href="http://www.hibernate.org/hib_docs/validator/reference/en/html/validator-defineconstraints.html#validator-defineconstraints-builtin">official Hibernate Validator documentation</a>, but we&rsquo;ll just focus on a small handful for right now.</p>
+
+<p>First notice that we&rsquo;ve attached our annotations to the getter methods. This is how we specify the validation constraints that attach to the associated properties.</p>
+
+<p>We&rsquo;ve used <code>@NotEmpty</code> in several places. This annotation means that the annotated property can&rsquo;t be null and it can&rsquo;t be the empty string either. There&rsquo;s also a <code>@NotNull</code> annotation that we could have used if we&rsquo;d wanted to, but in this case I wanted to prevent the empty string from being used as values.</p>
+
+<p>Another annotation that appears multiple times is the <code>@Length</code> annotation. We can specify associated minimum and maximum lengths by using the <code>min</code> and <code>max</code> elements, respectively, though in the example above we&rsquo;ve specified only maximum lengths. (In the example that follows we&rsquo;ll see how to specify a minimum length as well.) So for example we&rsquo;ve specified that passwords can&rsquo;t be any longer than 20 characters.</p>
+
+<p>A third annotation is the <code>@Email</code> annotation. As you would guess, this indicates that the property must contain a valid e-mail address.</p>
+
+<p>The fourth and final annotation of the ones that appear above is the <code>@Valid</code> annotation. This tells Hibernate Validator that it should validate the associated object&mdash;here an associated <code>Address</code> object&mdash;using whatever validation annotations we define on the <code>Address</code> class.</p>
+
+<p>And that&rsquo;s our segue into our second example, the <code>Address</code> bean class, which appears below.</p>
+
+<pre>package com.wheelersoftware.demos.hibernatevalidator;
+
+import org.hibernate.validator.Length;
+import org.hibernate.validator.NotEmpty;
+import org.hibernate.validator.Pattern;
+
+public class Address {
+    private String street1;
+    private String street2;
+    private String city;
+    private String state;
+    private String zip;
+
+    @NotEmpty
+    @Length(max = 40)
+    public String getStreet1() { return street1; }
+
+    public void setStreet1(String street1) {
+        this.street1 = street1;
+    }
+
+    // No validation constraints
+    public String getStreet2() { return street2; }
+
+    public void setStreet2(String street2) {
+        this.street2 = street2;
+    }
+
+    @NotEmpty
+    @Length(max = 40)
+    public String getCity() { return city; }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    @NotEmpty
+    @Length(max = 3)
+    public String getState() { return state; }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    @NotEmpty
+    @Length(min = 5, max = 5, message = "{zip.length}")
+    @Pattern(regex = "[0-9]+")
+    public String getZip() { return zip; }
+
+    public void setZip(String zip) {
+        this.zip = zip;
+    }
+}</pre>
+
+
+<p>Our validation annotations for <code>Address</code> are pretty similar to what we saw for <code>User</code>, but there are a few differences worth mentioning. First, notice that we don&rsquo;t have to attach validation constraints to every property. It&rsquo;s OK, for example, for <code>street2</code> to be null or anything else, so we simply refrain from defining validation constraints for this property.</p>
+
+<p>Second, we&rsquo;re using a <code>@Pattern</code> annotation for the <code>zip</code> property. This allows us to specify regular expression match patterns.</p>
+
+<p>The third and final difference is the <code>@Length</code> annotation we&rsquo;ve defined for the <code>zip</code> property. Besides including a <code>min</code> element (which, when combined with the <code>max</code> element, indicates that the ZIP code must be exactly five characters long), we&rsquo;ve also included a <code>message</code> element. We can use this element to do either of two things. First, we can use it to define a hardcoded message to display when the given validation constraint fails. That&rsquo;s not what we&rsquo;re doing here. Instead we&rsquo;re doing the second thing we can do, which is specify a message key using the brace syntax: <code>message = {key_name}</code>. The idea is that we&rsquo;ll eventually use this message key to look up a message in a resource bundle, thus externalizing the message. Later in the tutorial we&rsquo;ll map the <code>zip.length</code> message key to an actual message using a resource bundle.</p>
+
+<p>That&rsquo;s it for the validation constraints themselves. Now let&rsquo;s see how we can tell Hibernate Validator to use them to perform our bean validation.</p>
+
+<h3>How to tell Hibernate Validator to validate annotated beans</h3>
+
+
+<p>It&rsquo;s fairly straightforward to get Hibernate Validator to validate our annotated beans. The following listing presents some demo code for doing exactly this. Let&rsquo;s take a look.</p>
+
+<pre>package com.wheelersoftware.demos.hibernatevalidator;
+
+import org.hibernate.validator.ClassValidator;
+import org.hibernate.validator.InvalidValue;
+
+public final class Demo {
+    private static ClassValidator&lt;User&gt;
+        userValidator = new ClassValidator&lt;User&gt;(User.class);
+
+    public static void main(String[] args) {
+        validateUser(createUser());
+    }
+
+    private static User createUser() {
+        User user = new User();
+        user.setFirstName("123456789012345678901");
+        user.setEmail("aol.com");
+
+        Address addr = new Address();
+        addr.setStreet1("");
+        addr.setCity("Moreno Valley");
+        addr.setState("CA");
+        addr.setZip("QWERTY");
+        user.setAddress(addr);
+
+        return user;
+    }
+
+    private static void validateUser(User user) {
+        InvalidValue[] invalidValues = userValidator.getInvalidValues(user);
+        for (InvalidValue value : invalidValues) {
+            System.out.println("========");
+            System.out.println(value);
+            System.out.println("message=" + value.getMessage());
+            System.out.println("propertyName=" + value.getPropertyName());
+            System.out.println("propertyPath=" + value.getPropertyPath());
+            System.out.println("value=" + value.getValue());
+        }
+    }
+}</pre>
+
+
+<p>There are really only a few interesting things happening here. First, we create a <code>ClassValidator&lt;User&gt;</code> instance for validating our <code>User</code> beans. We have to associate the <code>ClassValidator</code> with a type (here, <code>User</code>) because this is where Hibernate Validator goes in and reads all the annotations off of the bean class in question.</p>
+
+<p>Next, we have to create the bean we want to validate. Usually this would come from a user form (for example, a web-based form, or maybe a Swing-based form) though that&rsquo;s not necessarily the case. Here we just create a bean manually, and we intentionally make a lot of the fields invalid so we can see how Hibernate Validator responds.</p>
+
+<p>Finally we make the call <code>userValidator.getInvalidValues(user)</code>. This generates an array of <code>InvalidValue</code> instances&mdash;one for each validation constraint violation. Let&rsquo;s examine the <code>InvalidValue</code> class in more detail.</p>
+
+<h3>Understanding InvalidValue</h3>
+
+
+<p>To understand <code>InvalidValue</code> it will help to run the demo. So do that right now. You should see output that looks something like this:</p>
+
+<pre>26 [main] INFO org.hibernate.validator.Version - Hibernate Validator 3.1.0.GA
+45 [main] INFO org.hibernate.annotations.common.Version - Hibernate Commons Annotations 3.1.0.GA
+========
+username may not be null or empty
+message=may not be null or empty
+propertyName=username
+propertyPath=username
+value=null
+========
+firstName length must be between 0 and 20
+message=length must be between 0 and 20
+propertyName=firstName
+propertyPath=firstName
+value=123456789012345678901
+========
+lastName may not be null or empty
+message=may not be null or empty
+propertyName=lastName
+propertyPath=lastName
+value=null
+========
+email not a well-formed email address
+message=not a well-formed email address
+propertyName=email
+propertyPath=email
+value=aol.com
+========
+password may not be null or empty
+message=may not be null or empty
+propertyName=password
+propertyPath=password
+value=null
+========
+street1 may not be null or empty
+message=may not be null or empty
+propertyName=street1
+propertyPath=address.street1
+value=
+========
+zip {zip.length}
+message={zip.length}
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY
+========
+zip must match "[0-9]+"
+message=must match "[0-9]+"
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY</pre>
+
+
+<p>If you look at the source code for <code>Demo.validateUser()</code> you&rsquo;ll see that we&rsquo;re printing out each <code>InvalidValue</code> instance itself (the first line) as well as the values of the <code>message</code>, <code>propertyName</code>, <code>propertyPath</code> and <code>value</code> properties (the rest of the lines). When we print out the instance itself, we get Hibernate Validator&rsquo;s attempt at a user-friendly validation eror message. It starts with the property name and then appends the message; examples include</p>
+
+<ul class="square">
+<li><code>email not a well-formed e-mail address</code></li>
+<li><code>password may not be null or empty</code></li>
+<li><code>zip must match "[0-9]+"</code></li>
+</ul>
+
+
+<p>Each <code>message</code> value (such as <code>may not be null or empty</code>) is a default associated with a validation annotation (such as <code>@NotEmpty</code>). Note that in the case of the length violation for the <code>zip</code> property, we&rsquo;re seeing not the default length message, but instead the new message key name (namely, <code>zip.length</code>) we specified in listing 2. We&rsquo;ll see how to map <code>zip.length</code> to an actual message using a resource bundle in a little bit. For now we&rsquo;re seeing just the key name because we haven&rsquo;t yet associated a message with the key.</p>
+
+<p>The <code>propertyName</code> property specifies the name of the bean property whose value is invalid. For example, if we provide a bad ZIP code, then <code>propertyName</code> is <code>zip</code>.</p>
+
+<p>The <code>propertyPath</code> property is similar to <code>propertyName</code> property, except that with <code>propertyPath</code> we get to see the path from the top-level bean down to the invalid property. You can see the difference, for instance, with the invalid ZIP code: <code>propertyName</code> is <code>zip</code> but <code>propertyValue</code> is <code>address.zip</code>.</p>
+
+<p>Finally, <code>value</code> is just the bad value that violated the validation constraint in the first place.</p>
+
+<p>While we can use <code>InvalidValue</code> itself as a source of semi-user-friendly messages, it&rsquo;s clear that the defaults leave something to be desired. After all, <code>zip must match &ldquo;[0-9]+&rdquo;</code> wouldn&rsquo;t be what most users would consider user-friendly. We can however provide a resource bundle to improve the error messages and that&rsquo;s what we&rsquo;ll look at now.</p>
+
+<h3>Improving validation error messages using ValidatorMessages.properties</h3>
+
+
+<p>With Hibernate Validator we can override the default messages associated with the various validation annotations. We can also provide highly specific error messages associated with property/constraint pairs. We do this using resource bundles. Though it&rsquo;s possible to provide Hibernate Validator with arbitrary resource bundles, the easiest approach is to create a <code>ValidatorMessages.properties</code> resource bundle on the classpath and use that. Hibernate Validator knows to look for that particular bundle (including any associated localizations) and use it as a message source. The next listing presents a simple example.</p>
+
+<pre>validator.notEmpty=may not be null or empty!
+validator.length=must be {max} or fewer characters.
+zip.length=Please enter a {max}-character ZIP code.</pre>
+
+
+<p>The first two lines of listing 3 provide alternatives for the <code>validator.notEmpty</code> and <code>validator.length</code> message keys. The key names are defined by the validation annotations themselves, so consult the Javadocs for the annotations if you need the key names (though you should be able to figure them out using the examples above).</p>
+
+<p>Notice the <code>{max}</code> that appears in the message for the <code>validator.length</code> key. You can reference annotation elements from messages using the brace syntax. Consult the Javadocs for the various annotations&mdash;or else the Hibernate Validator reference manual&mdash;for a complete list of annotations and annotation elements.</p>
+
+<p>The third line also specifies a message, but this time we&rsquo;re associating a message with the <code>zip.length</code> custom key we defined in listing 2. Note that here we don&rsquo;t use the braces for the key name. And also note that we can still reference annotation elements using the brace syntax. The custom message key approach is useful when you want to be very specific about the error message you provide to the end user.</p>
+
+<p>Here&#8217;s what it looks like when you run it:</p>
+
+
+
+
+<pre>29 [main] INFO org.hibernate.validator.Version - Hibernate Validator 3.1.0.GA
+59 [main] INFO org.hibernate.annotations.common.Version - Hibernate Commons Annotations 3.1.0.GA
+========
+username may not be null or empty!
+message=may not be null or empty!
+propertyName=username
+propertyPath=username
+value=null
+========
+firstName must be 20 or fewer characters.
+message=must be 20 or fewer characters.
+propertyName=firstName
+propertyPath=firstName
+value=123456789012345678901
+========
+lastName may not be null or empty!
+message=may not be null or empty!
+propertyName=lastName
+propertyPath=lastName
+value=null
+========
+email not a well-formed email address
+message=not a well-formed email address
+propertyName=email
+propertyPath=email
+value=aol.com
+========
+password may not be null or empty!
+message=may not be null or empty!
+propertyName=password
+propertyPath=password
+value=null
+========
+street1 may not be null or empty!
+message=may not be null or empty!
+propertyName=street1
+propertyPath=address.street1
+value=
+========
+zip Please enter a 5-character ZIP code.
+message=Please enter a 5-character ZIP code.
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY
+========
+zip must match "[0-9]+"
+message=must match "[0-9]+"
+propertyName=zip
+propertyPath=address.zip
+value=QWERTY</pre>
+
+
+
+
+<h3>Discussion</h3>
+
+
+<p>That wraps it up for this tutorial. It&rsquo;s a good idea to get familiar with Hibernate Validator for a number of reasons:</p>
+
+<ul class="square">
+<li>Annotation-based declarative annotations are an intuitive and convenient way to specify validation constraints.</li>
+<li>Hibernate Validator isn&#8217;t tied to any particular application tier.</li>
+<li>It will support the JSR 303 standard once that finalizes.</li>
+</ul>
+
+
+<p>We haven&rsquo;t explored everything that Hibernate Validator has to offer. For instance, it&rsquo;s possible to configure it such that Hibernate ORM automatically runs Hibernate Validator when performing persistence operations.</p>
+
+<p>One slight annoyance that I&rsquo;ve found is that there doesn&rsquo;t seem to be built-in way to substitute the bad value into the message itself. Sometimes I like to have messages like</p>
+
+<p><code>willie2gmail.com is not a valid e-mail address</code></p>
+
+<p>I suppose that I could create messages like</p>
+
+<p><code>{1} is not a valid e-mail address</code></p>
+
+<p>and then perform the substitution when processing the <code>InvalidValue</code> array, but it would be nice to be able to do this out of the box. Maybe there&rsquo;s a way to do it after all, but if so, I haven&rsquo;t found it.</p>
+
+<p>Also, the documentation for Hibernate Validator is a little thin, both with respect to the reference manual and the Javadocs. Hopefully as JSR 303 matures we&rsquo;ll see improvements in this area. In the meantime, this tutorial will be my contribution to helping people understand Hibernate Validator.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1557,146 +1984,6 @@ public class UserServiceImpl implements UserService, InitializingBean {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Concurrent Programming for Practicing Software Engineers, Part 1</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-10-13T08:25:07-07:00" pubdate data-updated="true">Oct 13<span>th</span>, 2008</time>
-        
-         | <a href="/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><div class="intro">
-<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Part 3</a></span>
-</div>
-
-
-<p><a href="http://www.flickr.com/photos/12495774@N02/2405297371/"><img src="http://wheelersoftware.s3.amazonaws.com/articles/concurrent-programming/race.jpg" align="right" /></a></p>
-
-<p>Many professional software engineers see concurrent programming as something of an arcane art, and indeed it&rsquo;s possible to make it several years into a career without a good grasp of threads. The reasons seem clear enough:</p>
-
-<ul class="square">
-
-<li>Most problems don&#8217;t require a strong understanding of concurrency. I&#8217;d even argue that many web applications, which are often <em>highly</em> concurrent, don&#8217;t require a strong understanding of concurrency: sometimes there isn&#8217;t significant data sharing; sometimes the burden of managing concurrency, isolation and deadlocks is pushed back to a transactional data store; sometimes the consequences of races are minor or completely insignificant; etc.</li>
-
-<li>Even when a problem does require some knowledge of concurrency, a lack of knowledge manifests itself only sporadically and generally in ways that are difficult to reproduce, which allows people to mistake their 99.9999% solution for a 100% solution. Even in cases where the developer is under no such delusion, he may believe that his 99.9999% solution &#8220;works&#8221;. He fails to notice that 99.9999% may not be so high when you&#8217;re talking about long-running applications running on processors that execute billions of cycles per second, and that sometimes the consequences of that 1-in-1,000,000 screwup are <a href="http://en.wikipedia.org/wiki/Therac-25">disastrous</a>.</li>
-
-<li>The &#8220;behavioral&#8221; structure of a program, as embodied by its threads, is largely orthogonal to the program&#8217;s &#8220;static&#8221; structure, as embodied by packages, classes and methods. Since code is organized around the latter, developers can &#8220;see&#8221; and understand it. Since code is not organized around the behavioral structure (for example, the code does not contain explicit representations of the paths of individual threads), developers have a harder time seeing and understanding it.</li>
-
-</ul>
-
-
-<p>There are times when you really do need to understand how threads work in order to implement required functionality or else <a href="#">avoid simple but potentially serious mistakes</a>.</p>
-
-<h4>What we&#8217;ll cover</h4>
-
-
-<p>In this three-part series of posts we&rsquo;re going to cover several important concurrent programming concepts that every professional software developer needs to understand: serialism, parallelism, race conditions, synchronization, deadlocks and global lock orderings. The concepts form a logical progression that looks a little like an arms race: some problems lend themselves to a parallel solution, but parallelism gives rise to race conditions. We counter race conditions with synchronization (among other techniques), but synchronization leads to deadlocks (among other problems). And so we counter deadlocks with global lock orderings (among other techniques).</p>
-
-<p>You&rsquo;ll note that I said &ldquo;among other problems&rdquo; and &ldquo;among other techniques&rdquo;. The treatment here doesn&rsquo;t pretend to be comprehensive. There are lots of important topics in concurrent programming, such as proper encapsulation, contention-induced (rather than compute-induced) performance issues, read/write locking, minimizing lock scope, fine- vs. coarse-grained locks, timeouts, forking and joining and on and on (and on). I believe however that the topics we&rsquo;re about to treat provide a nice context against which developers can more easily learn other topics. I&rsquo;ll probably write about some of the other topics eventually.</p>
-
-<p>By the end of the series you&rsquo;ll have a basic foundation in multithreaded programming, one that I consider to be required for practicing software engineers.</p>
-
-<p>Our presentation is Java-centric, but developers from other languages (especially C#) should still find the discussion useful.</p>
-
-<h3>What is a thread?</h3>
-
-
-<p>Let&rsquo;s begin by introducing the star of the show, the thread. The following is probably more accurately considered a description rather than a definition, even though it reads a little like the latter.</p>
-
-<p>A thread is a sequential flow of control with its own program counter and call stack. It shares state, memory and resources with other threads in the same process. Since each thread gets its own call stack, local variables aren&rsquo;t shared. Instance and class variables, however, are shared across threads. It&rsquo;s also possible to define variables that exist outside of methods but are still local to a specific thread, and these are called <a href="http://en.wikipedia.org/wiki/Thread-local_storage">thread-local</a> variables.</p>
-
-<p>OK, so that&rsquo;s what a thread is. What can we do with them?</p>
-
-<h3>Serialism and parallelism</h3>
-
-
-<p>In software development we&rsquo;re asked to solve different kinds of problem. We may be asked to write code that takes a bunch of information about a loan applicant and produces a verdict as to whether that applicant should get the loan. Maybe we have to write a web-based shopping cart. Or maybe we have to write code to make a guy&rsquo;s arms and legs flail about in a realistic fashion when he falls off a cliff in a video game.</p>
-
-<p>For any given problem there are typically multiple ways to solve it, and different ways to categorize the solutions. One useful way of distinguishing solutions is to separate <em>serial</em> from <em>parallel</em> solutions. Let&rsquo;s look at that distinction in more detail.</p>
-
-<h4>Serial approaches to solving problems</h4>
-
-
-<p>Some problems have solutions that are essentially a single series of steps. If you&rsquo;re writing a home affordability calculator, for example, the steps might be as follows:</p>
-
-<ol>
-<li>Collect data from the user, such as their annual salary, the amount of the down payment, their monthly bill payments, whatever.</li>
-<li>Crunch some numbers.</li>
-<li>Show the maximum dollar amount the user can afford and an ad for a local Realtor.</li>
-</ol>
-
-
-<p>Our recipe for solving the &ldquo;home affordability problem&rdquo; is said to be <em>serial</em> because it&rsquo;s essentially just a series of steps to carry out. We might even go so far as to describing the problem itself as a serial problem, which is just a shorthand way of saying that the most plausible and reasonable solutions to the problem are serial solutions. Either way, the essence of serialism is that we have a series of steps that a single control flow can carry out.</p>
-
-<p>Now let&rsquo;s look at the alternative to serialism, which would be parallelism.</p>
-
-<h4>Parallel approaches to solving problems</h4>
-
-
-<p>Some problems are amenable to solutions involving multiple concurrent control flows, which is to say that they have <em>parallel</em> solutions. To take a non-computing example, say you have a room with toys scattered all over the floor. You want the room clean. As potential participants to the cleanup effort you have yourself and three kids. A possibly-relevant piece of background information is that one child is entirely responsible for the mess.</p>
-
-<p>Readers with young children will no doubt recognize this classic problem from the field of parenting algorithms. Fortunately, well-known serial and parallel solutions are available. The best approach in any given case depends strongly upon your goals:</p>
-
-<ol>
-
-<li>If you&#8217;re trying to emphasize fairness and personal responsibility, you might opt for the obvious serial solution even though it&#8217;s slower. (In reality this isn&#8217;t a serial solution; it inevitably involves close supervisory involvement by a supervisory parent thread. We can ignore that detail.)</li>
-
-<li>If you&#8217;re in a big hurry because you need to get the kids off to school, you might choose the obvious parallel solution, despite the unfairness.</li>
-
-<li>If you&#8217;re in an even bigger hurry you might choose the &#8220;other&#8221; serial solution. (Hint: it doesn&#8217;t involve any kids.)</li>
-
-</ol>
-
-
-<p>Whether we&rsquo;re talking about serialism or parallelism, there is a recurring concept, which is that of a flow of control. In the serial case we have exactly one flow. In the parallel case we have more.</p>
-
-<p>Computer scientists, hardware engineers and software engineers spend a lot of time with the distinction between serialism and parallelism. Let&rsquo;s look at why that is.</p>
-
-<h4>Serialism vs. parallelism: why do we care?</h4>
-
-
-<p>In a word, performance. In many cases&mdash;not all, but many&mdash;parallel solutions are simply faster than serial solutions, owing to the &ldquo;many hands make light work&rdquo; effect. And from a practical perspective, that&rsquo;s the main reason we care about concurrency (i.e., parallelism) despite its many attendant complications.</p>
-
-<p>The <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">next post in our series</a> explains what some of those complications are and some ways to overcome them.</p>
-
-<div class="outro">
-<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Part 3</a></span>
-</div>
-
-
-
-
-<div class="endnote">Post migrated from my Wheeler Software site.</div>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/7/">&larr; Older</a>
@@ -1714,6 +2001,10 @@ public class UserServiceImpl implements UserService, InitializingBean {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
       </li>
     
@@ -1727,10 +2018,6 @@ public class UserServiceImpl implements UserService, InitializingBean {
     
       <li class="post">
         <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
   </ul>

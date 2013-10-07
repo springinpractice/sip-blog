@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Hi all, Willie here. Happy New Year! In my last post, Devops: How NOT to collect configuration management data, I gave a quick rundown of some losing &hellip;">
+  <meta name="description" content="When you&rsquo;re creating a web form, it&rsquo;s often the case that you want to give the user a way to connect one entity up to another entity. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,216 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/07/making-formselect-work-nicely-using-spring-3-formatters/">Making Form:select Work Nicely Using Spring 3 Formatters</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-07T04:51:10-08:00" pubdate data-updated="true">Jan 7<span>th</span>, 2012</time>
+        
+         | <a href="/2012/01/07/making-formselect-work-nicely-using-spring-3-formatters/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>When you&rsquo;re creating a web form, it&rsquo;s often the case that you want to give the user a way to connect one entity up to another entity. This post explains how to do this in a nice, clean way using Spring Formatters.</p>
+
+<h2>A real-life example</h2>
+
+<p>To make things concrete, let&rsquo;s use a real-life example. I&rsquo;m working on an open source CMDB called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> that has entities such as farms, environments and data centers. When the user creates or edits a farm, he needs to specify the environment in which the farm lives (e.g., Development, Test, Production, etc.) and also the data center (e.g., US West DC 1, US West DC 2, etc.). We want the user to select an environment and a data center using dropdowns, like so:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-07-making-formselect-work-nicely-using-spring-3-formatters/farm_errors2.png" alt="New farm form" /></p>
+
+<p>For edits, we obviously want the dropdowns to be preset to their current values. We want validation: in our example, all three fields are required. For both edits and creates, when the user submits an invalid farm (e.g., missing name), we want the environment and data center to be preset to whatever value the user just submitted. Standard stuff.</p>
+
+<p>Let&rsquo;s look at three different approaches to solving this in Spring. The first two are ugly and the last one is clean. (If you&rsquo;re impatient, feel free to skip right to the third approach.)</p>
+
+<h2>Approach #1 (ugly): ad hoc ID fields</h2>
+
+<p>One approach is to create special fields on the <code>Farm</code> entity to hold the environment and data center IDs, and then write custom code in the controller to map these to <code>Environment</code> and <code>DataCenter</code> instances. Here&rsquo;s how such a <code>Farm</code> might look:</p>
+
+<pre>public class Farm {
+    private Long id;
+    private String name;
+    private Environment environment;
+    private DataCenter dataCenter;
+    private Long environmentId;
+    private Long dataCenterId;
+
+    ... getters and setters for id, name, environment and dataCenter ...
+
+    @NotNull
+    @Transient
+    @XmlTransient
+    public Long getEnvironmentId() { return environmentId; }
+
+    public void setEnvironmentId(Long id) { this.environmentId = id; }
+
+    @NotNull
+    @Transient
+    @XmlTransient
+    public Long getDataCenterId() { return dataCenterId; }
+
+    public void setDataCenterId(Long id) { this.dataCenterId = id; }
+}</pre>
+
+
+<p>And the form code looks something like this (I&rsquo;m suppressing some details just for clarity&rsquo;s sake):</p>
+
+<pre>&lt;form:select path="environmentId"&gt;
+    &lt;form:option value="" label="-- Choose one--" /&gt;
+    &lt;form:options items="${environmentList}" itemValue="id" itemLabel="name" /&gt;
+&lt;/form:select&gt;
+&lt;form:errors path="environmentId"&gt;
+    &lt;span class="help-inline"&gt;&lt;form:errors path="environmentId" /&gt;&lt;/span&gt;
+&lt;/form:errors&gt;</pre>
+
+
+<p>The approach works, but it&rsquo;s stinky for at least a couple of reasons:</p>
+
+<ul>
+    <li>It dirties up the `Farm` entity. We already have `Environment` and `DataCenter` properties, and each of those has an ID, so it&#8217;s redundant and annoying to have to include extra getters and setters to handle the IDs. If we&#8217;re doing ORM or OXM, it becomes very clear from the `@Transient` and `@XmlTransient` annotations that these extra ID properties aren&#8217;t really part of the entity at all; they&#8217;re purely supporting data transfer.</li>
+    <li>It forces us to write custom code in the controller to map the IDs to an `Environment` and a `DataCenter` so we can, e.g., save it in the database using Hibernate or whatever.</li>
+</ul>
+
+
+<p>Now let&rsquo;s see a closely related approach that&rsquo;s a step in the right direction, but still stinky.</p>
+
+<h2>Approach #2 (still ugly): use the referenced entities&#8217; ID properties</h2>
+
+<p>Instead of using redundant ID properties, we can just leave the <code>Farm</code> alone (meaning it has an ID, a name, an environment and a data center, and no extra ID properties) and just point the form at the environment&rsquo;s and data center&rsquo;s IDs:</p>
+
+<pre>&lt;form:select path="environment.id"&gt;
+    &lt;form:option value="" label="-- Choose one--" /&gt;
+    &lt;form:options items="${environmentList}" itemValue="id" itemLabel="name" /&gt;
+&lt;/form:select&gt;
+&lt;form:errors path="environment.id"&gt;
+    &lt;span class="help-inline"&gt;&lt;form:errors path="environment.id" /&gt;&lt;/span&gt;
+&lt;/form:errors&gt;</pre>
+
+
+<p>Spring is fine with complex properties like this. And so this almost works. But there are once again a couple of issues:</p>
+
+<ul>
+    <li>Stylistically, it&#8217;s a bit inelegant to treat reference-backed properties in a special way. It would be cleaner to deal with `environment` and `dataCenter` instead of `environment.id` and `dataCenter.id`. Minor issue, but still worth considering.</li>
+    <li>More seriously, validation (at least JSR-303 validation) doesn&#8217;t work properly anymore. Referencing `environment.id` in the form causes Spring to create an `Environment` instance automatically, even if the user picks &#8220;&#8211; Choose one &#8211;&#8221; with ID = &#8220;&#8221;. So the `environment` and `dataCenter` properties won&#8217;t ever be null. And we can&#8217;t put `@NotNull` on the environment and data center IDs, because they&#8217;re allowed (indeed, expected) to be null when creating new ones. So you end up having to write custom code to make sure that the IDs are whatever you want to see. Blech.</li>
+</ul>
+
+
+<p>OK, those are some approaches that aren&rsquo;t very clean. Fortunately Spring 3 has some features that clean things up.</p>
+
+<h2>Approach #3 (good approach): use Formatters</h2>
+
+<p>The best practice approach in Spring 3 is to use so-called <code>Formatters</code>. As this blog post is already pretty long, let&rsquo;s just jump right into the code. If you want to see more code details, check out the actual code at the <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase Github site</a>.</p>
+
+<p>First, our entities don&rsquo;t have any ad hoc ID properties like we saw in approach #1 above. <strong>But you do need to implement <code>equals()</code> for your entities, or else form prepopulation won&rsquo;t happen.</strong></p>
+
+<p>Next, here&rsquo;s what the form looks like:</p>
+
+<pre>&lt;form:select path="environment"&gt;
+    &lt;form:option value="" label="-- Choose one--" /&gt;
+    &lt;form:options items="${environmentList}" itemValue="id" itemLabel="name" /&gt;
+&lt;/form:select&gt;
+&lt;form:errors path="environment"&gt;
+    &lt;span class="help-inline"&gt;&lt;form:errors path="environment" /&gt;&lt;/span&gt;
+&lt;/form:errors&gt;</pre>
+
+
+<p>(Same thing for the <code>dataCenter</code> property.) Notice that we&rsquo;re not messing around with IDs at all, other than where we&rsquo;re telling the <code>&amp;lt;form:options&amp;gt;</code> tag which property to use for the option value, which is perfectly fine and legitimate.</p>
+
+<p>Next we need to look at the controller. In earlier versions of Spring we would have had to register some JavaBeans <code>PropertyEditor</code>s in an <code>@InitBinder</code> method, but we don&rsquo;t have to do that anymore. All we have to do is make sure we&rsquo;re prepared to accept a <code>Farm</code> in our handler method, that we annotate it with <code>@Valid</code>, etc.:</p>
+
+<pre>@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+public String putEditForm(
+        @PathVariable Long id,
+        @ModelAttribute("formData") @Valid Farm formData,
+        BindingResult result,
+        Model model) {
+
+    ...
+}</pre>
+
+
+<p>The method body doesn&rsquo;t matter so much for our current purpose&mdash;we can check for validity using <code>result.hasErrors()</code>, save the data if it&rsquo;s valid, return the invalid form if it&rsquo;s not, or whatever. The main thing is that the <code>Farm</code> will come populated with an <code>Environment</code> and a <code>DataCenter</code> (both having the right IDs set) if the user chose them, and they&rsquo;ll be null if the user didn&rsquo;t:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-07-making-formselect-work-nicely-using-spring-3-formatters/farm_errors2.png" alt="Farm with validation errors" /></p>
+
+<p>To make the magic work, we need to implement <code>Formatter</code>s to convert our environments and data centers back and forth to IDs. Regarding <code>Formatter</code>s, I&rsquo;ll let you read about them in the <a href="http://static.springsource.org/spring/docs/current/spring-framework-reference/html/validation.html#format">Spring Reference Documentation</a>; here I&rsquo;ll give some code examples. Here&rsquo;s the <code>EnvironmentFormatter</code>:</p>
+
+<pre>package org.zkybase.formatter;
+
+import java.text.ParseException;
+import java.util.Locale;
+import org.zkybase.model.Environment;
+import org.springframework.format.Formatter;
+import org.springframework.stereotype.Component;
+
+@Component
+public class EnvironmentFormatter implements Formatter&lt;Environment&gt; {
+
+    @Override
+    public String print(Environment environment, Locale locale) {
+        return environment.getId().toString();
+    }
+
+    @Override
+    public Environment parse(String id, Locale locale) throws ParseException {
+
+        // IMPORTANT: This approach works only if your equals() method doesn't compare fields
+        // beyond the ID. If it does, then you'll need those fields set too. Consider simply
+        // loading the entity from the database.
+        Environment environment = new Environment();
+        environment.setId(Long.parseLong(id));
+        return environment;
+    }
+}</pre>
+
+
+<p>One more thing we have to do is configure the formatters in our Spring configuration. Here&rsquo;s what that looks like (Spring 3.0.6+; I&rsquo;m suppressing the namespace declarations):</p>
+
+<pre>&lt;context:component-scan base-package="org.zkybase.formatter" /&gt;
+
+&lt;bean id="conversionService"
+    class="org.springframework.format.support.FormattingConversionServiceFactoryBean"&gt;
+    &lt;property name="formatters"&gt;
+        &lt;set&gt;
+            &lt;ref bean="dataCenterFormatter" /&gt;
+            &lt;ref bean="environmentFormatter" /&gt;
+        &lt;/set&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;mvc:annotation-driven conversion-service="conversionService" /&gt;</pre>
+
+
+<p>This tells Spring Web MVC to use the conversion service both when rendering the form and when processing submitted form data. We won&rsquo;t go into all the gory details here since they&rsquo;re not necessarily important to making the whole thing work, but the formatter&rsquo;s <code>print()</code> method is the one that handles form rendering, and the formatter&rsquo;s <code>parse()</code> method handles turning the IDs in the HTML into entities in the Java controller.</p>
+
+<p><strong>Quick tip regarding Firefox.</strong> Before I close, I wanted to offer a quick tip. When you&rsquo;re implementing and troubleshooting this stuff, be aware that <a href="http://stackoverflow.com/questions/4862606/when-using-html-select-tag-changed-selected-value-not-displayed-in-firefox">Firefox has a feature where it remembers your most recently submitted form values when you hit the refresh button</a> instead of resetting the form to its default settings. The feature helps users avoid data loss, but for developers it&rsquo;s a pain because you have to reload the page from the actual address bar (click in there and hit Enter) instead of refreshing the page. I didn&rsquo;t know this and the form was not responding to my code changes in the way I expected.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1155,96 +1365,6 @@ public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/10/27/quick-tip-spring-security-role-based-authorization-and-permissions/">Quick Tip: Spring Security Role-based Authorization and Permissions</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-10-27T05:40:13-07:00" pubdate data-updated="true">Oct 27<span>th</span>, 2010</time>
-        
-         | <a href="/2010/10/27/quick-tip-spring-security-role-based-authorization-and-permissions/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>The problem: hardcoded role-based authorization</h3>
-
-
-<p>One of the challenges around using Spring Security is that the examples&mdash;both in the documentation and on the web&mdash;tend to promote an overly-simple approach to role-based authorization, hardcoding roles in the source in a non-configurable fashion. For example:</p>
-
-<pre style="margin:20px 0;">
-@PreAuthorize("hasRole('facultyMember')")
-public Newsletter getFacultyNews() { ... }
-</pre>
-
-
-<p>(Assume for the sake of example that ACL-based authorization is overkill for the method in question. The user either has permission to read faculty newsletters or not.)</p>
-
-<p>The problem is that when we decide to make a change&mdash;for example, maybe teaching assistants should be allowed to read the faculty newsletters too&mdash;we have to go into the code to make a change:</p>
-
-<pre style="margin:20px 0;">
-@PreAuthorize("hasRole('facultyMember') or hasRole('teachingAssistant')")
-public Newsletter getFacultyNews() { ... }
-</pre>
-
-
-<p>For domain object security there&rsquo;s no problem because the permissions are cleanly separated from roles. We can map associate individual permissions on domain objects with users and roles as we wish. So the code contains annotations like</p>
-
-<pre style="margin:20px 0;">
-@PreAuthorize("hasPermission(#message, write)")
-public void editMessage(Message message) { ... }
-</pre>
-
-
-<p>and all is good. We probably won&rsquo;t need to change the relationship between the permission and the method itself; we&rsquo;ll only need to change who (which users/roles) actually has the write permission on the message in question, and we can do that in the database. So that is nice, and we want the same thing for role-based authorization.</p>
-
-<h3>Solution: use granted authorities to model <i>permissions</i>, not roles</h3>
-
-
-<p>Here we assume an authentication source that models the desired relationship between users, roles and permissions. The typical relationship would be a many-many relationship between users and roles, and a many-many relationship between roles and permissions. For example:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/refcard106/sample_user_schema.png" alt="Sample custom user schema" /></p>
-
-<p>It would be possible to have a direct relationship between users and permissions too (say to allow for the assignment of fine-grained permissions to specific users in addition to assigning roles), if that were desired.</p>
-
-<p>The schema can be part of some standard authentication source or it can be a custom <code>UserDetailsService</code>; it doesn&rsquo;t matter.</p>
-
-<p>At the end of the day we need to transform our user representation into a <code>UserDetails</code>, and the trick is to map <i>permissions</i>&mdash;not roles&mdash;to <code>GrantedAuthority</code> objects to support the <code>getAuthorities()</code> contract on the <code>UserDetails</code> interface. We still have roles, but they matter only insofar as they help to bundle permissions up into convenient packages. The <code>UserDetails</code> implementation will probably expose the roles, but the <code>UserDetails</code> interface simply exposes the permissions (not the roles) via the <code>getAuthorities()</code> method.</p>
-
-<p>It&rsquo;s really that simple, and the final result is that we can avoid hardcoding roles in the code:</p>
-
-<pre style="margin:20px 0;">
-@PreAuthorize("hasRole('PERM_READ_FACULTY_NEWS')")
-public Newsletter getFacultyNews() { ... }
-</pre>
-
-
-<p>As an aside, the predicate name <code>hasRole</code> rather than <code>hasAuthority</code> is a minor annoyance since permissions aren&rsquo;t roles. The backing check is against a <code>GrantedAuthority</code> and so <code>hasRole()</code> seems to reflect either the intended or the typical use of <code>GrantedAuthority</code>.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/5/">&larr; Older</a>
@@ -1262,6 +1382,10 @@ public Newsletter getFacultyNews() { ... }
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
       </li>
     
@@ -1275,10 +1399,6 @@ public Newsletter getFacultyNews() { ... }
     
       <li class="post">
         <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/">SeaJUG talk on Spring Data JPA</a>
       </li>
     
   </ul>
