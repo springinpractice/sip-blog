@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-09T00:34:14-07:00</updated>
+  <updated>2013-10-09T01:18:28-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,195 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Generating JSON error object responses with Spring Web MVC]]></title>
+    <link href="http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/"/>
+    <updated>2013-10-09T00:39:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc</id>
+    <content type="html"><![CDATA[<p>The other day I wrote a post called <a href="http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&rsquo;s RestTemplate</a>. Judging by the Twitter activity, people found it useful, so this time around I&rsquo;m going to write about the other side of the equation, which is <em>generating</em> the JSON error objects using Spring Web MVC. (For a quick background on what this means and why we&rsquo;d want to do it, please see the post I just linked to.)</p>
+
+<p>There are various ways to do this, but Spring 3.2 introduces a pretty elegant approach via the <code>@ControllerAdvice</code> annotation. The basic concept here is that we can define AOP-like &ldquo;advice&rdquo; around Spring Web MVC controllers. This advice captures exceptions and then maps them to JSON objects, which the advice sends in the response body. Of course we can also send the appropriate HTTP status code in the headers too.</p>
+
+<!-- more -->
+
+
+<p>(You can find out more about <code>@ControllerAdvice</code> and <code>@ExceptionHandler</code> in the post <a href="http://www.baeldung.com/2013/01/31/exception-handling-for-rest-with-spring-3-2/">Error Handling for REST with Spring 3</a> by Eugen Paraschiv.)</p>
+
+<p>Note that the error-triggering event doesn&rsquo;t really have to be an exception <em>per se</em>. For example, we might want bean validation errors or authorization errors&mdash;neither of which manifests itself as an exception&mdash;to map to JSON error objects. The key is to have these triggers generate exceptions that we can capture using the <code>@ControllerAdvice</code> component.</p>
+
+<p>Let&rsquo;s look at an example involving bean validation. Here we have a controller. If the incoming resource is invalid, we want to generate a JSON error object. So first we do this:</p>
+
+<pre><code>package myapp.web.controller;
+
+... various imports ...
+
+@Controller
+@RequestMapping("/doodads")
+public class DoodadController {
+    @Inject private DoodadService doodadService;
+
+    @RequestMapping(
+            value = "/{id}",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void updateDoodad(
+            @PathVariable Long id,
+            @RequestBody @Valid DoodadResource doodad,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            throw new InvalidRequestException("Invalid doodad", bindingResult);
+        }
+
+        doodadService.updateDoodad(doodad);
+    }   
+}
+</code></pre>
+
+<p>Note that <code>InvalidRequestException</code> is just a custom exception I created that takes an <code>Errors</code> object as an argument. (<code>BindingResult</code> implements <code>Errors</code>.) Just for completeness, here&rsquo;s <code>InvalidRequestException</code>:</p>
+
+<pre><code>package myapp.exception;
+
+import org.springframework.validation.Errors;
+
+@SuppressWarnings("serial")
+public class InvalidRequestException extends RuntimeException {
+    private Errors errors;
+
+    public InvalidRequestException(String message, Errors errors) {
+        super(message);
+        this.errors = errors;
+    }
+
+    public Errors getErrors() { return errors; }
+}
+</code></pre>
+
+<p>So far so good. But now we need that <code>@ControllerAdvice</code> to capture the <code>InvalidRequestException</code> and generate the JSON error object:</p>
+
+<pre><code>package myapp.web.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import myapp.binding.ErrorResource;
+import myapp.binding.FieldErrorResource;
+import myapp.exception.InvalidRequestException;
+
+@ControllerAdvice
+public class MyExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler({ InvalidRequestException.class })
+    protected ResponseEntity&lt;Object&gt; handleInvalidRequest(RuntimeException e, WebRequest request) {
+        InvalidRequestException ire = (InvalidRequestException) e;
+        List&lt;FieldErrorResource&gt; fieldErrorResources = new ArrayList&lt;&gt;();
+
+        List&lt;FieldError&gt; fieldErrors = ire.getErrors().getFieldErrors();
+        for (FieldError fieldError : fieldErrors) {
+            FieldErrorResource fieldErrorResource = new FieldErrorResource();
+            fieldErrorResource.setResource(fieldError.getObjectName());
+            fieldErrorResource.setField(fieldError.getField());
+            fieldErrorResource.setCode(fieldError.getCode());
+            fieldErrorResource.setMessage(fieldError.getDefaultMessage());
+            fieldErrorResources.add(fieldErrorResource);
+        }
+
+        ErrorResource error = new ErrorResource("InvalidRequest", ire.getMessage());
+        error.setFieldErrors(fieldErrorResources);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        return handleExceptionInternal(e, error, headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+    }
+
+    ... other handlers for other exceptions ...
+}
+</code></pre>
+
+<p>The important pieces here are <code>@ControllerAdvice</code> (which derives from <code>@Controller</code>, so we can component scan it), <code>ResponseEntityExceptionHandler</code> (provides the <code>handleExceptionInternal()</code> method), and <code>@ExceptionHandler</code> annotation. <code>@ExceptionHandler</code> accepts an array of match exceptions, and then its implementation builds the JSON error object, which here involves custom <code>ErrorResource</code> and <code>FieldErrorResource</code> beans that can be whatever we want to display to the client. Finally we pass response-related information to <code>handleExceptionInternal()</code>, where the error object ends up as the response body.</p>
+
+<p>Again in the interest of completeness, here are the error objects I&rsquo;m using. These are just examples of what&rsquo;s possible; choose error representations that fit your needs. First, the top-level error object:</p>
+
+<pre><code>package myapp.binding;
+
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ErrorResource {
+    private String code;
+    private String message;
+    private List&lt;FieldErrorResource&gt; fieldErrors;
+
+    public ErrorResource() { }
+
+    public ErrorResource(String code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+    public String getCode() { return code; }
+
+    public void setCode(String code) { this.code = code; }
+
+    public String getMessage() { return message; }
+
+    public void setMessage(String message) { this.message = message; }
+
+    public List&lt;FieldErrorResource&gt; getFieldErrors() { return fieldErrors; }
+
+    public void setFieldErrors(List&lt;FieldErrorResource&gt; fieldErrors) {
+        this.fieldErrors = fieldErrors;
+    }
+}
+</code></pre>
+
+<p>And finally here&rsquo;s a class for field errors:</p>
+
+<pre><code>package myapp.binding;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class FieldErrorResource {
+    private String resource;
+    private String field;
+    private String code;
+    private String message;
+
+    public String getResource() { return resource; }
+
+    public void setResource(String resource) { this.resource = resource; }
+
+    public String getField() { return field; }
+
+    public void setField(String field) { this.field = field; }
+
+    public String getCode() { return code; }
+
+    public void setCode(String code) { this.code = code; }
+
+    public String getMessage() { return message; }
+
+    public void setMessage(String message) { this.message = message; }
+}
+</code></pre>
+
+<p>Have fun!</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Handling JSON error object responses with Spring's RestTemplate]]></title>
@@ -389,213 +578,6 @@ Rss rss = rssResponse.getBody();</pre>
 <p>The trick here is to use the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> method, as this gives us more control over the request, including request headers. We just encode the cookie as a <code>JSESSIONID=[session ID]</code> request header and send it along.</p>
 
 <p>Have fun!</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Using Spring Social GitHub to access secured GitHub data]]></title>
-    <link href="http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/"/>
-    <updated>2012-03-06T04:40:28-08:00</updated>
-    <id>http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code</id>
-    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/">this post</a>, I shared some screenshots of an open source, Spring-based CMDB I&rsquo;m building called <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a>. In the current post I want to show some of the code and configuration that&rsquo;s required to make OAuth2-authorized Spring/GitHub integration work.</p>
-
-<!-- more -->
-
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-03-06-using-spring-social-github-to-access-secured-github-data-code/hooks2.png" alt="Zkybase screenshot" /></p>
-
-<h3>Spring application configuration</h3>
-
-
-<p>This goes in the app context. I lifted it more or less as-is from the Spring Social reference documentation, except that I&rsquo;m using GitHub as the provider instead of Facebook, Twitter or LinkedIn.</p>
-
-<pre>&lt;bean id="connectionFactoryLocator" class="org.springframework.social.connect.support.ConnectionFactoryRegistry"&gt;
-    &lt;property name="connectionFactories"&gt;
-        &lt;list&gt;
-            &lt;bean class="org.springframework.social.github.connect.GitHubConnectionFactory"&gt;
-                &lt;constructor-arg value="${gitHub.clientId}" /&gt;
-                &lt;constructor-arg value="${gitHub.clientSecret}" /&gt;
-            &lt;/bean&gt;
-        &lt;/list&gt;
-    &lt;/property&gt;
-&lt;/bean&gt;
-
-&lt;bean id="textEncryptor" class="org.springframework.security.crypto.encrypt.Encryptors" factory-method="noOpText" /&gt;
-
-&lt;bean id="usersConnectionRepository" class="org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository"&gt;
-    &lt;constructor-arg ref="dataSource" /&gt;
-    &lt;constructor-arg ref="connectionFactoryLocator" /&gt;
-    &lt;constructor-arg ref="textEncryptor" /&gt;
-&lt;/bean&gt;
-
-&lt;!-- This requires authentication via Spring Security --&gt;
-&lt;bean id="connectionRepository"
-    factory-bean="usersConnectionRepository"
-    factory-method="createConnectionRepository" 
-    scope="request"&gt;
-    
-    &lt;constructor-arg value="#{request.userPrincipal.name}" /&gt;
-    &lt;aop:scoped-proxy proxy-target-class="false" /&gt;
-&lt;/bean&gt;</pre>
-
-
-
-
-<h3>Spring web configuration</h3>
-
-
-
-
-<pre>&lt;bean class="org.springframework.social.connect.web.ConnectController" /&gt;</pre>
-
-
-
-
-<h3>Service code for the user account page</h3>
-
-
-<p>Here&rsquo;s how I&rsquo;m looking up the GitHub user profile information:</p>
-
-<pre>package org.skydingo.zkybase.service.impl;
-
-import javax.inject.Inject;
-
-import org.skydingo.zkybase.model.UserAccount;
-import org.skydingo.zkybase.repository.UserAccountRepository;
-import org.skydingo.zkybase.service.UserAccountService;
-import org.springframework.social.connect.Connection;
-import org.springframework.social.connect.ConnectionRepository;
-import org.springframework.social.github.api.GitHub;
-import org.springframework.social.github.api.GitHubUserProfile;
-import org.springframework.social.github.api.impl.GitHubTemplate;
-import org.springframework.stereotype.Service;
-
-@Service
-public class UserAccountServiceImpl extends AbstractCIService implements UserAccountService {
-    @Inject private ConnectionRepository connectionRepo;
-    
-    public GitHubUserProfile getCurrentUserProfile() {
-        if (gitHub().isAuthorized()) {
-            return gitHub().userOperations().getUserProfile();
-        } else {
-            return null;
-        }
-    }
-    
-    private GitHub gitHub() {
-        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
-        return (conn != null ? conn.getApi() : new GitHubTemplate());
-    }
-
-    ... other methods ...
-}</pre>
-
-
-<p>In the <code>gitHub()</code> method you can see that I return an existing <code>GitHub</code> object if the connection exists; otherwise I just create a new <code>GitHub</code> (in the form of the template, which implements <code>GitHub</code>) so that the app can at least perform non-sensitive read operations.</p>
-
-<h3>Service to get the GitHub service hooks</h3>
-
-
-<p>This one&rsquo;s pretty similar to the above.</p>
-
-<pre>package org.skydingo.zkybase.service.impl;
-
-import java.util.List;
-import javax.inject.Inject;
-import org.skydingo.zkybase.model.Application;
-import org.skydingo.zkybase.service.ApplicationService;
-import org.springframework.social.connect.Connection;
-import org.springframework.social.connect.ConnectionRepository;
-import org.springframework.social.github.api.GitHub;
-import org.springframework.social.github.api.GitHubHook;
-import org.springframework.social.github.api.impl.GitHubTemplate;
-import org.springframework.stereotype.Service;
-
-@Service
-public class ApplicationServiceImpl extends AbstractCIService implements ApplicationService {
-    @Inject private ConnectionRepository connectionRepo;
-    
-    public List findHooks(String user, String repo) {
-        return gitHub().repoOperations().getHooks(user, repo);
-    }
-
-    private GitHub gitHub() {
-        Connection conn = connectionRepo.findPrimaryConnection(GitHub.class);
-        return (conn != null ? conn.getApi() : new GitHubTemplate());
-    }
-
-    ... various other methods ...
-}</pre>
-
-
-<p>I should probably factor out that common <code>gitHub()</code> method. :&ndash;)</p>
-
-<h3>User account JSP</h3>
-
-
-<p>Here&rsquo;s the JSP code for rendering the connect/disconnect buttons. The CSS classes come from <a title="Twitter Bootstrap" href="http://twitter.github.com/bootstrap/">Bootstrap 2.0</a>, in case you were wondering.</p>
-
-<pre>&lt;%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %&gt;
-&lt;%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %&gt;
-&lt;%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %&gt;
-&lt;%@ taglib prefix="social" uri="http://www.springframework.org/spring-social/social/tags" %&gt;
-
-&lt;c:url var="connectUrl" value="/connect" /&gt;
-&lt;c:url var="githubUrl" value="/connect/github" /&gt;
-
-&lt;sec:authentication var="user" property="principal" /&gt;
-
-&lt;h1&gt;Account details&lt;/h1&gt;
-
-&lt;section class="first"&gt;
-    &lt;div class="well"&gt;
-        &lt;table class="grid"&gt;
-            &lt;tr&gt;
-                &lt;td&gt;Username:&lt;/td&gt;
-                &lt;td&gt;&lt;c:out value="${user.username}" /&gt;&lt;/td&gt;
-            &lt;/tr&gt;
-        &lt;/table&gt;
-    &lt;/div&gt;
-&lt;/section&gt;
-
-&lt;section&gt;
-    &lt;h2&gt;GitHub&lt;/h2&gt;
-
-    &lt;social:connected provider="github"&gt;
-        &lt;p&gt;Your Zkybase and GitHub accounts are connected.&lt;/p&gt;
-        &lt;div class="well"&gt;
-            &lt;table class="grid"&gt;
-                &lt;tr&gt;
-                    &lt;td&gt;Blog:&lt;/td&gt;
-                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.blog}" default="None" /&gt;&lt;/td&gt;
-                &lt;/tr&gt;
-                &lt;tr&gt;
-                    &lt;td&gt;Location:&lt;/td&gt;
-                    &lt;td&gt;&lt;c:out value="${gitHubUserProfile.location}" default="None" /&gt;&lt;/td&gt;
-                &lt;/tr&gt;
-            &lt;/table&gt;
-        &lt;/div&gt;
-        &lt;form method="post" action="${githubUrl}"&gt;
-            &lt;input type="hidden" name="_method" value="delete" /&gt;
-            &lt;input class="btn btn-danger" type="submit" value="Disconnect from GitHub" /&gt;
-        &lt;/form&gt;
-    &lt;/social:connected&gt;
-
-    &lt;social:notConnected provider="github"&gt;
-        &lt;p&gt;Your Zkybase and GitHub accounts are not yet connected. Connect them for additional Zkybase features.&lt;/p&gt;
-        &lt;form method="post" action="${githubUrl}"&gt;
-            &lt;input type="hidden" name="scope" value="user, repo, gist" /&gt;
-            &lt;input class="btn btn-primary" type="submit" value="Connect to GitHub" /&gt;
-        &lt;/form&gt;
-    &lt;/social:notConnected&gt;
-&lt;/section&gt;</pre>
-
-
-<p>Note the use of the Spring Social <code>&lt;social:connected&gt;</code> and <code>&lt;social:notConnected&gt;</code> tags to show different content based on whether the user is or isn&rsquo;t connected to the provider in question.</p>
-
-<p>Notice also that the connect button sends a hidden <code>scope</code> parameter to the GitHub URL. This allows us to specify the kinds of operation we want the user to authorize.</p>
-
-<p>Anyway, there you have it. This post was a bit quick, so let me know if I left anything important out and I&rsquo;m happy to add it. Have fun.</p>
 ]]></content>
   </entry>
   

@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-09T00:34:14-07:00</updated>
+  <updated>2013-10-09T01:18:28-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,195 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Generating JSON error object responses with Spring Web MVC]]></title>
+    <link href="http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/"/>
+    <updated>2013-10-09T00:39:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc</id>
+    <content type="html"><![CDATA[<p>The other day I wrote a post called <a href="http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&rsquo;s RestTemplate</a>. Judging by the Twitter activity, people found it useful, so this time around I&rsquo;m going to write about the other side of the equation, which is <em>generating</em> the JSON error objects using Spring Web MVC. (For a quick background on what this means and why we&rsquo;d want to do it, please see the post I just linked to.)</p>
+
+<p>There are various ways to do this, but Spring 3.2 introduces a pretty elegant approach via the <code>@ControllerAdvice</code> annotation. The basic concept here is that we can define AOP-like &ldquo;advice&rdquo; around Spring Web MVC controllers. This advice captures exceptions and then maps them to JSON objects, which the advice sends in the response body. Of course we can also send the appropriate HTTP status code in the headers too.</p>
+
+<!-- more -->
+
+
+<p>(You can find out more about <code>@ControllerAdvice</code> and <code>@ExceptionHandler</code> in the post <a href="http://www.baeldung.com/2013/01/31/exception-handling-for-rest-with-spring-3-2/">Error Handling for REST with Spring 3</a> by Eugen Paraschiv.)</p>
+
+<p>Note that the error-triggering event doesn&rsquo;t really have to be an exception <em>per se</em>. For example, we might want bean validation errors or authorization errors&mdash;neither of which manifests itself as an exception&mdash;to map to JSON error objects. The key is to have these triggers generate exceptions that we can capture using the <code>@ControllerAdvice</code> component.</p>
+
+<p>Let&rsquo;s look at an example involving bean validation. Here we have a controller. If the incoming resource is invalid, we want to generate a JSON error object. So first we do this:</p>
+
+<pre><code>package myapp.web.controller;
+
+... various imports ...
+
+@Controller
+@RequestMapping("/doodads")
+public class DoodadController {
+    @Inject private DoodadService doodadService;
+
+    @RequestMapping(
+            value = "/{id}",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void updateDoodad(
+            @PathVariable Long id,
+            @RequestBody @Valid DoodadResource doodad,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            throw new InvalidRequestException("Invalid doodad", bindingResult);
+        }
+
+        doodadService.updateDoodad(doodad);
+    }   
+}
+</code></pre>
+
+<p>Note that <code>InvalidRequestException</code> is just a custom exception I created that takes an <code>Errors</code> object as an argument. (<code>BindingResult</code> implements <code>Errors</code>.) Just for completeness, here&rsquo;s <code>InvalidRequestException</code>:</p>
+
+<pre><code>package myapp.exception;
+
+import org.springframework.validation.Errors;
+
+@SuppressWarnings("serial")
+public class InvalidRequestException extends RuntimeException {
+    private Errors errors;
+
+    public InvalidRequestException(String message, Errors errors) {
+        super(message);
+        this.errors = errors;
+    }
+
+    public Errors getErrors() { return errors; }
+}
+</code></pre>
+
+<p>So far so good. But now we need that <code>@ControllerAdvice</code> to capture the <code>InvalidRequestException</code> and generate the JSON error object:</p>
+
+<pre><code>package myapp.web.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import myapp.binding.ErrorResource;
+import myapp.binding.FieldErrorResource;
+import myapp.exception.InvalidRequestException;
+
+@ControllerAdvice
+public class MyExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler({ InvalidRequestException.class })
+    protected ResponseEntity&lt;Object&gt; handleInvalidRequest(RuntimeException e, WebRequest request) {
+        InvalidRequestException ire = (InvalidRequestException) e;
+        List&lt;FieldErrorResource&gt; fieldErrorResources = new ArrayList&lt;&gt;();
+
+        List&lt;FieldError&gt; fieldErrors = ire.getErrors().getFieldErrors();
+        for (FieldError fieldError : fieldErrors) {
+            FieldErrorResource fieldErrorResource = new FieldErrorResource();
+            fieldErrorResource.setResource(fieldError.getObjectName());
+            fieldErrorResource.setField(fieldError.getField());
+            fieldErrorResource.setCode(fieldError.getCode());
+            fieldErrorResource.setMessage(fieldError.getDefaultMessage());
+            fieldErrorResources.add(fieldErrorResource);
+        }
+
+        ErrorResource error = new ErrorResource("InvalidRequest", ire.getMessage());
+        error.setFieldErrors(fieldErrorResources);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        return handleExceptionInternal(e, error, headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+    }
+
+    ... other handlers for other exceptions ...
+}
+</code></pre>
+
+<p>The important pieces here are <code>@ControllerAdvice</code> (which derives from <code>@Controller</code>, so we can component scan it), <code>ResponseEntityExceptionHandler</code> (provides the <code>handleExceptionInternal()</code> method), and <code>@ExceptionHandler</code> annotation. <code>@ExceptionHandler</code> accepts an array of match exceptions, and then its implementation builds the JSON error object, which here involves custom <code>ErrorResource</code> and <code>FieldErrorResource</code> beans that can be whatever we want to display to the client. Finally we pass response-related information to <code>handleExceptionInternal()</code>, where the error object ends up as the response body.</p>
+
+<p>Again in the interest of completeness, here are the error objects I&rsquo;m using. These are just examples of what&rsquo;s possible; choose error representations that fit your needs. First, the top-level error object:</p>
+
+<pre><code>package myapp.binding;
+
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ErrorResource {
+    private String code;
+    private String message;
+    private List&lt;FieldErrorResource&gt; fieldErrors;
+
+    public ErrorResource() { }
+
+    public ErrorResource(String code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+    public String getCode() { return code; }
+
+    public void setCode(String code) { this.code = code; }
+
+    public String getMessage() { return message; }
+
+    public void setMessage(String message) { this.message = message; }
+
+    public List&lt;FieldErrorResource&gt; getFieldErrors() { return fieldErrors; }
+
+    public void setFieldErrors(List&lt;FieldErrorResource&gt; fieldErrors) {
+        this.fieldErrors = fieldErrors;
+    }
+}
+</code></pre>
+
+<p>And finally here&rsquo;s a class for field errors:</p>
+
+<pre><code>package myapp.binding;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class FieldErrorResource {
+    private String resource;
+    private String field;
+    private String code;
+    private String message;
+
+    public String getResource() { return resource; }
+
+    public void setResource(String resource) { this.resource = resource; }
+
+    public String getField() { return field; }
+
+    public void setField(String field) { this.field = field; }
+
+    public String getCode() { return code; }
+
+    public void setCode(String code) { this.code = code; }
+
+    public String getMessage() { return message; }
+
+    public void setMessage(String message) { this.message = message; }
+}
+</code></pre>
+
+<p>Have fun!</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Handling JSON error object responses with Spring's RestTemplate]]></title>
@@ -1339,237 +1528,6 @@ jM3JXG7LRkr/G6M24RCxBKONckQy+3j1wdy/jZwfisilPg==
 
 
 <p>I&rsquo;ve had a bit of a change of heart regarding the constructor namespace. Here&rsquo;s why I think <a href="http://springinpractice.com/2012/05/07/springs-constructor-namespace-is-a-bad-idea/">the Spring constructor namespace is a bad idea</a>.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Dynamic DAOs and queries using Spring Data JPA]]></title>
-    <link href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/"/>
-    <updated>2012-04-24T16:18:27-07:00</updated>
-    <id>http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa</id>
-    <content type="html"><![CDATA[<p>For a long time, creating a DAO layer in Spring has been a largely manual process:</p>
-
-<ol>
-    <li>Create a base generic DAO interface.</li>
-    <li>Create a generic abstract DAO implementation with general-purpose CRUD methods and common queries (e.g., <code>findAll</code>()).</li>
-    <li>For each DAO we want, extend the base DAO interface with an entity-specific interface (e.g., <code>CustomerDao</code>).</li>
-    <li>For each DAO we want, extend the abstract DAO class with an entity-specific concrete class (e.g., <code>HibernateCustomerDao</code>).</li>
-</ol>
-
-
-<p>Items 1 and 2 amount to creating a homegrown DAO framework, and items 3 and 4 amount to using it to implement DAOs.</p>
-
-<p>Now there&rsquo;s a better way to do things.</p>
-
-<!-- more -->
-
-
-<p>The <a href="http://www.springsource.org/spring-data">Spring Data</a> family of projects provides a ready-made DAO framework. There are different projects, such as <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a>, <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. Something they all have in common is that they provide framework code so we don&rsquo;t have to implement it ourselves.</p>
-
-<p>Moreover, Spring Data is able to generate concrete DAO implementations and custom queries automatically. So even step 4 above goes away in many cases. With Spring Data JPA you can create DAO tiers by defining interfaces.</p>
-
-<p>In this post we&rsquo;ll learn how to use Spring Data JPA to clean up our DAO tier. Let&rsquo;s get the POM and configuration out of the way first. Then we&rsquo;ll get into the actual repository code. We won&rsquo;t get into the details of mapping actual entities (via JPA annotations or otherwise) as that&rsquo;s outside the scope of what we want to cover here.</p>
-
-<h3>POM</h3>
-
-
-<p>First we need to choose which JPA provider and which package versions we want to work with. For the JPA provider, we&rsquo;ll use Hibernate. For the package versions, we&rsquo;ll use Spring 3.1.1, Spring Data JPA 1.0.3 and Hibernate 4.1.1 since those are current at the time I&rsquo;m writing this.</p>
-
-<p>Here are the relevant Maven dependencies for <code>pom.xml</code>:</p>
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;project ...&gt;
-
-    ...
-
-    &lt;!-- Use whatever versions make sense for your project. --&gt;
-    &lt;properties&gt;
-        &lt;hibernate.version&gt;4.1.1.Final&lt;/hibernate.version&gt;
-        &lt;spring.version&gt;3.1.1.RELEASE&lt;/spring.version&gt;
-        &lt;spring.data.version&gt;1.0.3.RELEASE&lt;/spring.data.version&gt;
-    &lt;/properties&gt;
-
-    &lt;dependencies&gt;
-
-        ... standard Spring dependencies (beans, context, core, etc.) ...
-
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.springframework.data&lt;/groupId&gt;
-            &lt;artifactId&gt;spring-data-jpa&lt;/artifactId&gt;
-            &lt;version&gt;${spring.data.version}&lt;/version&gt;
-        &lt;/dependency&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
-            &lt;artifactId&gt;hibernate-core&lt;/artifactId&gt;
-            &lt;version&gt;${hibernate.version}&lt;/version&gt;
-        &lt;/dependency&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
-            &lt;artifactId&gt;hibernate-entitymanager&lt;/artifactId&gt;
-            &lt;version&gt;${hibernate.version}&lt;/version&gt;
-        &lt;/dependency&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
-            &lt;artifactId&gt;hibernate-ehcache&lt;/artifactId&gt;
-            &lt;version&gt;${hibernate.version}&lt;/version&gt;
-        &lt;/dependency&gt;
-    &lt;/dependencies&gt;
-
-    ...
-
-&lt;/project&gt;
-</pre>
-
-
-
-
-<h3>JPA configuration</h3>
-
-
-<p>The JPA configuration goes here: <code>/src/main/resources/META-INF/persistence.xml</code>. Here&rsquo;s the configuration itself. (Adjust as necessary if you&rsquo;re not using MySQL.)</p>
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;persistence xmlns="http://java.sun.com/xml/ns/persistence"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
-    version="1.0"&gt;
-   
-    &lt;persistence-unit name="RunbookManager" transaction-type="RESOURCE_LOCAL"&gt;
-        &lt;description&gt;This unit manages runbooks.&lt;/description&gt;
-        &lt;provider&gt;org.hibernate.ejb.HibernatePersistence&lt;/provider&gt;
-        &lt;jta-data-source&gt;jdbc/RunbookDS&lt;/jta-data-source&gt;
-        &lt;properties&gt;
-            &lt;property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5Dialect" /&gt;
-            &lt;property name="hibernate.show_sql" value="false" /&gt;
-        &lt;/properties&gt;
-    &lt;/persistence-unit&gt;
-&lt;/persistence&gt;</pre>
-
-
-<p>The configuration above is where we declare Hibernate as our JPA provider.</p>
-
-<p>Now let&rsquo;s look at the Spring configuration.</p>
-
-<h3>Spring configuration</h3>
-
-
-
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:jee="http://www.springframework.org/schema/jee"
-    xmlns:jpa="http://www.springframework.org/schema/data/jpa"
-    xmlns:p="http://www.springframework.org/schema/p"
-    xmlns:tx="http://www.springframework.org/schema/tx"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
-        http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.0.xsd
-        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.1.xsd
-        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd"&gt;
-        
-    &lt;jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/RunbookDS" resource-ref="true" /&gt;
-    
-    &lt;bean id="entityManagerFactory"
-        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
-        p:persistenceUnitName="RunbookManager"
-        p:dataSource-ref="dataSource" /&gt;
-
-    &lt;bean id="transactionManager"
-        class="org.springframework.orm.jpa.JpaTransactionManager"
-        p:entityManagerFactory-ref="entityManagerFactory" /&gt;
-
-    &lt;jpa:repositories base-package="com.example.runbooks.repo" /&gt;
-    
-    &lt;tx:annotation-driven /&gt;
-
-    ... other beans ...
-
-&lt;/beans&gt;
-</pre>
-
-
-<p>Note the use of the <code>jpa</code> namespace to declare a package containing the repositories. This package contains the various interfaces we&rsquo;re about to define. The <code>&lt;jpa:repositories&gt;</code> configuration tells Spring to scan for interfaces and create the repository implementations, magically.</p>
-
-<h3>Repository interfaces</h3>
-
-
-<p>OK, now we&rsquo;ve made it to the good stuff. We&rsquo;ll look at a few examples here.</p>
-
-<p>To create a new DAO, we simply extend the <code>JpaRepository</code> interface, which is part of Spring Data JPA. It takes two type parameters: the relevant entity type, and its ID type. The interface comes with a bunch of standard CRUD operations and queries; see the <a href="http://static.springsource.org/spring-data/data-jpa/docs/current/api/org/springframework/data/jpa/repository/JpaRepository.html">JpaRepository API documentation</a> for details on those.</p>
-
-<h4>Example 1: A barebones repo</h4>
-
-
-<p>First, the most barebones example would be where we&rsquo;re perfectly happy with the standard CRUD and query operations that the Spring Data <code>JpaRepository</code> already provides. In that case, all we have to do is extend the interface and we&rsquo;re done.</p>
-
-<pre>package com.example.runbooks.repo;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import com.example.runbooks.model.RunbookGroup;
-
-public interface RunbookGroupRepo
-    extends JpaRepository&lt;RunbookGroup, Long&gt; { }</pre>
-
-
-<p>With that simple interface definition, Spring Data JPA will be able to create an implementation dynamically that gives us methods like <code>count()</code>, <code>findAll()</code>, <code>findOne()</code>, <code>save()</code>, <code>delete()</code>, <code>deleteAll()</code>, <code>deleteInBatch()</code> and more for free.</p>
-
-<h4>Example 2. A simple custom query</h4>
-
-
-<p>Say we have a <code>ChapterType</code> entity with a <code>key</code> property, and we want a query that can find chapter types by key. No problem. We can use conventions around method names to tell Spring Data JPA which query we&rsquo;d like to see:</p>
-
-<pre>package com.example.runbooks.repo;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import com.example.runbooks.model.ChapterType;
-
-public interface ChapterTypeRepo
-    extends JpaRepository&lt;ChapterType, Long&gt; {
-
-    ChapterType findByKey(String key);
-}</pre>
-
-
-<p>Spring Data maps the method to a query that effectively accomplishes</p>
-
-<blockquote>
-<code>from ChapterType where key = :key</code>
-</blockquote>
-
-
-
-
-<h4>Example 3. A more complex custom query</h4>
-
-
-<p>The scheme from example 2 above extends to cases where the properties in question are complex, in a couple of different ways: first, they might involve multiple conditions in the &ldquo;where&rdquo; clause; second, they might involve joins. Suppose, for instance, that we want to find a chapter having a certain runbook ID and a certain chapter number. Suppose also that the JPQL would be</p>
-
-<blockquote>
-<code>from Chapter c where c.runbook.id = :runbookId and<br />
-c.chapterType.number = :chapterNumber</code>
-</blockquote>
-
-
-<p>Here&rsquo;s how to build a repo supporting that query:</p>
-
-<pre>package com.example.runbooks.repo;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import com.example.runbooks.model.Chapter;
-
-public interface ChapterRepo
-    extends JpaRepository&lt;Chapter, Long&gt; {
-
-    Chapter findByRunbookIdAndChapterTypeNumber(
-        Long runbookId, Integer chapterNumber);
-}</pre>
-
-
-<p>The convention implicit in the method name is fairly obvious, especially in light of the JPQL query. The convention can admittedly lead to some awkward method names, as it does in this case. (A better name might be <code>findByRunbookIdAndChapterNumber()</code>.) But the convenience is tough to beat.</p>
-
-<div class="endnote">Interested in learning more about Spring Data JPA? See my post <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">Pagination and sorting with Spring Data JPA</a>.</div>
-
 ]]></content>
   </entry>
   

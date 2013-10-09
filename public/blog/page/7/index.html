@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="This post is part of a three-part series: Part 1 | Part 2 | Part 3 Many professional software engineers see concurrent programming as something of &hellip;">
+  <meta name="description" content="This post is part of a three-part series: Part 1 | Part 2 | Part 3 This post is the second in a three-part series on concurrent programming. In the &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,344 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Concurrent Programming for Practicing Software Engineers, Part 2</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-14T08:44:32-07:00" pubdate data-updated="true">Oct 14<span>th</span>, 2008</time>
+        
+         | <a href="/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><div class="intro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Part 3</a></span>
+</div>
+
+
+<p>This post is the second in a three-part series on concurrent programming. In the <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">first post</a> we learned some basic concepts such as threads and serial vs. parallel execution. In this post we&rsquo;ll learn how parallel execution can create problems if we&rsquo;re not careful.</p>
+
+<h3>How parallelism gives rise to race conditions</h3>
+
+
+<p>Even among parallelizable problems, some are harder than others. The easy ones are the ones that don&rsquo;t involve threads sharing state with one another. For example, if you have five independent work queues, and the goal is simply to process all the tasks in all the queues, then there&rsquo;s nothing especially tough about this. You start five threads, run them against the five queues, and then move on once they&rsquo;re done.</p>
+
+<p>The trickier problems are the ones that involve threads sharing state with one another. Let&rsquo;s see why.</p>
+
+<h4>Threads and shared state</h4>
+
+
+<p>Shared state presents a challenge in concurrent programming because threads can interfere with one another if their access to that shared state isn&rsquo;t properly coordinated. If you&rsquo;ve ever tried to collaborate with other authors on a single document, you might have some experience with this problem. (Though Google Docs does a nice job of supporting multiple simultaneous authors.) You make some changes to the document, hoping that your coauthor didn&rsquo;t make his own changes to the part that you worked on. If he did, then there may be a mess to clean up.</p>
+
+<p>The essence of the problem is that at least one guy is updating the document while somebody else is either reading it or writing it. We talked about the case where you have two authors writing to the document, but it can be one guy writing and someone else reading. If one person is in the middle of updating emergency information for hurricane evacuees and another person reads a partial update, the result could be dangerous.</p>
+
+<p>Note that there&rsquo;s no problem if you have a bunch of people simply <em>reading</em> a document at the same time. The problem only comes up if at least one of them is <em>writing</em> to it.</p>
+
+<p>The problem we&rsquo;ve just described is called a <em>race condition</em>. The idea is that if threads aren&rsquo;t properly coordinated, then their concurrent work is vulnerable to problems associated with &ldquo;unlucky timing&rdquo;. There can be situations in which one thread is trying to update shared state and one or more other threads are trying to access it (either read or write). In effect the threads &ldquo;race&rdquo; against one another and the outcome of their work is dependent on the nondeterministic outcome of their race.</p>
+
+<p>Let&rsquo;s look at a code example.</p>
+
+<h4>An example of code that allows race conditions</h4>
+
+
+<p>Originally I was going to present the standard (and probably a bit tired) web page hit counter example. But then today I saw somebody&rsquo;s purportedly threadsafe class that is in fact susceptible to race conditions. The code was written by an experienced engineer. So let&rsquo;s use that example instead, shown in Listing 1 below, as it&rsquo;s instructive.</p>
+
+<div>
+    <div>
+        <span class="code-listing">Listing 1.</span> A class that&#8217;s supposed to be threadsafe, but isn&#8217;t
+    </div>
+    <pre>public class InMemoryUserDao implements UserDao {
+    private Map&lt;String, User&gt; users;
+
+    public InMemoryUserDao() {
+        users = Collections.synchronizedMap(new HashMap&lt;String, User&gt;());
+    }
+
+    public boolean userExists(String username) {
+        return users.containsKey(username);
+    }
+
+    public void createUser(User user) {
+        String username = user.getUsername();
+        if (userExists(username)) {
+            throw new DuplicateUserException();
+        }
+        users.put(username, user);
+    }
+
+    public User findUser(String username) {
+        User user = users.get(username);
+        if (user == null) {
+            throw new NoSuchUserException();
+        }
+        return user;
+    }
+
+    public void updateUser(User user) {
+        String username = user.getUsername();
+        if (!userExists(username)) {
+            throw new NoSuchUserException();
+        }
+        users.put(username, user);
+    }
+
+    public void removeUser(String username) {
+        if (!userExists(username)) {
+            throw new NoSuchUserException();
+        }
+        users.remove(username);
+    }
+}</pre>
+    </div>
+
+
+<p>What do you think? See anything? The engineer claims that the class is threadsafe because we&rsquo;ve wrapped our hashmap with a synchronized instance.</p>
+
+<h4>Threadsafety problems with the code</h4>
+
+
+<p>It turns out that that&rsquo;s not correct. It&rsquo;s a common misconception that as long as you&rsquo;re dealing with a threadsafe collection (like a synchronized map), you&rsquo;ve taken care of any threadsafety issues you might have otherwise had. We&rsquo;ll use this example to show why this belief is just plain wrong.</p>
+
+<p>Before I expose the race conditions, let me state some plausible assumptions about the intended semantics for the class:</p>
+
+<ul class="square">
+<li>Calling <code>createUser()</code> with an user whose username already exists in the map should generate a <code>DuplicateUserException</code>.</li>
+<li>Calling <code>updateUser()</code> with an user whose username does not already exist should generate a <code>NoSuchUserException</code>.</li>
+<li>Calling <code>removeUser()</code> with an user whose username does not already exist should generate a <code>NoSuchUserException</code>.</li>
+</ul>
+
+
+<p>Now let&rsquo;s see how the implementation fails to support those semantics, and in particular how the implementation permits race conditions.</p>
+
+<p><b>createUser() is broken.</b> Here&rsquo;s a race that shows that <code>createUser()</code> does not have the intended semantics:</p>
+
+<ol>
+
+<li>Thread T<sub>1</sub> enters <code>createUser()</code>, with argument user U<sub>1</sub> having username N. N is not already in the map.</li>
+
+<li>Thread T<sub>1</sub> successfully makes it past the <code>if</code> test, but not yet to the line that puts N in the map.</li>
+
+<li>Context switch to thread T<sub>2</sub>, which also enters <code>createUser()</code>, this time with argument user U<sub>2</sub> having the same username N that U<sub>1</sub> has. (You can imagine, for example, two users registering with the same username at the same time.) N is still not in the map, because thread T<sub>1</sub> hasn&#8217;t put it there yet.</li>
+
+<li>Thread T<sub>2</sub> completes its call to <code>createUser()</code> and exits. User U<sub>2</sub> and username N are now in the map.</li>
+
+<li>Thread T<sub>1</sub> completes the method and executes. User U<sub>1</sub> has been placed into the map under the key N.</li>
+
+</ol>
+
+
+<p>Poof! User U<sub>2</sub> simply disappears from the map, having been overwritten by user U<sub>1</sub>. T<sub>1</sub> never encounters the <code>DuplicateUserException</code> it&rsquo;s supposed to encounter.</p>
+
+<p><b>updateUser() is broken.</b> This one is a little more subtle than the <code>createUser()</code> case. Here&rsquo;s the race:</p>
+
+<ol>
+<li>Thread T<sub>1</sub> enters <code>updateUser()</code> with user U having name N. The user already exists in the map, so T<sub>1</sub> passes the <code>if</code> test successfully. It hasn&#8217;t reached the <code>put()</code> part yet.</li>
+<li>Context switch to thread T<sub>2</sub>, which enters and exits <code>removeUser()</code> with username N (the same one that T<sub>1</sub> was using). The user U is removed from the map.</li>
+<li>Thread T<sub>1</sub> completes, placing U back in the map under key N. User U has essentially been reinstated.</li>
+</ol>
+
+
+<p>The problem here is that the <code>removeUser()</code> method completed successfully, there was no <code>createUser()</code> call, and yet there&rsquo;s still a user sitting in the map with no error having been thrown. Given the semantics described above, that should not be possible. The only two possible outcomes ought to be: (1) the update occurs before the remove, which would mean that when the two threads complete, U is no longer in the map; or (2) the remove occurs before the update, which would mean that U should be gone, and the update should have generated an exception. In either case, U should not be in the map when the two threads complete, and yet there it is. So if T<sub>2</sub> belongs to an admin who thought he was removing a troublesome user, guess again.</p>
+
+<p><b>removeUser() is broken.</b> We&rsquo;ve already seen in the race above that there are situations under which <code>removeUser()</code> would be expected to remove a user but does not actually do that. Here&rsquo;s another race for you, probably less significant, but still a bug:</p>
+
+<ol>
+<li>Thread T<sub>1</sub> enters <code>removeUser()</code> with existing username N, and makes it past the <code>if</code> test.</li>
+<li>Context switch to thread T<sub>2</sub>, which enters and exits <code>removeUser()</code> with the same username N.</li>
+<li>Thread T<sub>1</sub> completes and exits the method.</li>
+</ol>
+
+
+<p>In this case we have two methods that called the <code>removeUser()</code> method with the same username, but neither thread encountered a <code>NoSuchUserException</code>. That is not compatible with the semantics of the class.</p>
+
+<p>Now that we&rsquo;ve seen some problems, let&rsquo;s try to understand what&rsquo;s happening here.</p>
+
+<h4>What the three broken methods have in common</h4>
+
+
+<p>One thing that all three cases have in common is that they follow a &ldquo;check-then-act&rdquo; pattern, where both the &ldquo;check&rdquo; and &ldquo;act&rdquo; parts reference shared data (in this case, the hashmap). The <code>createUser()</code> method checks whether the username already exists, and if not, adds the user to the map. The <code>updateUser()</code> method checks whether the username already exists, and if so, updates the user. <code>removeUser()</code> checks whether the username exists, and if so, deletes the user.</p>
+
+<p>Note that the <code>findUser()</code> method does <em>not</em> follow the same pattern. It does a single <code>get()</code> against the map, and then does a check that checks the returned user rather than checking something against the map. Though it looks like almost the same thing, it is really a completely different situation because we&rsquo;re performing only one action against the shared data instead of multiple actions.</p>
+
+<p>It turns out that the difference between <code>createUser()</code>, <code>updateUser()</code> and <code>removeUser()</code>, on the one hand, and the <code>findUser()</code> method, on the other, is important from a threadsafety point of view. Essentially what&rsquo;s happening is that the <code>findUser()</code> method is <em>atomic</em> (with a certain qualification, which we&rsquo;ll discuss in the next section), meaning that it executes as a single action. The <code>createUser()</code>, <code>updateUser()</code> and <code>removeUser()</code> methods, on the other hand, are not atomic. The various check and act operations can be interleaved in arbitrary ways across different threads. Intuitively what that means is that checks, which are supposed to provide safety, can become invalid because other actions can be scheduled in between any given check-act pair. The safety checks are invalidated and the class behaves in strange ways (especially as load increases, which is usually the most inopportune time for such issues to arise).</p>
+
+<p>Now let&rsquo;s look at how we can solve race conditions such as the ones we&rsquo;ve been considering.</p>
+
+<h3>Solving race conditions with synchronization</h3>
+
+
+<p>The key to avoiding race conditions is to coordinate the multiple threads when accessing shared data. There are different ways to do this, but the simplest is the one your mom taught you when you were a kid: take turns.</p>
+
+<h4>Taking turns with mutexes</h4>
+
+
+<p>Here&rsquo;s how you take turns in software. Suppose that you have some shared data that you want to protect, such as a list of all the posts in a given web-based discussion forum, or a web page hit counter. You have various blocks of code throughout your application that access that data, both reading it and writing it. These blocks of code don&rsquo;t have to be in the same class (though they often are), but they&rsquo;re all accessing the same data.</p>
+
+<p>(Keep in mind that when we describe the data as shared data, we mean that it&rsquo;s shared by multiple threads, not that multiple blocks of code access it. If multiple blocks of code access the data but only one thread ever does, then it&rsquo;s not shared data.)</p>
+
+<p>The trick is to protect the code so that only one thread can enter it at a time. I don&rsquo;t mean that only one thread can enter one of the code blocks at a time. I mean that if you consider the whole set of code blocks as a single group, only one thread can enter that group at a time. So if one thread enters one of the blocks, then all other threads need to be kept out of all other blocks until that first thread is done.</p>
+
+<p>The way we enforce this behavior is to associate with each block of code you want to protect something called a mutual exclusion lock, or <em>mutex</em>. People often just call it a lock as well. You associate a lock with any given piece of data you want to protect, and all the code blocks that access that data use that same lock. A thread is not allowed to enter the code block unless it acquires the lock. So whenever thread T<sub>1</sub> wants to enter, it attempts to grab the lock. If the lock is available, then T<sub>1</sub> takes it and other threads have to wait until T<sub>1</sub> is done. If instead some other thread T<sub>2</sub> has the lock, then T<sub>1</sub> has to wait until T<sub>2</sub> is done.</p>
+
+<p>When a thread leaves the block of code protected by the mutex, known as the <em>critical section</em>, it releases the lock.</p>
+
+<p>Incidentally, I always thought it was kind of funny we talk about grabbing locks. It seems like we should say we grab a key so we can get past the lock. But that&rsquo;s not how people talk about it.</p>
+
+<p>We now introduce the principal way of implementing a mutex in Java, the <code>synchronized</code> keyword.</p>
+
+<h4>The <code>synchronized</code> keyword</h4>
+
+
+<p>In Java the primary mechanism for enforcing turn-taking across threads is the <code>synchronized</code> keyword. You basically put the code you want to protect inside a <code>synchronized</code> block, specifying a lock object (or more exactly, specifying an object whose <em>monitor</em> will be used as a lock&mdash;in Java, each object has a &ldquo;monitor&rdquo; that can be used as a mutex). If you want to synchronize access to the whole method, you just use the <code>synchronized</code> keyword on the method itself. In this latter case, the locking object is the one on which the method is being called.</p>
+
+<p>Here&rsquo;s an example of a synchronized block:</p>
+
+<pre>synchronized (myList) {
+    int lastIndex = myList.size() - 1;
+    myList.remove(lastIndex);
+}</pre>
+
+
+<p>Here, we&rsquo;re using the <code>myList</code> instance as the lock. Anytime a thread wants to enter this block of code, or any other block of code protected by the same lock, it needs to grab the lock on the <code>myList</code> instance first. And it releases the lock upon exiting the <code>synchronized</code> block (i.e., the critical section).</p>
+
+<p>Here&rsquo;s an example of a synchronized method:</p>
+
+<pre>public class Order {
+
+    ...
+
+    public synchronized void removeLastLineItem() {
+        int lastIndex = myList.size() - 1;
+        myList.remove(lastIndex);
+    }
+}</pre>
+
+
+<p>In this case, a thread wanting to enter the <code>removeLastLineItem()</code> method would need to grab the lock on the relevant <code>Order</code> instance first, and would release the lock after exiting the method.</p>
+
+<p>Armed with our understanding of mutexes and the <code>synchronized</code> keyword, let&rsquo;s revisit our example from the previous page.</p>
+
+<h4>Our example, revisited: making the code threadsafe</h4>
+
+
+<p>Listing 2 shows how to apply thread synchronization to make the class threadsafe.</p>
+
+<div>
+    <div><span class="code-listing">Listing 2.</span> A threadsafe version of our DAO</div>
+    <pre>public final class InMemoryUserDao implements UserDao {
+    private Map&lt;String, User&gt; users;
+
+    public InMemoryUserDao() {
+        users = Collections.synchronizedMap(new HashMap&lt;String, User&gt;());
+    }
+
+    public boolean userExists(String username) {
+        return users.containsKey(username);
+    }
+
+    public void createUser(User user) {
+        String username = user.getUsername();
+        synchronized (users) {
+            if (userExists(username)) {
+                throw new DuplicateUserException();
+            }
+            users.put(username, user);
+        }
+    }
+
+    public User findUser(String username) {
+        User user = users.get(username);
+        if (user == null) {
+            throw new NoSuchUserException();
+        }
+        return user;
+    }
+
+    public void updateUser(User user) {
+        String username = user.getUsername();
+        synchronized (users) {
+            if (!userExists(username)) {
+                throw new NoSuchUserException();
+            }
+            users.put(username, user);
+        }
+    }
+
+    public void removeUser(String username) {
+        synchronized (users) {
+            if (!userExists(username)) {
+                throw new NoSuchUserException();
+            }
+            users.remove(username);
+        }
+    }
+}</pre>
+    </div>
+
+
+<p>In Listing 2 we&rsquo;ve addressed the three issues that we raised earlier. First note that the <code>users</code> instance is entirely encapsulated by our <code>InMemoryUserDao</code> class (I&rsquo;ve made the class <code>final</code> to prevent inheritance from breaking our encapsulation here), so that means it is entirely within our power to protect every possible access to the <code>users</code> instance. (Hm, that&rsquo;s probably a good interview question: &ldquo;Discuss the relationship between encapsulation and threadsafety.&rdquo;)</p>
+
+<p>Next note that we&rsquo;ve addressed the general problem that we saw by making every &ldquo;check-then-act&rdquo; occurrence atomic. Now the code is such that if thread T checks something (such as checking whether a username exists), we can be sure that the answer doesn&rsquo;t change before the action part, because no other thread is able to access the <code>users</code> instance at all until T is done with it.</p>
+
+<h4>Internal vs. external synchronization</h4>
+
+
+<p>There&rsquo;s one detail to discuss. Take a look at the <code>userExists()</code> and <code>findUser()</code> methods. In both cases we access the <code>users</code> instance, but there&rsquo;s no <code>synchronized</code> block. The reason this isn&rsquo;t a problem is that both of the following are true:</p>
+
+<ol>
+<li>we&#8217;re calling only one method on the <code>users</code> map, and</li>
+<li>the map is internally synchronized since we created the map using the <code>Collections.synchronizedMap(...)</code> wrapper.</li>
+</ol>
+
+
+<p>If either of those two conditions had failed, we&rsquo;d need to put the calls in a <code>synchronized</code> block. It&rsquo;s useful to discuss these a little more carefully.</p>
+
+<p>Let&rsquo;s take (1) first. Note that even though we don&rsquo;t have an explicit <code>synchronized</code> block, each individual method call we make against <code>users</code> is threadsafe. That&rsquo;s because the <code>users</code> map is internally synchronized on the monitor for the <code>users</code> instance itself. That is, the map handles synchronization for individual method calls so we don&rsquo;t have to. If we&rsquo;re just going to call a single method on an internally synchronized method, we&rsquo;re usually OK to do so.</p>
+
+<p>The place where we have to pay attention to threadsafety is where we call multiple methods on the <code>users</code> instance. There, the internal synchronization doesn&rsquo;t help us at all because that synchronization doesn&rsquo;t prevent the thread from releasing the lock in between the multiple method calls. And when it releases the lock, another thread can come in and change the data. If your code logic assumes that the multiple method calls behave as an atomic unit, you have a problem. Therefore you must provide your own synchronization on the relevant lock when you use check-then-act and similar patterns.</p>
+
+<p>It is a common error to assume that just because the object is internally synchronized, you don&rsquo;t have to worry about threadsafety anymore. That is simply not true, as we&rsquo;ve just explained.</p>
+
+<p>Now take (2). Clearly if the map didn&rsquo;t have any internal synchronization, then we&rsquo;d need to provide it ourselves, even for single method calls against the map. Otherwise threads could get in and muck things up for other threads. This is true even in many cases where it <em>looks</em> like individual threads are performing atomic actions. For example, if you have some threads making <code>get()</code> calls against a <code>HashMap</code>, and another set of threads making <code>put()</code> calls against the same <code>HashMap</code>, you may think that they are all performing atomic operations and therefore it&rsquo;s OK to do this. But that is not correct. The problem is that they only <em>look</em> like atomic operations; behind the scenes, they&rsquo;re impacting the size of a shared backing array, which in turn impacts how hashcodes are mapped to buckets, which impacts the <code>get()</code> and <code>put()</code> calls themselves. If the class had internal synchronization then <code>get()</code> and <code>put()</code> would both be atomic from the perspective of external code, but without that, they aren&rsquo;t atomic at all.</p>
+
+<p>That was your crash course on solving race conditions with thread synchronization. It&rsquo;s not a simple topic, but you should now have the basics. But even though thread synchronization helps solve one problem, unfortunately it creates another. The problem is that in forcing threads to stop and wait their turn, you create the potential for the situation in which threads might wait indefinitely before they can move on. This is called a deadlock, and we&rsquo;ll turn to it in the next post in the series.</p>
+
+<div class="outro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Part 3</a></span>
+</div>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1532,177 +1870,6 @@ UserMessage.text[length]=Please enter no more than {2} characters.
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/05/15/send-e-mail-using-spring-and-javamail/">Send E-mail Using Spring and JavaMail</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-05-15T14:18:08-07:00" pubdate data-updated="true">May 15<span>th</span>, 2008</time>
-        
-         | <a href="/2008/05/15/send-e-mail-using-spring-and-javamail/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>This brief tutorial will show how to send e-mail using Spring and JavaMail. JavaMail can handle e-mail storage as well, but here we&rsquo;re just worrying about sending e-mail.</p>
-
-<p>I happen to be using Spring 2.5 but this ought to work for earlier versions of Spring as well (at least Spring 2.0 I think).</p>
-
-<p>Let&rsquo;s jump right in. You can configure your JavaMail session either in Spring itself or with JNDI. We&rsquo;ll look at both alternatives.</p>
-
-<h3>Alternative 1: Configuring JavaMail with Spring</h3>
-
-
-<p>You may be operating in an environment where you don&rsquo;t have a JNDI enterprise naming context (ENC) available. No problem; you can just configure JavaMail in the Spring application context configuration as shown below.</p>
-
-<pre>&lt;!-- Mail service --&gt;
-&lt;bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl"&gt;
-    &lt;property name="host" value="your.smtphost.com"/&gt;
-    &lt;property name="port" value="25"/&gt;
-    &lt;property name="username" value="yourusername"/&gt;
-    &lt;property name="password" value="yourpassword"/&gt;
-    &lt;property name="javaMailProperties"&gt;
-        &lt;props&gt;
-            &lt;!-- Use SMTP-AUTH to authenticate to SMTP server --&gt;
-            &lt;prop key="mail.smtp.auth"&gt;true&lt;/prop&gt;
-            &lt;!-- Use TLS to encrypt communication with SMTP server --&gt;
-            &lt;prop key="mail.smtp.starttls.enable"&gt;true&lt;/prop&gt;
-        &lt;/props&gt;
-    &lt;/property&gt;
-&lt;/bean&gt;</pre>
-
-
-<p>This bean is, as its name suggests, a mail sender. It is basically a wrapper around JavaMail SMTP, and the configuration reflects that. In the example I&rsquo;m showing how you would enable SMTP-AUTH (supports authentication to the SMTP server) and TLS (supports message encryption), assuming your SMTP server has those capabilities. For more information see my article <a href="http://springinpractice.com/2008/05/05/smtp-and-smtp-auth/">SMTP and SMTP-AUTH</a>.</p>
-
-<p><strong>IMPORTANT:</strong> You will need to inject <code>mailSender</code> into your mail-sending service bean.</p>
-
-<p>So that&rsquo;s how to configure JavaMail from Spring. Now here&rsquo;s how to do the same thing with JNDI, which you may want to do if you&rsquo;re running in an environment with a JNDI ENC (like an app server or a servlet container).</p>
-
-<h3>Alternative 2: Configuring JavaMail with JNDI</h3>
-
-
-
-
-<h4>Server JNDI configuration (using Tomcat 6 as an example)</h4>
-
-
-<p>(For a Jetty configuration using Gmail, see <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">Configuring Jetty to use Gmail as an SMTP provider</a>.)</p>
-
-<p>First you will need to expose a JavaMail session factory through JNDI in your server environment. This is environment-dependent, but let&rsquo;s look at an example.</p>
-
-<p>Say you&rsquo;re using Tomcat 6. There are a couple things you must do. First, move <code>mail.jar</code> and <code>activation.jar</code> to your <code>tomcat/lib</code> directory. I say &ldquo;move&rdquo; rather than &ldquo;copy&rdquo; because you will get an odd error if you leave the two JARs in your application classpath. The error is</p>
-
-<pre>java.lang.IllegalArgumentException: 
-    Cannot convert value of type [javax.mail.Session] to required type
-    [javax.mail.Session] for property 'session': no matching editors
-    or conversion strategy found</pre>
-
-
-<p>Second, define your Tomcat JNDI configuration, which might look like this (e.g. in your <code>context.xml</code> file):</p>
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-
-&lt;Context path="/myapp" docBase="myapp" debug="5" crossContext="false"&gt;
-
-    &lt;!-- JavaMail session factory --&gt;
-    &lt;Resource name="mail/Session"
-              auth="Container"
-              type="javax.mail.Session"
-              username="yourusername"
-              password="yourpassword"
-              mail.debug="true"
-              mail.user="yourusername"
-              mail.password="yourpassword"
-              mail.transport.protocol="smtp"
-              mail.smtp.host="your.smtphost.com"
-              mail.smtp.auth="true"
-              mail.smtp.port="25"
-              mail.smtp.starttls.enable="true"/&gt;
-&lt;/Context&gt;</pre>
-
-
-<p>As with the non-JNDI example, I&rsquo;m configuring for SMTP-AUTH and TLS. If you are using SMTP-AUTH (authenticated SMTP sessions, which you activate using <code>mail.smtp.auth=&ldquo;true&rdquo;</code>), then you will need to specify the username and password twice, as shown above. Also, if your SMTP server supports it, you can tell JavaMail to encrypt sessions using TLS by setting <code>mail.smtp.starttls.enable=true</code>.</p>
-
-<p>The above discussion applies only to Tomcat 6 (see <a href="http://tomcat.apache.org/tomcat-6.0-doc/jndi-resources-howto.html">Apache Tomcat 6.0 JNDI Resources HOWTO</a> for detailed instructions); you&rsquo;ll need to consult your server docs to expose a JavaMail session factory through JNDI in your environment.</p>
-
-<h4>Spring configuration</h4>
-
-
-<p>We still need to create a mail sender, but the configuration is simpler since we did all the heavy lifting in <code>context.xml</code> (or whatever, depending on your server environment). So for the Spring application context, all we need is:</p>
-
-<pre>&lt;bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl"&gt;
-    &lt;property name="session" ref="mailSession"/&gt;
-&lt;/bean&gt;</pre>
-
-
-<p><strong>IMPORTANT:</strong> As before, you will need to inject <code>mailSender</code> into your mail-sending service bean.</p>
-
-<p>So that takes care of configuring the mail sender, and also the JavaMail session factory if you are using JNDI. Let&rsquo;s visit one more topic before we dive into the code itself.</p>
-
-<h3>Creating an e-mail template (optional)</h3>
-
-
-<p>Sometimes the e-mail you want to send fits inside a standard template (e.g., maybe it always has the same sender, or maybe the same recipient, or whatever). You can define a template using Spring. Here&rsquo;s an example:</p>
-
-<pre>&lt;!-- Mail message --&gt;
-&lt;bean id="mailMessage" class="org.springframework.mail.SimpleMailMessage"&gt;
-    &lt;property name="from"&gt;
-        &lt;value&gt;&lt;![CDATA[Simple Application Monitor &lt;noreply@somehost.com&gt;]]&gt;&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property name="to"&gt;
-        &lt;value&gt;&lt;![CDATA[System Administrator &lt;sysadmin@somehost.com&gt;]]&gt;&lt;/value&gt;
-    &lt;/property&gt;
-    &lt;property name="subject" value="SAM Alert"/&gt;
-&lt;/bean&gt;</pre>
-
-
-<p>You can include as many e-mail templates in a Spring app context configuration, including none if you don&rsquo;t need a template. Here I&rsquo;ve defined a template that specifies a &ldquo;from&rdquo; field, a &ldquo;to&rdquo; field and a &ldquo;subject&rdquo; field. It doesn&rsquo;t specify the date or the body. That template works say for an application monitoring system but it wouldn&rsquo;t work for an e-commerce site&rsquo;s order confirmation e-mail,which would need to have a variable &ldquo;to&rdquo; field.</p>
-
-<p><strong>IMPORTANT:</strong> I didn&rsquo;t show it above, but you will need to inject any e-mail templates (i.e. mail messages) you create into your mail-sending service bean. Otherwise the service bean has no way to use the template.</p>
-
-<p>So that&rsquo;s that. Time for the Java code that actually sends the e-mail.</p>
-
-<h3>How to send the e-mail from your service bean</h3>
-
-
-<p>It turns out that the coding part is much simpler than the configuration (not that the config was too bad). Let&rsquo;s suppose for the sake of example that we want to send an e-mail based on the template that we defined above, and that you&rsquo;ve injected that template into your service bean as <code>mailMessage</code>. Then here&rsquo;s the service bean code that allows you to use the template to send an e-mail:</p>
-
-<pre>SimpleMailMessage message = new SimpleMailMessage(mailMessage);
-message.setSentDate(new Date());
-message.setText("Blah blah blah...");
-mailSender.send(message);</pre>
-
-
-<p>You can see we&rsquo;re creating a new message based on the <code>mailMessage</code> e-mail template and <code>mailSender</code> that we injected into said service bean.</p>
-
-<p>And that&rsquo;s it!</p>
-
-<p><span class="icon stickyNote">Post migrated from my Wheeler Software site.</span></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -1720,6 +1887,10 @@ mailSender.send(message);</pre>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
       </li>
     
@@ -1733,10 +1904,6 @@ mailSender.send(message);</pre>
     
       <li class="post">
         <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
       </li>
     
   </ul>

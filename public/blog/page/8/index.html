@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="This tutorial will show you how to define session-scoped beans in Spring. The idea here is that you have a web application, and you have various &hellip;">
+  <meta name="description" content="This brief tutorial will show how to send e-mail using Spring and JavaMail. JavaMail can handle e-mail storage as well, but here we&rsquo;re just &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,177 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/05/15/send-e-mail-using-spring-and-javamail/">Send E-mail Using Spring and JavaMail</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-05-15T14:18:08-07:00" pubdate data-updated="true">May 15<span>th</span>, 2008</time>
+        
+         | <a href="/2008/05/15/send-e-mail-using-spring-and-javamail/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This brief tutorial will show how to send e-mail using Spring and JavaMail. JavaMail can handle e-mail storage as well, but here we&rsquo;re just worrying about sending e-mail.</p>
+
+<p>I happen to be using Spring 2.5 but this ought to work for earlier versions of Spring as well (at least Spring 2.0 I think).</p>
+
+<p>Let&rsquo;s jump right in. You can configure your JavaMail session either in Spring itself or with JNDI. We&rsquo;ll look at both alternatives.</p>
+
+<h3>Alternative 1: Configuring JavaMail with Spring</h3>
+
+
+<p>You may be operating in an environment where you don&rsquo;t have a JNDI enterprise naming context (ENC) available. No problem; you can just configure JavaMail in the Spring application context configuration as shown below.</p>
+
+<pre>&lt;!-- Mail service --&gt;
+&lt;bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl"&gt;
+    &lt;property name="host" value="your.smtphost.com"/&gt;
+    &lt;property name="port" value="25"/&gt;
+    &lt;property name="username" value="yourusername"/&gt;
+    &lt;property name="password" value="yourpassword"/&gt;
+    &lt;property name="javaMailProperties"&gt;
+        &lt;props&gt;
+            &lt;!-- Use SMTP-AUTH to authenticate to SMTP server --&gt;
+            &lt;prop key="mail.smtp.auth"&gt;true&lt;/prop&gt;
+            &lt;!-- Use TLS to encrypt communication with SMTP server --&gt;
+            &lt;prop key="mail.smtp.starttls.enable"&gt;true&lt;/prop&gt;
+        &lt;/props&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>This bean is, as its name suggests, a mail sender. It is basically a wrapper around JavaMail SMTP, and the configuration reflects that. In the example I&rsquo;m showing how you would enable SMTP-AUTH (supports authentication to the SMTP server) and TLS (supports message encryption), assuming your SMTP server has those capabilities. For more information see my article <a href="http://springinpractice.com/2008/05/05/smtp-and-smtp-auth/">SMTP and SMTP-AUTH</a>.</p>
+
+<p><strong>IMPORTANT:</strong> You will need to inject <code>mailSender</code> into your mail-sending service bean.</p>
+
+<p>So that&rsquo;s how to configure JavaMail from Spring. Now here&rsquo;s how to do the same thing with JNDI, which you may want to do if you&rsquo;re running in an environment with a JNDI ENC (like an app server or a servlet container).</p>
+
+<h3>Alternative 2: Configuring JavaMail with JNDI</h3>
+
+
+
+
+<h4>Server JNDI configuration (using Tomcat 6 as an example)</h4>
+
+
+<p>(For a Jetty configuration using Gmail, see <a href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/">Configuring Jetty to use Gmail as an SMTP provider</a>.)</p>
+
+<p>First you will need to expose a JavaMail session factory through JNDI in your server environment. This is environment-dependent, but let&rsquo;s look at an example.</p>
+
+<p>Say you&rsquo;re using Tomcat 6. There are a couple things you must do. First, move <code>mail.jar</code> and <code>activation.jar</code> to your <code>tomcat/lib</code> directory. I say &ldquo;move&rdquo; rather than &ldquo;copy&rdquo; because you will get an odd error if you leave the two JARs in your application classpath. The error is</p>
+
+<pre>java.lang.IllegalArgumentException: 
+    Cannot convert value of type [javax.mail.Session] to required type
+    [javax.mail.Session] for property 'session': no matching editors
+    or conversion strategy found</pre>
+
+
+<p>Second, define your Tomcat JNDI configuration, which might look like this (e.g. in your <code>context.xml</code> file):</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;Context path="/myapp" docBase="myapp" debug="5" crossContext="false"&gt;
+
+    &lt;!-- JavaMail session factory --&gt;
+    &lt;Resource name="mail/Session"
+              auth="Container"
+              type="javax.mail.Session"
+              username="yourusername"
+              password="yourpassword"
+              mail.debug="true"
+              mail.user="yourusername"
+              mail.password="yourpassword"
+              mail.transport.protocol="smtp"
+              mail.smtp.host="your.smtphost.com"
+              mail.smtp.auth="true"
+              mail.smtp.port="25"
+              mail.smtp.starttls.enable="true"/&gt;
+&lt;/Context&gt;</pre>
+
+
+<p>As with the non-JNDI example, I&rsquo;m configuring for SMTP-AUTH and TLS. If you are using SMTP-AUTH (authenticated SMTP sessions, which you activate using <code>mail.smtp.auth=&ldquo;true&rdquo;</code>), then you will need to specify the username and password twice, as shown above. Also, if your SMTP server supports it, you can tell JavaMail to encrypt sessions using TLS by setting <code>mail.smtp.starttls.enable=true</code>.</p>
+
+<p>The above discussion applies only to Tomcat 6 (see <a href="http://tomcat.apache.org/tomcat-6.0-doc/jndi-resources-howto.html">Apache Tomcat 6.0 JNDI Resources HOWTO</a> for detailed instructions); you&rsquo;ll need to consult your server docs to expose a JavaMail session factory through JNDI in your environment.</p>
+
+<h4>Spring configuration</h4>
+
+
+<p>We still need to create a mail sender, but the configuration is simpler since we did all the heavy lifting in <code>context.xml</code> (or whatever, depending on your server environment). So for the Spring application context, all we need is:</p>
+
+<pre>&lt;bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl"&gt;
+    &lt;property name="session" ref="mailSession"/&gt;
+&lt;/bean&gt;</pre>
+
+
+<p><strong>IMPORTANT:</strong> As before, you will need to inject <code>mailSender</code> into your mail-sending service bean.</p>
+
+<p>So that takes care of configuring the mail sender, and also the JavaMail session factory if you are using JNDI. Let&rsquo;s visit one more topic before we dive into the code itself.</p>
+
+<h3>Creating an e-mail template (optional)</h3>
+
+
+<p>Sometimes the e-mail you want to send fits inside a standard template (e.g., maybe it always has the same sender, or maybe the same recipient, or whatever). You can define a template using Spring. Here&rsquo;s an example:</p>
+
+<pre>&lt;!-- Mail message --&gt;
+&lt;bean id="mailMessage" class="org.springframework.mail.SimpleMailMessage"&gt;
+    &lt;property name="from"&gt;
+        &lt;value&gt;&lt;![CDATA[Simple Application Monitor &lt;noreply@somehost.com&gt;]]&gt;&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property name="to"&gt;
+        &lt;value&gt;&lt;![CDATA[System Administrator &lt;sysadmin@somehost.com&gt;]]&gt;&lt;/value&gt;
+    &lt;/property&gt;
+    &lt;property name="subject" value="SAM Alert"/&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>You can include as many e-mail templates in a Spring app context configuration, including none if you don&rsquo;t need a template. Here I&rsquo;ve defined a template that specifies a &ldquo;from&rdquo; field, a &ldquo;to&rdquo; field and a &ldquo;subject&rdquo; field. It doesn&rsquo;t specify the date or the body. That template works say for an application monitoring system but it wouldn&rsquo;t work for an e-commerce site&rsquo;s order confirmation e-mail,which would need to have a variable &ldquo;to&rdquo; field.</p>
+
+<p><strong>IMPORTANT:</strong> I didn&rsquo;t show it above, but you will need to inject any e-mail templates (i.e. mail messages) you create into your mail-sending service bean. Otherwise the service bean has no way to use the template.</p>
+
+<p>So that&rsquo;s that. Time for the Java code that actually sends the e-mail.</p>
+
+<h3>How to send the e-mail from your service bean</h3>
+
+
+<p>It turns out that the coding part is much simpler than the configuration (not that the config was too bad). Let&rsquo;s suppose for the sake of example that we want to send an e-mail based on the template that we defined above, and that you&rsquo;ve injected that template into your service bean as <code>mailMessage</code>. Then here&rsquo;s the service bean code that allows you to use the template to send an e-mail:</p>
+
+<pre>SimpleMailMessage message = new SimpleMailMessage(mailMessage);
+message.setSentDate(new Date());
+message.setText("Blah blah blah...");
+mailSender.send(message);</pre>
+
+
+<p>You can see we&rsquo;re creating a new message based on the <code>mailMessage</code> e-mail template and <code>mailSender</code> that we injected into said service bean.</p>
+
+<p>And that&rsquo;s it!</p>
+
+<p><span class="icon stickyNote">Post migrated from my Wheeler Software site.</span></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -2026,174 +2197,6 @@ public interface ArticleService {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/03/13/how-to-recaptcha-your-java-application/">How to reCAPTCHA Your Java Application</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-03-13T07:42:36-07:00" pubdate data-updated="true">Mar 13<span>th</span>, 2008</time>
-        
-         | <a href="/2008/03/13/how-to-recaptcha-your-java-application/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>reCAPTCHA is a novel CAPTCHA system developed by the School of Computer Science at my alma mater, Carnegie Mellon University. I won&rsquo;t explain its coolness here since they do a good job of <a href="http://recaptcha.net/learnmore.html" target="_blank">explaining that coolness themselves</a>. What I will do here, though, is explain how to get your Java app reCAPTCHAed very quickly. Note however that reCAPTCHA is not tied specifically to Java.</p>
-
-<p>In this tutorial I&rsquo;m using Spring 2.5 MVC with annotations, and Commons Validator, but you&rsquo;ll be able to follow this whether or not you&rsquo;re using Spring and Validator.</p>
-
-<p>These instructions are based on the <a href="http://recaptcha.net/apidocs/captcha/client.html" target="_blank">instructions from the reCAPTCHA site</a>, but I&rsquo;m focusing specifically on Java integration whereas the site makes you dig around a bit to get the information. Not too bad, but enough that there&rsquo;s value in my writing a Java-specific tutorial. :&ndash;)</p>
-
-<h3>Step 1. Get your account and key pair</h3>
-
-
-<p>First, go to <a href="http://recaptcha.net/" target="_blank">the reCAPTCHA web site</a> and create an account. As part of that account creation process you&rsquo;ll have to specify the domain your reCAPTCHA will be protecting. The reCAPTCHA site will will give you a key pair for that domain. The key pair allows you to authenticate your reCAPTCHA requests to the reCAPTCHA servers, as we&rsquo;ll see.</p>
-
-<h3>Step 2. Put the reCAPTCHA JavaScript in your app&#8217;s form</h3>
-
-
-
-
-<p><p>Here&rsquo;s the JavaScript you need to put in your form, meaning in between the &lt;form&gt; and &lt;/form&gt; tags. Put it wherever you would have normally put a CAPTCHA text box. This JavaScript will generate the reCAPTCHA box when users request the page:</p>
-
-<p><pre>&lt;script type=&ldquo;text/javascript&rdquo;</p>
-
-<pre><code>src="http://api.recaptcha.net/challenge?k=&amp;lt;your_public_key&amp;gt;"&amp;gt;
-</code></pre>
-
-<p>&lt;/script&gt;
-&lt;noscript&gt;</p>
-
-<pre><code>&amp;lt;iframe src="http://api.recaptcha.net/noscript?k=&amp;lt;your_public_key&amp;gt;"
-    height="300" width="500" frameborder="0"&amp;gt;&amp;lt;/iframe&amp;gt;&amp;lt;br&amp;gt;
-&amp;lt;textarea name="recaptcha_challenge_field" rows="3" cols="40"&amp;gt;
-&amp;lt;/textarea&amp;gt;
-&amp;lt;input type="hidden" name="recaptcha_response_field" 
-    value="manual_challenge"&amp;gt;
-</code></pre>
-
-<p>&lt;/noscript&gt;</pre></p>
-
-<p>It probably goes without saying, but I&rsquo;ll say it anyway: you need to replace the two instances of &lt;your_public_key&gt; with the public key that you received during the account creation process. Be careful that you don&rsquo;t use your private key by mistake. If you do that then everybody will be able to see your private key and act like they&rsquo;re you.</p>
-
-<p><h3>Step 3. Run your app and make sure the reCAPTCHA is showing up</h3></p>
-
-<p>You should see it there in your form. It&rsquo;s OK if you are coming from <code>localhost</code> or <code>127.0.0.1</code> instead of the domain that you specified in the account creation step; reCAPTCHA will allow that. You should be able to click the buttons on the reCAPTCHA box and they should work.</p>
-
-<p>After you goof around with that a bit, you&rsquo;ll need to update your app itself so that it actually uses the reCAPTCHA box to validate the form submission.</p>
-
-<p>Let&rsquo;s turn now to the Java piece, where we validate the form and reCAPTCHA.</p>
-
-<p><h3>Step 4: Validate the form, including the reCAPTCHA</h3></p>
-
-<p>You&rsquo;ll find it convenient to <a href="http://code.google.com/p/recaptcha/downloads/list?q=label:java-Latest" target="_blank">download the recaptcha4j library</a>. It provides a simple API for submitting user responses to the reCAPTCHA server and finding out whether a user&rsquo;s response is valid.</p>
-
-<p>At this point I&rsquo;m just going to lay some code on you. As mentioned above I&rsquo;m using <a href="spring-mvc-annotations.html">Spring 2.5 MVC with annotations</a> and Commons Validator, but the main thing is for you to look at how I&rsquo;m using the <code>ReCaptchaImpl</code> class and just copy that.</p>
-
-<p><pre>import net.tanesha.recaptcha.ReCaptchaImpl;
-import net.tanesha.recaptcha.ReCaptchaResponse;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.Validator;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;</p>
-
-<p>&hellip;</p>
-
-<p>@RequestMapping(value = &ldquo;/comments/postcomment.do&rdquo;, method = RequestMethod.POST)
-public String doPost(</p>
-
-<pre><code>    HttpServletRequest req,
-    @RequestParam("articleId") long articleId,
-    @RequestParam("recaptcha_challenge_field") String challenge,
-    @RequestParam("recaptcha_response_field") String response,
-    @ModelAttribute("comment") Comment comment,
-    BindingResult result) {
-
-// Validate the form (other than the reCAPTCHA)
-validator.validate(comment, result);
-
-// Validate the reCAPTCHA
-String remoteAddr = req.getRemoteAddr();
-ReCaptchaImpl reCaptcha = new ReCaptchaImpl();
-
-// Probably don't want to hardcode your private key here but
-// just to get it working is OK...
-reCaptcha.setPrivateKey("&amp;lt;your_private_key&amp;gt;");
-
-ReCaptchaResponse reCaptchaResponse =
-    reCaptcha.checkAnswer(remoteAddr, challenge, response);
-
-if (!reCaptchaResponse.isValid()) {
-    FieldError fieldError = new FieldError(
-        "comment",
-        "captcha",
-        response,
-        false,
-        new String[] { "errors.badCaptcha" },
-        null,
-        "Please try again.");
-    result.addError(fieldError);
-}
-
-// If there are errors, then validation fails.
-if (result.hasErrors()) {
-    String path = comment.getPagePath();
-    log.debug("Form validation error; forwarding to " + path);
-    return "forward:" + path;
-}
-
-// Else validation succeeds.
-log.debug("Form validation passed");
-comment.setIpAddress(remoteAddr);
-comment.setDate(new Date());
-
-// Post the comment
-log.debug("Posting the comment");
-articleService.postComment(articleId, comment);
-log.debug("Comment posted");
-
-return "redirect:" + comment.getPagePath() + "#comments";
-</code></pre>
-
-<p>}</pre></p>
-
-<p>Here&rsquo;s the <a href="http://static.springframework.org/spring/docs/2.5.x/api/org/springframework/validation/FieldError.html" target="_blank">API for FieldError</a> since I know that&rsquo;s not clear from the code. Basically I&rsquo;m using that to indicate that a validation error occurred and set up an error message for the user. If you&rsquo;re not using Spring/Validator then you&rsquo;ll do something else here.</p>
-
-<p>The <code>Comment</code> class is just a class from my app, so don&rsquo;t worry about that one.</p>
-
-<p><h3>You did it</h3></p>
-
-<p>Good job. If you&rsquo;re feeling ambitious, try to defeat reCAPTCHA with super-advanced OCR. If you succeed then it represents an advance in OCR technology. Tell somebody and become famous. :&ndash;)</p>
-
-<p><div class="endnote">Post migrated from my Wheeler Software site.</div></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/9/">&larr; Older</a>
@@ -2211,6 +2214,10 @@ return "redirect:" + comment.getPagePath() + "#comments";
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
       </li>
     
@@ -2224,10 +2231,6 @@ return "redirect:" + comment.getPagePath() + "#comments";
     
       <li class="post">
         <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
       </li>
     
   </ul>

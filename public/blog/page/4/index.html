@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="When you&rsquo;re creating a web form, it&rsquo;s often the case that you want to give the user a way to connect one entity up to another entity. &hellip;">
+  <meta name="description" content="GitHub has an RESTful JSON API that we can call from our apps. In this post I&rsquo;ll show how I&rsquo;m grabbing a GitHub repo&rsquo;s watchers and &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,141 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/14/calling-the-github-api-using-springs-resttemplate/">Calling the GitHub API Using Spring&#8217;s RestTemplate</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-14T07:15:59-08:00" pubdate data-updated="true">Jan 14<span>th</span>, 2012</time>
+        
+         | <a href="/2012/01/14/calling-the-github-api-using-springs-resttemplate/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>GitHub has an <a title="GitHub API" href="http://developer.github.com/">RESTful JSON API</a> that we can call from our apps. In this post I&rsquo;ll show how I&rsquo;m grabbing a GitHub repo&rsquo;s watchers and pull them into my own app using Spring&rsquo;s RestTemplate.</p>
+
+<h2>Meet the GitHub API</h2>
+
+<p>First, take a quick look at the <a title="GitHub Repo Watching API" href="http://developer.github.com/v3/repos/watching/">GitHub Repo Watching API</a>. It&rsquo;s pretty simple, and it doesn&rsquo;t require credentials to call. The URL for my <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> project, for example, is <a title="Zkybase watchers" href="https://api.github.com/repos/williewheeler/zkybase/watchers"><a href="https://api.github.com/repos/williewheeler/zkybase/watchers">https://api.github.com/repos/williewheeler/zkybase/watchers</a></a>.</p>
+
+<p>Go ahead and click the watcher link above. You&rsquo;ll see that the response is a JSON array of watcher objects.</p>
+
+<p>Note that since the GitHub API is HTTPS-based, you will need to download the GitHub API certificate (using, e.g., openssl) and then import it into your Java keystore (using keytool) so your Java programs can call the API without running into certificate errors.</p>
+
+<h2>Create a User class for object/JSON mapping</h2>
+
+<p>We&rsquo;re going to use <a title="Jackson JSON processor" href="http://jackson.codehaus.org/">Jackson</a> to map the GitHub JSON to Java objects. We&rsquo;ll need a <code>User</code> class for that. Here it is:</p>
+
+<pre><code>package org.skydingo.zkybase.integrations.github.model;
+
+import org.codehaus.jackson.annotate.JsonProperty;
+
+public class User {
+    private Long id;
+    private String url, login, avatarUrl, gravatarId;
+
+    public Long getId() { return id; }
+
+    public void setId(Long id) { this.id = id; }
+
+    public String getUrl() { return url; }
+
+    public void setUrl(String url) { this.url = url; }
+
+    public String getLogin() { return login; }
+
+    public void setLogin(String login) { this.login = login; }
+
+    @JsonProperty("avatar_url")
+    public String getAvatarUrl() { return avatarUrl; }
+
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    @JsonProperty("gravatar_id")
+    public String getGravatarId() { return gravatarId; }
+
+    public void setGravatarId(String gravatarId) { this.gravatarId = gravatarId; }
+}
+</code></pre>
+
+<p>Nothing too amazing here. Note that I&rsquo;m using <code>@JsonProperty</code> to clarify the mapping from the <code>avatar_url</code> and <code>gravatar_id</code> JSON fields to the <code>avatarUrl</code> and <code>gravatarId</code> Java properties, since Jackson doesn&rsquo;t automatically handle underscores or anything like that.</p>
+
+<p>The Maven dependency for the <code>@JsonProperty</code> annotation is</p>
+
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.codehaus.jackson&lt;/groupId&gt;
+    &lt;artifactId&gt;jackson-mapper-asl&lt;/artifactId&gt;
+    &lt;version&gt;1.9.3&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+
+<h2>Get the data using RestTemplate</h2>
+
+<p>Now that we have <code>User</code>, all we need to do is grab the data using <code>RestTemplate</code>. Easy:</p>
+
+<pre><code>package org.skydingo.zkybase.service;
+
+import javax.inject.Inject;
+import org.skydingo.zkybase.integrations.github.model.User;
+import org.skydingo.zkybase.model.Application;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+public class ApplicationService {
+    private static final String GITHUB_WATCHER_URI =
+        "https://api.github.com/repos/{user}/{repo}/watchers";
+
+    @Inject private RestTemplate restTemplate;
+
+    public User[] getGithubRepoWatchers(String user, String repo) {
+        return restTemplate.getForObject(GITHUB_WATCHER_URI, User[].class, user, repo);
+    }
+}
+</code></pre>
+
+<p>Recall that GitHub returns an array of watchers. That&rsquo;s why we&rsquo;re using <code>User[].class</code> in the call. <code>RestTemplate</code> substitutes the <code>user</code> and <code>repo</code> values into the <code>GITHUB_WATCHER_URI</code> string for us.</p>
+
+<h2>Spring configuration</h2>
+
+<p>All we need to do is put a <code>RestTemplate</code> instance on the app context:</p>
+
+<pre><code>&lt;bean class="org.springframework.web.client.RestTemplate" /&gt;
+</code></pre>
+
+<h2>Success!</h2>
+
+<p>After a little hacking at the UI:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-14-calling-the-github-api-using-springs-resttemplate/skybase_scm3.png" alt="Zkybase SCM page" /></p>
+
+<p>See <a href="http://springinpractice.com/2012/01/14/skybasegithub-integration/">Zkybase/GitHub integration</a> for more context as to why we&rsquo;d want to integrate our CMDB with GitHub.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1303,68 +1438,6 @@ public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/10/28/springone-2gx-takeaways/">SpringOne 2GX Takeaways</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-10-28T05:06:28-07:00" pubdate data-updated="true">Oct 28<span>th</span>, 2010</time>
-        
-         | <a href="/2010/10/28/springone-2gx-takeaways/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/blog/images/springone2gx.png" alt="SpringOne 2GX logo" align="right" /></p>
-
-<p>I attended SpringOne 2GX in Chicago last week and had a good time. Great sessions and keynotes, and I got to see some people I hadn&rsquo;t seen in a while, and meet some new people too.</p>
-
-<p>Here are some of the things that I found most interesting. This is just my own personal list obviously, and there&rsquo;s a huge list of things happening in the Spring world.</p>
-
-<p><strong>Code2Cloud.</strong> This will be cloud-based application lifecycle management (ALM), like source control, issue tracking and continuous integration. One feature that looked particularly interesting was that the ALM system will execute the committed code and complain about code performance issues by creating an issue in the issue tracking system, complete with contextual information surrounding the performance issue in question.</p>
-
-<p><strong>Gradle.</strong> From what I gather, this is like Maven, but Groovy-based instead of XML-based, and much more aggressive about making assumptions about your project. The end result is that the build file is much smaller than a Maven POM file. I suspect that I&rsquo;m not doing Gradle justice with this description but even with that description I&rsquo;m interested because I like Maven&rsquo;s approach, but I wouldn&rsquo;t mind build files that are more compact.</p>
-
-<p><strong>Spring support for NoSQL data stores.</strong> NoSQL (&ldquo;not only SQL&rdquo;) is a pretty important topic and Spring is jumping into this space with support for multiple providers. One thing that was neat was that you can have POJOs that are partially backed by traditional RDBMS databases (say for metadata) and partially backed by a NoSQL store, all using annotations as you might guess.</p>
-
-<p><strong>Spring Social.</strong> It allows developers to create apps that interact with the major social networks. Part of what&rsquo;s involved includes expanded <code>RestTemplate</code>s for making the web service calls. The other part is that it handles the OAuth authorization behind the scenes so developers don&rsquo;t have to mess around with what can be a complicated undertaking.</p>
-
-<p><strong>Spring Mobile.</strong> This allows Spring developers to develop apps for mobile platforms like the iPhone and the Droid.</p>
-
-<p><strong>Support for HTML 5.</strong> Saw some pretty nice demos of HTML 5 apps. I&rsquo;m not sure at this point exactly what this support entails, but it looks like this is one of several areas of effort.</p>
-
-<p><strong>Cache API and support for distributed caches.</strong> Spring has included a preliminary cache API for several years now, but with the uptick in distributed caching they&rsquo;re building this out and will include it in Spring 3.1 I think they said.</p>
-
-<p><strong>Support for environments.</strong> Also a Spring 3.1 feature, there will be support for creating environment-specific beans (e.g. beans for dev, functional test, staging, prod, etc.).</p>
-
-<p><strong>Gemfire data fabric.</strong> I sat in on a session here and there was quite a bit to take in, so I&rsquo;d need to hear the talk again to report on exactly what the offer is here. But the basic idea is highly available, low latency, horizontally scalable data that doesn&rsquo;t sacrifice consistency. I know a lot of organizations could use something like that so I&rsquo;ll be keeping an eye on this.</p>
-
-<p>Those were the things that stood out for me. Any fears that Java and/or Spring aren&rsquo;t keeping with the times would appear to be unfounded.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/5/">&larr; Older</a>
@@ -1382,6 +1455,10 @@ public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
       </li>
     
@@ -1395,10 +1472,6 @@ public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
     
       <li class="post">
         <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
       </li>
     
   </ul>

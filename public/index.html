@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Some web services return JSON error objects when there&rsquo;s a problem. GitHub&rsquo;s API is a good case in point, and HipChat&rsquo;s API does &hellip;">
+  <meta name="description" content="The other day I wrote a post called Handling JSON error object responses with Spring&rsquo;s RestTemplate. Judging by the Twitter activity, people &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,51 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON Error Object Responses With Spring Web MVC</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-09T00:39:00-07:00" pubdate data-updated="true">Oct 9<span>th</span>, 2013</time>
+        
+         | <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>The other day I wrote a post called <a href="http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&rsquo;s RestTemplate</a>. Judging by the Twitter activity, people found it useful, so this time around I&rsquo;m going to write about the other side of the equation, which is <em>generating</em> the JSON error objects using Spring Web MVC. (For a quick background on what this means and why we&rsquo;d want to do it, please see the post I just linked to.)</p>
+
+<p>There are various ways to do this, but Spring 3.2 introduces a pretty elegant approach via the <code>@ControllerAdvice</code> annotation. The basic concept here is that we can define AOP-like &ldquo;advice&rdquo; around Spring Web MVC controllers. This advice captures exceptions and then maps them to JSON objects, which the advice sends in the response body. Of course we can also send the appropriate HTTP status code in the headers too.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -489,82 +534,6 @@ public interface IncidentRepo extends JpaRepository&lt;Incident, Long&gt; {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/05/13/how-to-run-javascript-from-java/">How to Run JavaScript From Java</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-05-13T11:02:00-07:00" pubdate data-updated="true">May 13<span>th</span>, 2012</time>
-        
-         | <a href="/2012/05/13/how-to-run-javascript-from-java/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Java 6 comes with the <a href="http://www.mozilla.org/rhino/">Rhino JavaScript engine</a>, which makes it easy to run JavaScript from inside your Java app. There are different situations in which you might want to do this. Chapter 9 of <a href="http://www.manning.com/wheeler/">Spring in Practice</a> affords a good example. There we&rsquo;re implementing a rich-text comment engine based on the WMD editor that <a href="http://stackoverflow.com">Stack Overflow</a> uses. We have a <code>showdown.js</code> script that maps Markdown to HTML, and we want to run it in two places:</p>
-
-<ul>
-<li>on the client to present a preview pane</li>
-<li>on the server to store the Markdown as HTML for easy presentation (as opposed to running the script against every comment dynamically)</li>
-</ul>
-
-
-<p>Here&rsquo;s how we can run it on the server:</p>
-
-<pre><code>import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-...
-
-public final class RichTextFilter implements TextFilter {
-    @Inject private File showdownJsFile;
-
-    private String markdownToHtml(String markdown) {
-        try {
-            ScriptEngineManager mgr = new ScriptEngineManager();
-            ScriptEngine engine = mgr.getEngineByName("JavaScript");
-            engine.eval(showdownJs);
-            engine.eval("var markdown = '" + markdown + "';");
-            engine.eval("var converter = new Showdown.converter();");
-            engine.eval("var html = converter.makeHtml(markdown);");
-            return (String) engine.get("html");
-        } catch (ScriptException e) {
-            // Shouldn't happen unless somebody breaks the script
-            throw new RuntimeException(e);
-        }
-    }
-
-    ... other stuff ...
-}
-</code></pre>
-
-<p>To see how to inject the File into the class in Spring, see my post <a href="http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/">Injecting a file from the classpath into a bean</a>.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -580,6 +549,10 @@ public final class RichTextFilter implements TextFilter {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
       </li>
     
@@ -593,10 +566,6 @@ public final class RichTextFilter implements TextFilter {
     
       <li class="post">
         <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/07/octopress-migration/">Octopress migration</a>
       </li>
     
   </ul>
