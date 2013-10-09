@@ -107,7 +107,7 @@
   </header>
 
 
-<div class="entry-content"><p>Some web services return JSON error objects when there&rsquo;s a problem. <a href="http://developer.github.com/v3/#client-errors">GitHub&rsquo;s API</a> is a good case in point, and <a href="https://www.hipchat.com/docs/api">HipChat&rsquo;s API</a> does the same thing. The approach is pretty common. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate.</p>
+<div class="entry-content"><p>Some web services return JSON error objects when there&rsquo;s a problem. <a href="http://developer.github.com/v3/#client-errors">GitHub&rsquo;s API</a> is a good case in point, and <a href="https://www.hipchat.com/docs/api">HipChat&rsquo;s API</a> does the same thing. The approach is pretty common. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate. (For more information on how to <em>generate</em> such responses, please see my post <a href="http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON Error Object Responses With Spring Web MVC</a>.)</p>
 
 <p>A challenge when using Spring&rsquo;s <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html">RestTemplate</a> is that there&rsquo;s not an obvious way to handle these. Normally when we use the <code>RestTemplate</code>, we indicate a specific type of response payload we expect to see, and so if an error object comes back instead, then it&rsquo;s not clear what to do.</p>
 

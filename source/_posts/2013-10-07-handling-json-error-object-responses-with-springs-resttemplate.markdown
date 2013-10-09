@@ -5,7 +5,7 @@ date: 2013-10-07 01:14
 comments: true
 categories: [ "Chapter 13 - Integration", "Quick Tips" ]
 ---
-Some web services return JSON error objects when there's a problem. [GitHub's API](http://developer.github.com/v3/#client-errors) is a good case in point, and [HipChat's API](https://www.hipchat.com/docs/api) does the same thing. The approach is pretty common. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate.
+Some web services return JSON error objects when there's a problem. [GitHub's API](http://developer.github.com/v3/#client-errors) is a good case in point, and [HipChat's API](https://www.hipchat.com/docs/api) does the same thing. The approach is pretty common. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate. (For more information on how to *generate* such responses, please see my post [Generating JSON Error Object Responses With Spring Web MVC](http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/).)
 
 A challenge when using Spring's [RestTemplate](http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html) is that there's not an obvious way to handle these. Normally when we use the `RestTemplate`, we indicate a specific type of response payload we expect to see, and so if an error object comes back instead, then it's not clear what to do.
 
