@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-07T02:22:46-07:00</updated>
+  <updated>2013-10-09T00:34:14-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -18,7 +18,7 @@
     <link href="http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/"/>
     <updated>2013-10-07T01:14:00-07:00</updated>
     <id>http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate</id>
-    <content type="html"><![CDATA[<p>Some web services return JSON error objects when there&rsquo;s a problem. <a href="http://developer.github.com/v3/#client-errors">GitHub&rsquo;s API</a> is a good case in point, but the approach is not uncommon. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate.</p>
+    <content type="html"><![CDATA[<p>Some web services return JSON error objects when there&rsquo;s a problem. <a href="http://developer.github.com/v3/#client-errors">GitHub&rsquo;s API</a> is a good case in point, and <a href="https://www.hipchat.com/docs/api">HipChat&rsquo;s API</a> does the same thing. The approach is pretty common. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate.</p>
 
 <p>A challenge when using Spring&rsquo;s <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html">RestTemplate</a> is that there&rsquo;s not an obvious way to handle these. Normally when we use the <code>RestTemplate</code>, we indicate a specific type of response payload we expect to see, and so if an error object comes back instead, then it&rsquo;s not clear what to do.</p>
 

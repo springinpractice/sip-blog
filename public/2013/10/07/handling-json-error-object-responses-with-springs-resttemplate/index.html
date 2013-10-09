@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Some web services return JSON error objects when there&rsquo;s a problem. GitHub&rsquo;s API is a good case in point, but the approach is not &hellip;">
+  <meta name="description" content="Some web services return JSON error objects when there&rsquo;s a problem. GitHub&rsquo;s API is a good case in point, and HipChat&rsquo;s API does &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -107,7 +107,7 @@
   </header>
 
 
-<div class="entry-content"><p>Some web services return JSON error objects when there&rsquo;s a problem. <a href="http://developer.github.com/v3/#client-errors">GitHub&rsquo;s API</a> is a good case in point, but the approach is not uncommon. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate.</p>
+<div class="entry-content"><p>Some web services return JSON error objects when there&rsquo;s a problem. <a href="http://developer.github.com/v3/#client-errors">GitHub&rsquo;s API</a> is a good case in point, and <a href="https://www.hipchat.com/docs/api">HipChat&rsquo;s API</a> does the same thing. The approach is pretty common. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate.</p>
 
 <p>A challenge when using Spring&rsquo;s <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html">RestTemplate</a> is that there&rsquo;s not an obvious way to handle these. Normally when we use the <code>RestTemplate</code>, we indicate a specific type of response payload we expect to see, and so if an error object comes back instead, then it&rsquo;s not clear what to do.</p>
 
