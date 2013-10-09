@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 03 - Web MVC | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-03-web-mvc/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-09T01:18:28-07:00</updated>
+  <updated>2013-10-09T01:31:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,215 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Generating JSON error object responses with Spring Web MVC]]></title>
+    <link href="http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/"/>
+    <updated>2013-10-09T00:39:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc</id>
+    <content type="html"><![CDATA[<p>The other day I wrote a post called <a href="http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&rsquo;s RestTemplate</a>. Judging by the Twitter activity, people found it useful, so this time around I&rsquo;m going to write about the other side of the equation, which is <em>generating</em> the JSON error objects using Spring Web MVC. Something like this:</p>
+
+<pre><code>{
+  "code": "InvalidRequest",
+  "message": "Invalid doodad",
+  "fieldErrors": [
+    {
+      "resource": "doodadResource",
+      "field": "key",
+      "code": "NotNull",
+      "message": "may not be null"
+    },
+    {
+      "resource": "doodadResource",
+      "field": "name",
+      "code": "NotNull",
+      "message": "may not be null"
+    }
+  ]
+}
+</code></pre>
+
+<p>There are various ways to do this, but Spring 3.2 introduces a pretty elegant approach via the <code>@ControllerAdvice</code> annotation. The basic concept here is that we can define AOP-like &ldquo;advice&rdquo; around Spring Web MVC controllers. This advice captures exceptions and then maps them to JSON objects, which the advice sends in the response body. Of course we can also send the appropriate HTTP status code in the headers too.</p>
+
+<!-- more -->
+
+
+<p>(You can find out more about <code>@ControllerAdvice</code> and <code>@ExceptionHandler</code> in the post <a href="http://www.baeldung.com/2013/01/31/exception-handling-for-rest-with-spring-3-2/">Error Handling for REST with Spring 3</a> by Eugen Paraschiv.)</p>
+
+<p>Note that the error-triggering event doesn&rsquo;t really have to be an exception <em>per se</em>. For example, we might want bean validation errors or authorization errors&mdash;neither of which manifests itself as an exception&mdash;to map to JSON error objects. The key is to have these triggers generate exceptions that we can capture using the <code>@ControllerAdvice</code> component.</p>
+
+<p>Let&rsquo;s look at an example involving bean validation. Here we have a controller. If the incoming resource is invalid, we want to generate a JSON error object. So first we do this:</p>
+
+<pre><code>package myapp.web.controller;
+
+... various imports ...
+
+@Controller
+@RequestMapping("/doodads")
+public class DoodadController {
+    @Inject private DoodadService doodadService;
+
+    @RequestMapping(
+            value = "/{id}",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void updateDoodad(
+            @PathVariable Long id,
+            @RequestBody @Valid DoodadResource doodad,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            throw new InvalidRequestException("Invalid doodad", bindingResult);
+        }
+
+        doodadService.updateDoodad(doodad);
+    }   
+}
+</code></pre>
+
+<p>Note that <code>InvalidRequestException</code> is just a custom exception I created that takes an <code>Errors</code> object as an argument. (<code>BindingResult</code> implements <code>Errors</code>.) Just for completeness, here&rsquo;s <code>InvalidRequestException</code>:</p>
+
+<pre><code>package myapp.exception;
+
+import org.springframework.validation.Errors;
+
+@SuppressWarnings("serial")
+public class InvalidRequestException extends RuntimeException {
+    private Errors errors;
+
+    public InvalidRequestException(String message, Errors errors) {
+        super(message);
+        this.errors = errors;
+    }
+
+    public Errors getErrors() { return errors; }
+}
+</code></pre>
+
+<p>So far so good. But now we need that <code>@ControllerAdvice</code> to capture the <code>InvalidRequestException</code> and generate the JSON error object:</p>
+
+<pre><code>package myapp.web.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import myapp.binding.ErrorResource;
+import myapp.binding.FieldErrorResource;
+import myapp.exception.InvalidRequestException;
+
+@ControllerAdvice
+public class MyExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler({ InvalidRequestException.class })
+    protected ResponseEntity&lt;Object&gt; handleInvalidRequest(RuntimeException e, WebRequest request) {
+        InvalidRequestException ire = (InvalidRequestException) e;
+        List&lt;FieldErrorResource&gt; fieldErrorResources = new ArrayList&lt;&gt;();
+
+        List&lt;FieldError&gt; fieldErrors = ire.getErrors().getFieldErrors();
+        for (FieldError fieldError : fieldErrors) {
+            FieldErrorResource fieldErrorResource = new FieldErrorResource();
+            fieldErrorResource.setResource(fieldError.getObjectName());
+            fieldErrorResource.setField(fieldError.getField());
+            fieldErrorResource.setCode(fieldError.getCode());
+            fieldErrorResource.setMessage(fieldError.getDefaultMessage());
+            fieldErrorResources.add(fieldErrorResource);
+        }
+
+        ErrorResource error = new ErrorResource("InvalidRequest", ire.getMessage());
+        error.setFieldErrors(fieldErrorResources);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        return handleExceptionInternal(e, error, headers, HttpStatus.UNPROCESSABLE_ENTITY, request);
+    }
+
+    ... other handlers for other exceptions ...
+}
+</code></pre>
+
+<p>The important pieces here are <code>@ControllerAdvice</code> (which derives from <code>@Controller</code>, so we can component scan it), <code>ResponseEntityExceptionHandler</code> (provides the <code>handleExceptionInternal()</code> method), and <code>@ExceptionHandler</code> annotation. <code>@ExceptionHandler</code> accepts an array of match exceptions, and then its implementation builds the JSON error object, which here involves custom <code>ErrorResource</code> and <code>FieldErrorResource</code> beans that can be whatever we want to display to the client. Finally we pass response-related information to <code>handleExceptionInternal()</code>, where the error object ends up as the response body. Here we&rsquo;re using &ldquo;Unprocessable Entity&rdquo; (HTTP 422), a WebDAV extension to HTTP, since &ldquo;Bad Request&rdquo; (HTTP 400) is for syntactic rather than semantic errors. (See <a href="http://www.bennadel.com/blog/2434-HTTP-Status-Codes-For-Invalid-Data-400-vs-422.htm">HTTP Status Codes For Invalid Data: 400 vs. 422</a> by Ben Nadel for more information.)</p>
+
+<p>Again in the interest of completeness, here are the error objects I&rsquo;m using. These are just examples of what&rsquo;s possible; choose error representations that fit your needs. First, the top-level error object:</p>
+
+<pre><code>package myapp.binding;
+
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ErrorResource {
+    private String code;
+    private String message;
+    private List&lt;FieldErrorResource&gt; fieldErrors;
+
+    public ErrorResource() { }
+
+    public ErrorResource(String code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+    public String getCode() { return code; }
+
+    public void setCode(String code) { this.code = code; }
+
+    public String getMessage() { return message; }
+
+    public void setMessage(String message) { this.message = message; }
+
+    public List&lt;FieldErrorResource&gt; getFieldErrors() { return fieldErrors; }
+
+    public void setFieldErrors(List&lt;FieldErrorResource&gt; fieldErrors) {
+        this.fieldErrors = fieldErrors;
+    }
+}
+</code></pre>
+
+<p>And finally here&rsquo;s a class for field errors:</p>
+
+<pre><code>package myapp.binding;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class FieldErrorResource {
+    private String resource;
+    private String field;
+    private String code;
+    private String message;
+
+    public String getResource() { return resource; }
+
+    public void setResource(String resource) { this.resource = resource; }
+
+    public String getField() { return field; }
+
+    public void setField(String field) { this.field = field; }
+
+    public String getCode() { return code; }
+
+    public void setCode(String code) { this.code = code; }
+
+    public String getMessage() { return message; }
+
+    public void setMessage(String message) { this.message = message; }
+}
+</code></pre>
+
+<p>Have fun!</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Annotation-based MVC in Spring 2.5]]></title>

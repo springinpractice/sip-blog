@@ -3,9 +3,28 @@ layout: post
 title: "Generating JSON error object responses with Spring Web MVC"
 date: 2013-10-09 00:39
 comments: true
-categories: [ "Chapter 13 - Integration", "Quick Tips" ]
+categories: [ "Chapter 03 - Web MVC", "Chapter 13 - Integration", "Quick Tips" ]
 ---
-The other day I wrote a post called [Handling JSON error object responses with Spring's RestTemplate](http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/). Judging by the Twitter activity, people found it useful, so this time around I'm going to write about the other side of the equation, which is *generating* the JSON error objects using Spring Web MVC. (For a quick background on what this means and why we'd want to do it, please see the post I just linked to.)
+The other day I wrote a post called [Handling JSON error object responses with Spring's RestTemplate](http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/). Judging by the Twitter activity, people found it useful, so this time around I'm going to write about the other side of the equation, which is *generating* the JSON error objects using Spring Web MVC. Something like this:
+
+    {
+      "code": "InvalidRequest",
+      "message": "Invalid doodad",
+      "fieldErrors": [
+        {
+          "resource": "doodadResource",
+          "field": "key",
+          "code": "NotNull",
+          "message": "may not be null"
+        },
+        {
+          "resource": "doodadResource",
+          "field": "name",
+          "code": "NotNull",
+          "message": "may not be null"
+        }
+      ]
+    }
 
 There are various ways to do this, but Spring 3.2 introduces a pretty elegant approach via the `@ControllerAdvice` annotation. The basic concept here is that we can define AOP-like "advice" around Spring Web MVC controllers. This advice captures exceptions and then maps them to JSON objects, which the advice sends in the response body. Of course we can also send the appropriate HTTP status code in the headers too.
 
@@ -112,7 +131,7 @@ So far so good. But now we need that `@ControllerAdvice` to capture the `Invalid
         ... other handlers for other exceptions ...
     }
 
-The important pieces here are `@ControllerAdvice` (which derives from `@Controller`, so we can component scan it), `ResponseEntityExceptionHandler` (provides the `handleExceptionInternal()` method), and `@ExceptionHandler` annotation. `@ExceptionHandler` accepts an array of match exceptions, and then its implementation builds the JSON error object, which here involves custom `ErrorResource` and `FieldErrorResource` beans that can be whatever we want to display to the client. Finally we pass response-related information to `handleExceptionInternal()`, where the error object ends up as the response body.
+The important pieces here are `@ControllerAdvice` (which derives from `@Controller`, so we can component scan it), `ResponseEntityExceptionHandler` (provides the `handleExceptionInternal()` method), and `@ExceptionHandler` annotation. `@ExceptionHandler` accepts an array of match exceptions, and then its implementation builds the JSON error object, which here involves custom `ErrorResource` and `FieldErrorResource` beans that can be whatever we want to display to the client. Finally we pass response-related information to `handleExceptionInternal()`, where the error object ends up as the response body. Here we're using "Unprocessable Entity" (HTTP 422), a WebDAV extension to HTTP, since "Bad Request" (HTTP 400) is for syntactic rather than semantic errors. (See [HTTP Status Codes For Invalid Data: 400 vs. 422](http://www.bennadel.com/blog/2434-HTTP-Status-Codes-For-Invalid-Data-400-vs-422.htm) by Ben Nadel for more information.)
 
 Again in the interest of completeness, here are the error objects I'm using. These are just examples of what's possible; choose error representations that fit your needs. First, the top-level error object:
 

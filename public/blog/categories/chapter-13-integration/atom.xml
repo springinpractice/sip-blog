@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-09T01:18:28-07:00</updated>
+  <updated>2013-10-09T01:31:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -18,7 +18,27 @@
     <link href="http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/"/>
     <updated>2013-10-09T00:39:00-07:00</updated>
     <id>http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc</id>
-    <content type="html"><![CDATA[<p>The other day I wrote a post called <a href="http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&rsquo;s RestTemplate</a>. Judging by the Twitter activity, people found it useful, so this time around I&rsquo;m going to write about the other side of the equation, which is <em>generating</em> the JSON error objects using Spring Web MVC. (For a quick background on what this means and why we&rsquo;d want to do it, please see the post I just linked to.)</p>
+    <content type="html"><![CDATA[<p>The other day I wrote a post called <a href="http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&rsquo;s RestTemplate</a>. Judging by the Twitter activity, people found it useful, so this time around I&rsquo;m going to write about the other side of the equation, which is <em>generating</em> the JSON error objects using Spring Web MVC. Something like this:</p>
+
+<pre><code>{
+  "code": "InvalidRequest",
+  "message": "Invalid doodad",
+  "fieldErrors": [
+    {
+      "resource": "doodadResource",
+      "field": "key",
+      "code": "NotNull",
+      "message": "may not be null"
+    },
+    {
+      "resource": "doodadResource",
+      "field": "name",
+      "code": "NotNull",
+      "message": "may not be null"
+    }
+  ]
+}
+</code></pre>
 
 <p>There are various ways to do this, but Spring 3.2 introduces a pretty elegant approach via the <code>@ControllerAdvice</code> annotation. The basic concept here is that we can define AOP-like &ldquo;advice&rdquo; around Spring Web MVC controllers. This advice captures exceptions and then maps them to JSON objects, which the advice sends in the response body. Of course we can also send the appropriate HTTP status code in the headers too.</p>
 
@@ -129,7 +149,7 @@ public class MyExceptionHandler extends ResponseEntityExceptionHandler {
 }
 </code></pre>
 
-<p>The important pieces here are <code>@ControllerAdvice</code> (which derives from <code>@Controller</code>, so we can component scan it), <code>ResponseEntityExceptionHandler</code> (provides the <code>handleExceptionInternal()</code> method), and <code>@ExceptionHandler</code> annotation. <code>@ExceptionHandler</code> accepts an array of match exceptions, and then its implementation builds the JSON error object, which here involves custom <code>ErrorResource</code> and <code>FieldErrorResource</code> beans that can be whatever we want to display to the client. Finally we pass response-related information to <code>handleExceptionInternal()</code>, where the error object ends up as the response body.</p>
+<p>The important pieces here are <code>@ControllerAdvice</code> (which derives from <code>@Controller</code>, so we can component scan it), <code>ResponseEntityExceptionHandler</code> (provides the <code>handleExceptionInternal()</code> method), and <code>@ExceptionHandler</code> annotation. <code>@ExceptionHandler</code> accepts an array of match exceptions, and then its implementation builds the JSON error object, which here involves custom <code>ErrorResource</code> and <code>FieldErrorResource</code> beans that can be whatever we want to display to the client. Finally we pass response-related information to <code>handleExceptionInternal()</code>, where the error object ends up as the response body. Here we&rsquo;re using &ldquo;Unprocessable Entity&rdquo; (HTTP 422), a WebDAV extension to HTTP, since &ldquo;Bad Request&rdquo; (HTTP 400) is for syntactic rather than semantic errors. (See <a href="http://www.bennadel.com/blog/2434-HTTP-Status-Codes-For-Invalid-Data-400-vs-422.htm">HTTP Status Codes For Invalid Data: 400 vs. 422</a> by Ben Nadel for more information.)</p>
 
 <p>Again in the interest of completeness, here are the error objects I&rsquo;m using. These are just examples of what&rsquo;s possible; choose error representations that fit your needs. First, the top-level error object:</p>
 

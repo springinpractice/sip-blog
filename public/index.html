@@ -110,7 +110,27 @@
   </header>
 
 
-  <div class="entry-content"><p>The other day I wrote a post called <a href="http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&rsquo;s RestTemplate</a>. Judging by the Twitter activity, people found it useful, so this time around I&rsquo;m going to write about the other side of the equation, which is <em>generating</em> the JSON error objects using Spring Web MVC. (For a quick background on what this means and why we&rsquo;d want to do it, please see the post I just linked to.)</p>
+  <div class="entry-content"><p>The other day I wrote a post called <a href="http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&rsquo;s RestTemplate</a>. Judging by the Twitter activity, people found it useful, so this time around I&rsquo;m going to write about the other side of the equation, which is <em>generating</em> the JSON error objects using Spring Web MVC. Something like this:</p>
+
+<pre><code>{
+  "code": "InvalidRequest",
+  "message": "Invalid doodad",
+  "fieldErrors": [
+    {
+      "resource": "doodadResource",
+      "field": "key",
+      "code": "NotNull",
+      "message": "may not be null"
+    },
+    {
+      "resource": "doodadResource",
+      "field": "name",
+      "code": "NotNull",
+      "message": "may not be null"
+    }
+  ]
+}
+</code></pre>
 
 <p>There are various ways to do this, but Spring 3.2 introduces a pretty elegant approach via the <code>@ControllerAdvice</code> annotation. The basic concept here is that we can define AOP-like &ldquo;advice&rdquo; around Spring Web MVC controllers. This advice captures exceptions and then maps them to JSON objects, which the advice sends in the response body. Of course we can also send the appropriate HTTP status code in the headers too.</p>
 
