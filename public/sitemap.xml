@@ -2,474 +2,474 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://springinpractice.com/2008/02/26/acegi-overview/</loc>
-        <lastmod>2013-10-24T18:13:28-07:00</lastmod>
+        <lastmod>2013-10-24T18:15:56-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/02/26/annotation-based-autowiring-in-spring-2-5/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/02/26/annotation-based-mvc-in-spring-2-5/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/02/29/web-services-with-spring-2-5-and-apache-cxf-2-0/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/03/10/make-web-services-transparent-with-spring-2-5-and-apache-cxf-2-0/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/03/13/how-to-recaptcha-your-java-application/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/03/18/annotation-based-transactions-in-spring/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/03/19/apachetomcat-integration/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/03/19/setting-up-public-key-authentication-pka-over-ssh/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/03/28/tutorial-wireshark-in-fifteen-minutes/</loc>
-        <lastmod>2013-09-22T03:20:26-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/05/05/smtp-and-smtp-auth/</loc>
-        <lastmod>2013-09-22T03:19:58-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/05/06/build-a-shopping-cart-with-spring-web-flow-2-part-2/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/05/07/build-a-shopping-cart-with-spring-web-flow-2-part-3/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/05/08/session-scoped-beans-in-spring/</loc>
-        <lastmod>2013-09-22T03:18:21-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/08/31/storing-passwords-securely/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/08/31/about-our-book/</loc>
-        <lastmod>2013-09-22T03:17:35-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/09/05/just-got-the-book-cover/</loc>
-        <lastmod>2013-09-20T01:11:25-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/09/06/login-remember-me/</loc>
-        <lastmod>2013-09-20T01:17:32-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/09/30/weve-been-meaped-chapters-4-5-available/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/10/01/some-thoughts-on-the-new-springsource-maintenance-policy/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/10/11/hashing-and-salting-passwords-with-spring-security-2/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/10/27/spring-paranoia-with-initializingbean-and-assert/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/11/15/aop-101-speeding-up-springs-javamailsenderimpl-with-aop/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/11/25/publish-an-rss-feed-with-spring-3-0/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/11/27/springone-americas-2008/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2008/12/01/rod-johnsons-keynote-address-at-springone-americas-2008/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/12/02/new-stuff-in-spring-30/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2008/12/03/new-stuff-in-spring-30-part-2/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2009/02/02/getting-started-with-hibernate-validator/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2009/05/15/balancing-frontend-and-backend-server-capacity/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2010/07/06/spring-security-database-schemas-for-mysql/
         </loc>
-        <lastmod>2013-09-22T03:12:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2010/07/06/annotation-based-circuit-breakers-with-spring/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2010/07/12/spring-security-3-dzone-refcard-and-interview/
         </loc>
-        <lastmod>2013-09-22T03:11:57-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2010/07/14/spring-roo-in-under-nine-minutes/</loc>
-        <lastmod>2013-09-22T03:11:23-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2010/07/20/thoughts-on-cloud-portability/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2010/07/27/top-ten-operational-excellence-design-principles/
         </loc>
-        <lastmod>2013-09-22T03:10:08-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2010/09/06/quick-tip-upgrade-a-legacy-password-storage-scheme/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2010/10/10/quick-tip-avoid-rule-duplication-when-using-securityauthorize/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2010/10/27/quick-tip-spring-security-role-based-authorization-and-permissions/
         </loc>
-        <lastmod>2013-09-22T03:04:37-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2010/10/28/springone-2gx-takeaways/</loc>
-        <lastmod>2013-09-22T03:03:58-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2011/12/05/skybase-screenshots/</loc>
-        <lastmod>2013-09-22T03:03:06-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2011/12/06/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/
         </loc>
-        <lastmod>2013-09-20T01:53:56-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2011/12/06/jackson-json-jaxb2-xml-spring/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2011/12/17/domain-modeling-with-spring-data-neo4j-code/
         </loc>
-        <lastmod>2013-09-21T22:09:05-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2011/12/26/devops-how-not-to-collect-configuration-management-data/
         </loc>
-        <lastmod>2013-09-20T21:05:13-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2011/12/28/initializing-lazy-loaded-collections-with-spring-data-neo4j/
         </loc>
-        <lastmod>2013-09-22T03:00:12-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2011/12/29/its-back-the-classpathscanningjaxb2marshaller/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/01/03/closed-loops-the-secret-to-collecting-configuration-management-data/
         </loc>
-        <lastmod>2013-09-21T22:20:39-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/01/07/making-formselect-work-nicely-using-spring-3-formatters/
         </loc>
-        <lastmod>2013-09-21T22:28:06-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/
         </loc>
-        <lastmod>2013-09-22T02:10:08-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2012/01/14/skybasegithub-integration/</loc>
-        <lastmod>2013-09-22T02:16:59-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2012/01/17/more-skybase-screenshots/</loc>
-        <lastmod>2013-09-22T02:26:27-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/01/17/spring-social-github-revisiting-github-integration/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2012/02/12/working-with-the-neo4j-shell/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/02/22/supporting-xml-and-json-web-service-endpoints-in-spring-3-1-using-responsebody/
         </loc>
-        <lastmod>2013-09-22T13:16:33-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/03/06/zkybase-now-supports-authorized-access-to-github-via-spring-social-github/
         </loc>
-        <lastmod>2013-09-22T13:15:57-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/03/06/neo4j-1-6-1-cypher-query-examples-when-using-spring-data-neo4j-2-0/
         </loc>
-        <lastmod>2013-09-22T13:15:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/03/06/using-spring-social-github-to-access-secured-github-data-code/
         </loc>
-        <lastmod>2013-09-22T13:15:07-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate/</loc>
-        <lastmod>2013-09-22T13:14:43-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/
         </loc>
-        <lastmod>2013-09-22T13:14:11-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/
         </loc>
-        <lastmod>2013-09-22T13:13:04-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/
         </loc>
-        <lastmod>2013-09-22T13:11:51-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/
         </loc>
-        <lastmod>2013-09-22T13:11:24-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/05/03/migrating-non-wordpress-blog-comments-into-wordpress/
         </loc>
-        <lastmod>2013-09-22T13:07:07-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2012/05/05/combined-my-two-blogs/</loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/05/06/mavenizing-an-empty-github-project-in-eclipse/
         </loc>
-        <lastmod>2013-09-18T23:52:36-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/05/07/springs-constructor-namespace-is-a-bad-idea/
         </loc>
-        <lastmod>2013-09-16T02:12:29-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/
         </loc>
-        <lastmod>2013-09-16T02:11:26-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/05/12/injecting-a-file-from-the-classpath-into-a-bean/
         </loc>
-        <lastmod>2013-09-16T02:11:26-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2012/05/13/how-to-run-javascript-from-java/</loc>
-        <lastmod>2013-09-16T02:11:26-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/06/30/pageable-custom-queries-with-spring-data-jpa/
         </loc>
-        <lastmod>2013-09-16T02:11:26-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/
         </loc>
-        <lastmod>2013-09-16T02:11:26-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2013/05/08/spring-in-practice-now-available/</loc>
-        <lastmod>2013-09-16T02:11:26-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2013/06/08/seajug-talk-on-spring-data-jpa-spring-data-rest-and-spring-hateoas/
         </loc>
-        <lastmod>2013-09-16T02:11:26-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2013/09/07/octopress-migration/</loc>
-        <lastmod>2013-09-23T23:40:49-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/
         </loc>
-        <lastmod>2013-09-30T22:59:07-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/2013/09/25/aggregating-tp90-data-with-splunk/</loc>
-        <lastmod>2013-09-25T21:09:21-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/
         </loc>
-        <lastmod>2013-10-02T03:10:40-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/
         </loc>
-        <lastmod>2013-10-09T01:47:56-07:00</lastmod>
+        <lastmod>2013-10-24T18:07:37-07:00</lastmod>
     </url>
     <url>
         <loc>
             http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/
         </loc>
-        <lastmod>2013-10-09T01:50:06-07:00</lastmod>
+        <lastmod>2013-10-24T18:07:37-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/archives/</loc>
-        <lastmod>2013-10-24T18:13:28-07:00</lastmod>
+        <lastmod>2013-10-24T18:15:56-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/book/</loc>
-        <lastmod>2013-09-24T01:54:44-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/consulting/</loc>
-        <lastmod>2013-09-24T01:58:56-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/</loc>
-        <lastmod>2013-10-24T18:13:28-07:00</lastmod>
+        <lastmod>2013-10-24T18:15:56-07:00</lastmod>
     </url>
     <url>
         <loc>http://springinpractice.com/robots.txt</loc>
-        <lastmod>2013-09-16T02:11:26-07:00</lastmod>
+        <lastmod>2013-10-24T00:45:03-07:00</lastmod>
     </url>
 </urlset>
