@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 07 - Authorization | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-07-authorization/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-09T01:50:14-07:00</updated>
+  <updated>2013-10-24T18:19:38-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -343,9 +343,6 @@ authenticationProcessingFilter,exceptionTranslationFilter,filterSecurityIntercep
 
 
 <p>Here&rsquo;s a <a href="http://www.javaworld.com/javaworld/jw-10-2007/jw-10-acegi2.html">JavaWorld article on getting started with Acegi</a>. Also, <a href="http://www.amazon.com/Spring-Action-Craig-Walls/dp/1933988134/ref=pd_bbs_sr_1?ie=UTF8&s=books&qid=1199391787&sr=8-1">Spring in Action</a> has some good instructions.</p>
-
-<div class="endnote">Post migrated from my Wheeler Software site.</div>
-
 ]]></content>
   </entry>
   
