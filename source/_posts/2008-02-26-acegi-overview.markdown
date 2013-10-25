@@ -63,4 +63,3 @@ There are some points/gotchas worth mentioning:
 
 Here's a <a href="http://www.javaworld.com/javaworld/jw-10-2007/jw-10-acegi2.html">JavaWorld article on getting started with Acegi</a>. Also, <a href="http://www.amazon.com/Spring-Action-Craig-Walls/dp/1933988134/ref=pd_bbs_sr_1?ie=UTF8&s=books&qid=1199391787&sr=8-1">Spring in Action</a> has some good instructions.
 
-<div class="endnote">Post migrated from my Wheeler Software site.</div>
