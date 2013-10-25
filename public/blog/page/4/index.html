@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="GitHub has an RESTful JSON API that we can call from our apps. In this post I&rsquo;ll show how I&rsquo;m grabbing a GitHub repo&rsquo;s watchers and &hellip;">
+  <meta name="description" content="A major goal for Zkybase is to tie together the activities of developers, testers, release engineers and operations. A few major benefits are: Tool &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,59 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/14/skybasegithub-integration/">Zkybase/GitHub Integration</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-14T07:55:43-08:00" pubdate data-updated="true">Jan 14<span>th</span>, 2012</time>
+        
+         | <a href="/2012/01/14/skybasegithub-integration/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A major goal for <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> is to tie together the activities of developers, testers, release engineers and operations. A few major benefits are:</p>
+
+<ul>
+<li><strong>Tool integration:</strong> We can single source app lists and more across development, build, test, deployment, monitoring, knowledge management and other tools.</li>
+<li><strong>Process streamlining:</strong> Outputs from the dev process feed into the test and deployment processes, which in turn feed into operational processes.</li>
+<li><strong>Communications across teams:</strong> All the teams work from the same concepts and data, facilitating communication.</li>
+</ul>
+
+
+<p>One of the first things I want to tackle in Zkybase, then, is supporting some developer-centric concerns. An important one is source control. Obviously Zkybase isn&rsquo;t itself a source control management system, but it makes sense to pull in useful information from the source code repos just to provide a &ldquo;single pane of glass&rdquo; where developers and other users can get a holistic view of what an app is all about.</p>
+
+<p>Since I&rsquo;m using GitHub, Github integration is a logical starting point for Zkybase/SCM integration. GitHub has a <a title="GitHub REST API" href="http://developer.github.com/v3/">REST API</a> that makes this integration easy. I wrote a <a title="Calling the GitHub API using Spring’s RestTemplate" href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/">post</a> that explains the technical approach. Here&rsquo;s the end result:</p>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-14-skybasegithub-integration/skybase_scm4.png" alt="Zkybase SCM page" /></p>
+
+<p>I suspect that such integrations will be a large part of the value that Zkybase delivers. They will help realize the process, tool and communications benefits I highlighted above.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1386,58 +1439,6 @@ public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2011/12/05/skybase-screenshots/">Zkybase Screenshots</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-12-05T04:43:11-08:00" pubdate data-updated="true">Dec 5<span>th</span>, 2011</time>
-        
-         | <a href="/2011/12/05/skybase-screenshots/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>One of the things we&rsquo;re working on is an open source configuration management system called <a href="https://github.com/williewheeler/zkybase">Zkybase</a>. It&rsquo;s a new project, and we&rsquo;re still working out a lot of the high-level vision for this thing. I&rsquo;ll post more information about it later, but for now I just wanted to post some screenshots as a way for people to see how it looks. We&rsquo;re using <a href="http://twitter.github.com/bootstrap/">Twitter Bootstrap</a> for the CSS (very nice toolkit&mdash;love it), and Spring/<a href="http://neo4j.org/">Neo4j</a> (along with <a href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a> on the backend. So far the Neo4j graph data is working out great for configuration management data.</p>
-
-<p>Anyway here are the screenshots.</p>
-
-<p>First, the dashboard:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/dashboard1.png" alt="Dashboard" /></p>
-
-<p>Here&rsquo;s the project details page:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/project_details.png" alt="Project details page" /></p>
-
-<p>And here&rsquo;s the page that allows you to create a new project:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-05-skybase-screenshots/new_project_form.png" alt="New project form" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/5/">&larr; Older</a>
@@ -1455,6 +1456,10 @@ public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know which apps are hitting your web service</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
       </li>
     
@@ -1468,10 +1473,6 @@ public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
     
       <li class="post">
         <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
       </li>
     
   </ul>

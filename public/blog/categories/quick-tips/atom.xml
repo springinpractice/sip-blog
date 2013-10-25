@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Quick Tips | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/quick-tips/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-24T18:47:52-07:00</updated>
+  <updated>2013-10-25T01:43:30-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,74 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Know which apps are hitting your web service]]></title>
+    <link href="http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service/"/>
+    <updated>2013-10-25T00:42:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service</id>
+    <content type="html"><![CDATA[<p>When creating a web service, it&rsquo;s often useful to know which apps are hitting it. I don&rsquo;t mean which users, but instead which apps. The reason is that you may want to coordinate with some other team on something. For example, maybe the team is being too aggressive about request retries, or maybe you want to alert the team to a change in the API. Whatever the reason, it&rsquo;s good to know which apps are calling your service.</p>
+
+<p>HTTP has a <code>User-Agent</code> header that can help here. One possible approach is to make that a required header. Unfortunately, this approach isn&rsquo;t ideal. The problem is that HTTP client libraries usually set that header automatically. So if the client application forgets to set the header explicitly, you end up with user agents like <code>Apache-HttpClient/release (java 1.5)</code>, which isn&rsquo;t much help at all.</p>
+
+<p>An approach I like better is to define a custom header and make it required. I use <code>X-User-Agent</code>, since it really is a user agent we&rsquo;re talking about here.</p>
+
+<p>Here&rsquo;s how to implement this with a servlet filter. No Spring involved here at all; it&rsquo;s just servlet stuff.</p>
+
+<pre><code>package com.myapp.web.filter;
+
+import java.io.IOException;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class XUserAgentFilter implements Filter {
+    private static final String X_USER_AGENT = "X-User-Agent";
+
+    private String errorJson;
+
+    public XUserAgentFilter() {
+        String message = 
+            "HTTP header '" + X_USER_AGENT + "' is required. Please set it to your application name so we know " +
+            "who to contact if there's an issue.";
+        this.errorJson = "{ " + wrap("message") + " : " + wrap(message) + " }";
+    }
+
+    private String wrap(String s) { return "\"" + s + "\""; }
+
+    @Override
+    public void init(FilterConfig config) throws ServletException { }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        if (httpRequest.getHeader(X_USER_AGENT) == null) {
+            httpResponse.setStatus(422);
+            httpResponse.getWriter().println(errorJson);
+        } else {
+            chain.doFilter(request, response);
+        }
+    }
+
+    @Override
+    public void destroy() { }
+}
+</code></pre>
+
+<p>Of course, you need to configure this filter and a filter mapping in your <code>web.xml</code> file.</p>
+
+<p>In the next post I&rsquo;ll show you how to set up your Spring <code>RestTemplate</code> to send the <code>X-User-Agent</code> header with each request automatically.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Generating JSON error object responses with Spring Web MVC]]></title>
@@ -436,95 +504,6 @@ Account account = response.getBody();
 </code></pre>
 
 <p>That&rsquo;s it.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Renaming node classes when using Spring Data Neo4j]]></title>
-    <link href="http://springinpractice.com/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/"/>
-    <updated>2012-12-09T15:33:00-08:00</updated>
-    <id>http://springinpractice.com/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j</id>
-    <content type="html"><![CDATA[<p>This is one of those posts where I&rsquo;m just jotting down some notes for my own future use, but someone else may find this useful.</p>
-
-<p>I&rsquo;m going to show how to rename a node entity class when using Spring Data Neo4j. I&rsquo;m talking about the fully-qualified classname here, so it applies when we want to rename a package too.</p>
-
-<!-- more -->
-
-
-<p>First, suppose my old classname is <code>org.zkybase.cmdb.api.domain.ApplicationEntity</code>. If I go into the Neo4j shell, I can see that I have a couple of nodes of this type:</p>
-
-<pre><code>neo4j-sh (0)$ start n=node:__types__(className="org.zkybase.cmdb.api.domain.ApplicationEntity") return n
-+-----------------------------------------------------------------------------------------------------+
-| n                                                                                                   |
-+-----------------------------------------------------------------------------------------------------+
-| Node[36]{__type__-&gt;"org.zkybase.cmdb.api.domain.ApplicationEntity",name-&gt;"Zkybase"}                 |
-| Node[49]{name-&gt;"Spring in Practice Blog",__type__-&gt;"org.zkybase.cmdb.api.domain.ApplicationEntity"} |
-+-----------------------------------------------------------------------------------------------------+
-2 rows, 1 ms
-</code></pre>
-
-<p>From the above, it <i>looks like</i> you can just go to the nodes themselves and change their <code>__type__</code> fields:</p>
-
-<pre><code>neo4j-sh (0)$ cd -a 36
-neo4j-sh (Zkybase,36)$ ls
-*__type__ =[org.zkybase.cmdb.api.domain.ApplicationEntity]
-*name     =[Zkybase]
-neo4j-sh (Zkybase,36)$ set __type__ "org.zkybase.api.domain.entity.ApplicationEntity"
-neo4j-sh (Zkybase,36)$ ls
-*__type__ =[org.zkybase.api.domain.entity.ApplicationEntity]
-*name     =[Zkybase]
-</code></pre>
-
-<p>But then when you try to find the node using the query, it doesn&rsquo;t show up.</p>
-
-<pre><code>neo4j-sh (Zkybase,36)$ start n=node:__types__(className="org.zkybase.api.domain.entity.ApplicationEntity") return n
-+---+
-| n |
-+---+
-+---+
-0 rows, 1 ms
-</code></pre>
-
-<p>Moreover, when you re-run the original query, the node whose <code>__type__</code> we changed still shows up.</p>
-
-<p>The problem is that we need to reindex the nodes. Spring Data Neo4j uses an index called <code>__types__</code>, and we need to replace the old index entries with some new ones.</p>
-
-<p>Let&rsquo;s see what&rsquo;s under the old classname, using <code>index -g</code> to get the relevant nodes from the <code>__types__</code> index:</p>
-
-<pre><code>neo4j-sh (Zkybase,36)$ index -g __types__ className "org.zkybase.cmdb.api.domain.ApplicationEntity"
-(me)
-
-(Spring in Practice Blog,49)
-</code></pre>
-
-<p>And under the new classname:</p>
-
-<pre><code>neo4j-sh (Zkybase,36)$ index -g __types__ className "org.zkybase.api.domain.entity.ApplicationEntity"
-neo4j-sh (Zkybase,36)$ 
-</code></pre>
-
-<p>We can fix that using <code>index -i</code>, which indexes the current entity:</p>
-
-<pre><code>neo4j-sh (Zkybase,36)$ index -i __types__ className "org.zkybase.api.domain.entity.ApplicationEntity"
-neo4j-sh (Zkybase,36)$ cd -a 49
-neo4j-sh (Spring in Practice Blog,49)$ index -i __types__ className "org.zkybase.api.domain.entity.ApplicationEntity"
-neo4j-sh (Spring in Practice Blog,49)$ cd -a 36
-neo4j-sh (Zkybase,36)$ index -g __types__ className "org.zkybase.api.domain.entity.ApplicationEntity"
-(me)
-
-(Spring in Practice Blog,49)
-</code></pre>
-
-<p>We still need to clean up the old entries, though, because they&rsquo;re still there. We use <code>index -r</code> to remove the index entry for the current node:</p>
-
-<pre><code>neo4j-sh (Zkybase,36)$ index -r __types__ className "org.zkybase.cmdb.api.domain.ApplicationEntity"
-neo4j-sh (Zkybase,36)$ cd -a 49
-neo4j-sh (Spring in Practice Blog,49)$ index -r __types__ className "org.zkybase.cmdb.api.domain.ApplicationEntity"
-neo4j-sh (Spring in Practice Blog,49)$ index -g __types__ className "org.zkybase.cmdb.api.domain.ApplicationEntity"
-neo4j-sh (Spring in Practice Blog,49)$ 
-</code></pre>
-
-<p>That&rsquo;s it. This was the result of about 15 minutes of investigation, so there&rsquo;s a good chance there&rsquo;s more going on than what I&rsquo;ve described. Let me know and I&rsquo;ll update the post accordingly.</p>
 ]]></content>
   </entry>
   

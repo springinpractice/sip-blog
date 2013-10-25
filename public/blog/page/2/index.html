@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Java 6 comes with the Rhino JavaScript engine, which makes it easy to run JavaScript from inside your Java app. There are different situations in &hellip;">
+  <meta name="description" content="In previous posts I explained how you can use Spring Data JPA to create repositories that support custom queries, as well as to support paging in &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,56 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/">Pageable Custom Queries With Spring Data JPA</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-30T12:41:00-07:00" pubdate data-updated="true">Jun 30<span>th</span>, 2012</time>
+        
+         | <a href="/2012/06/30/pageable-custom-queries-with-spring-data-jpa/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In previous posts I explained how you can use Spring Data JPA to <a href="http://springinpractice.com/2012/04/24/autogenerate-daos-and-queries-using-spring-data-jpa/">create repositories that support custom queries</a>, as well as to <a href="http://springinpractice.com/2012/05/11/pagination-and-sorting-with-spring-data-jpa/">support paging in your app</a>. You might wonder whether you can use these together.</p>
+
+<p>The answer is yes. It works just like you would expect:</p>
+
+<pre><code>import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IncidentRepo extends JpaRepository&lt;Incident, Long&gt; {
+
+    Page&lt;Incident&gt; findByProblemId(Long problemId, Pageable pageable);
+}
+</code></pre>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -547,69 +597,6 @@ public final class RichTextFilter implements TextFilter {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/">The Spring Constructor Namespace</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-04-26T05:14:51-07:00" pubdate data-updated="true">Apr 26<span>th</span>, 2012</time>
-        
-         | <a href="/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>You know the <code>p</code> namespace? It&rsquo;s the one that cleans up your Spring configuration files by providing a shorthand for injecting beans and values:</p>
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:p="http://www.springframework.org/schema/p"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation=
-       "http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"&gt;
-    
-    &lt;bean id="sessionFactory"
-        class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"
-        p:dataSource-ref="dataSource"
-        p:packagesToScan="com.springinpractice.ch10.model" /&gt;
-
-    ... other beans ...
-
-&lt;/beans&gt;</pre>
-
-
-<p>Did you know that Spring 3.1 introduces an analogous namespace for constructor injection? Yup&mdash;it&rsquo;s the <code>c</code> namespace:</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/3/">&larr; Older</a>
@@ -627,6 +614,10 @@ public final class RichTextFilter implements TextFilter {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know which apps are hitting your web service</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
       </li>
     
@@ -640,10 +631,6 @@ public final class RichTextFilter implements TextFilter {
     
       <li class="post">
         <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
       </li>
     
   </ul>

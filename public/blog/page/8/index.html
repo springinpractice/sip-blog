@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="This brief tutorial will show how to send e-mail using Spring and JavaMail. JavaMail can handle e-mail storage as well, but here we&rsquo;re just &hellip;">
+  <meta name="description" content="This post predates JSR 303, which describes a standard around bean validation. The Spring Modules Bean Validation Framework isn&#8217;t compliant &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,394 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/">Annotation-based Validation With the Spring Bean Validation Framework</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-07-17T16:35:36-07:00" pubdate data-updated="true">Jul 17<span>th</span>, 2008</time>
+        
+         | <a href="/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><div class="alert warning">This post predates JSR 303, which describes a standard around bean validation. The Spring Modules Bean Validation Framework isn&#8217;t compliant with that JSR, and anyway, it&#8217;s a defunct library. Use <a href="http://springinpractice.com/2009/02/02/getting-started-with-hibernate-validator/">Hibernate Validator</a> instead.</div>
+
+
+<p>The Spring Bean Validation Framework, which is part of the <a href="https://springmodules.dev.java.net/">Spring Modules</a> project, allows you to perform validation declaratively using Java annotations. I&rsquo;ve always liked the declarative approach, which we saw for instance in Commons Validator, but annotation-based validation is especially convenient.</p>
+
+<p><a href="http://jcp.org/en/jsr/detail?id=303">JSR 303 (Bean Validation)</a> specifies some standards around bean validation, though the Spring Bean Validation Framework does not adopt those standards. The <a href="http://www.hibernate.org/412.html">Hibernate Validator</a> project, on the other hand, aims to provide an implementation of the emerging JSR 303 standard.</p>
+
+<p>While it very well could be subpar Googling skills on my part, there doesn&rsquo;t seem to be much detailed how-to information out there on actually using the Bean Validation Framework.  Hence this article.</p>
+
+<p>I&rsquo;m using Spring 2.5.x (specifically, Spring 2.5.5) and Spring Modules 0.9.  I assume that you already know Spring and Spring Web MVC in particular.</p>
+
+<p>If you want to download the code, you can do so here:</p>
+
+<center><span class="icon archive"><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-bean-validation-framework/contact-example.zip">contact-example.zip</a></span></center>
+
+
+<p>You&rsquo;ll have to download the dependencies separately though.</p>
+
+<h3>Dependencies</h3>
+
+
+<p>Here&rsquo;s what you&rsquo;ll need (again, I&rsquo;m using Spring 2.5.x and Spring Modules 0.9):</p>
+
+<ul class="square">
+    <li><code>commons-collections.jar</code></li>
+    <li><code>commons-lang.jar</code></li>
+    <li><code>commons-logging.jar</code></li>
+    <li><code>spring.jar</code></li>
+    <li><code>spring-modules-validation.jar</code></li>
+    <li><code>spring-webmvc.jar</code></li>
+</ul>
+
+
+
+
+<h3>Java sources</h3>
+
+
+<p>I&rsquo;m going to do things a little differently than I normally do, and start with the Java first.  We&rsquo;re going to build a very simple &ldquo;Contact Us&rdquo; form of the sort that you might use to ask a question, complain about lousy service, or whatever.  Since we&rsquo;re just showing how validation works, I&rsquo;ve left out the service and persistence tiers.  We&rsquo;re going to do everything with a form bean and a controller.</p>
+
+<p>Here&rsquo;s the form bean:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>contact.UserMessage</code>
+<pre name="code" class="java">
+package contact;
+
+import org.springmodules.validation.bean.conf.loader.annotation.handler.Email;
+import org.springmodules.validation.bean.conf.loader.annotation.handler.Length;
+import org.springmodules.validation.bean.conf.loader.annotation.handler.NotBlank;
+
+public final class UserMessage {
+    
+    @NotBlank
+    @Length(max = 80)
+    private String name;
+    
+    @NotBlank
+    @Email
+    @Length(max = 80)
+    private String email;
+    
+    @NotBlank
+    @Length(max = 4000)
+    private String text;
+    
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+    
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) { this.email = email; }
+
+    public String getText() { return text; }
+
+    public void setText(String text) { this.text = text; }
+}
+</pre>
+</div>
+
+
+<p>The bean itself is pretty uninteresting&mdash;I have field for the user&rsquo;s name, e-mail address, and the message text.  But the cool part is that I&rsquo;ve included annotations that specify validation constraints.  It&rsquo;s probably self-explanatory, but I&rsquo;ve specified that none of the fields is allowed to be blank, and I&rsquo;ve also specified the maximum lengths for each.  (You can also specify minimum lengths, which one could use instead of <code>@NotBlank</code>, but I&rsquo;m using <code>@NotBlank</code> instead for a reason I&rsquo;ll explain in just a bit.)  Finally, I&rsquo;ve specified that <code>email</code> needs to be a valid e-mail address.  It&rsquo;s that simple!</p>
+
+<p>Here are <a href="https://springmodules.dev.java.net/docs/reference/0.8/html_single/#d0e9699">the rest of the validation rules</a> you can use.</p>
+
+<p>Now here&rsquo;s the Spring MVC controller, which I&rsquo;ve implemented as a POJO controller:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>contact.ContactController</code>
+<pre name="code" class="java">
+package contact;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@Controller
+public final class ContactController {
+    
+    @Autowired
+    private Validator validator;
+    
+    public void setValidator(Validator validator) {
+        this.validator = validator;
+    }
+    
+    @RequestMapping(value = "/form", method = RequestMethod.GET)
+    public ModelMap get() {
+        
+        // Because we're not specifying a logical view name, the
+        // DispatcherServlet's DefaultRequestToViewNameTranslator kicks in.
+        return new ModelMap("userMessage", new UserMessage());
+    }
+    
+    @RequestMapping(value = "/form", method = RequestMethod.POST)
+    public String post(@ModelAttribute("userMessage") UserMessage userMsg,
+            BindingResult result) {
+        
+        validator.validate(userMsg, result);
+        if (result.hasErrors()) { return "form"; }
+        
+        // Use the redirect-after-post pattern to reduce double-submits.
+        return "redirect:thanks";
+    }
+    
+    @RequestMapping("/thanks")
+    public void thanks() {
+    }
+}
+</pre>
+</div>
+
+
+<p>The Bean Validation Framework includes its own <code>Validator</code> implementation, called <code>BeanValidator</code>, and I&rsquo;m making that injectable here.  Also, note that we&rsquo;re going to autowire it in.</p>
+
+<p>It may be that there&rsquo;s a standard, predefined interceptor to apply <code>BeanValidator</code> (as opposed to injecting the <code>Validator</code> into the controller), but if there is, I haven&rsquo;t seen it.  I&rsquo;d be interested to hear if you, gentle reader, know of one.</p>
+
+<p>The noteworthy method here is the second <code>post()</code> method, which contains the validation code.  I just call the standard <code>validate()</code> method, passing in the form bean and the <code>BindingResult</code>, and return the current logical view name if there&rsquo;s an error.  That way the form shows the validation error messages, which we&rsquo;ll see below.  If everything passes validation, I just redirect to a &ldquo;thank you&rdquo; page.</p>
+
+<p>Now let&rsquo;s look at how we define the validation messages that the end user sees if his form submission fails validation.</p>
+
+<h3>Validation messages</h3>
+
+
+
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/classes/errors.properties</code>
+<pre name="code" class="java">
+UserMessage.name[not.blank]=Please enter your name.
+UserMessage.name[length]=Please enter no more than {2} characters.
+UserMessage.email[not.blank]=Please enter your e-mail address.
+UserMessage.email[email]=Please enter a valid e-mail address.
+UserMessage.email[length]=Please enter no more than {2} characters.
+UserMessage.text[not.blank]=Please enter a message.
+UserMessage.text[length]=Please enter no more than {2} characters.
+</pre>
+</div>
+
+
+<p>The keys should be fairly self-explanatory given <code>UserMessage</code> above.  Each key involves a class, a field and an annotation.  The values are parametrizable messages, not unlike Commons Validator messages if you&rsquo;re familiar with those.  In the three <code>length</code> messages, I&rsquo;m using <code>{2}</code> to indicate argument #2&mdash;viz., <code>max</code>&mdash;for the <code>length</code> validation rule.  Argument #1 happens to be <code>min</code>, and argument #0 in general appears to be the form bean itself.  I can imagine that it would be nice to be able to use the form bean to get at the specific submitted value so you could say things like &ldquo;You entered 4012 characters, but the limit is 4000 characters.&rdquo;  And I think there&rsquo;s actually a way to do that though I don&rsquo;t myself know how to do it yet.  (This is another one of those areas where I&rsquo;d appreciate whatever information you may have.)</p>
+
+<p>I mentioned above that I chose <code>@NotBlank</code> instead of <code>@Length(min = 1, max = 80)</code>.  The reason is that I wanted to use a specific error message (&ldquo;Please enter your name&rdquo;) if the message is blank.  I could have just used &ldquo;Please enter a name between 1-80 characters&rdquo; but that sounds slightly silly compared to &ldquo;Please enter your name&rdquo;, and since I&rsquo;m a usability guy I care about such things.</p>
+
+<h3>The JSPs</h3>
+
+
+<p>We have two JSPs: the form itself, and a basic (really basic) &ldquo;thank you&rdquo; page.</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/form.jsp</code>
+<pre name="code" class="xml">
+&lt;%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %&gt;
+
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+    &lt;head&gt;
+        &lt;title&gt;Contact Us&lt;/title&gt;
+        &lt;style&gt;
+            .form-item { margin: 20px 0; }
+            .form-label { font-weight: bold; }
+            .form-error-field { background-color: #FFC; }
+            .form-error-message { font-weight: bold; color: #900; }
+        &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    
+&lt;h1&gt;Contact Us&lt;/h1&gt;
+
+&lt;%-- Give command object a meaningful name instead of using default name, 'command' --%&gt;
+&lt;form:form commandName="userMessage"&gt;
+    &lt;div class="form-item"&gt;
+        &lt;div class="form-label"&gt;Your name:&lt;/div&gt;
+        &lt;form:input path="name" size="40" cssErrorClass="form-error-field"/&gt;
+        &lt;div class="form-error-message"&gt;&lt;form:errors path="name"/&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="form-item"&gt;
+        &lt;div class="form-label"&gt;Your e-mail address:&lt;/div&gt;
+        &lt;form:input path="email" size="40" cssErrorClass="form-error-field"/&gt;
+        &lt;div class="form-error-message"&gt;&lt;form:errors path="email"/&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="form-item"&gt;
+        &lt;div class="form-label"&gt;Your message:&lt;/div&gt;
+        &lt;form:textarea path="text" rows="12" cols="60" cssErrorClass="form-error-field"/&gt;
+        &lt;div class="form-error-message"&gt;&lt;form:errors path="text"/&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="form-item"&gt;
+        &lt;input type="submit" value="Submit" /&gt;
+    &lt;/div&gt;
+&lt;/form:form&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div>
+
+
+<p>This is just a standard Spring Web MVC form, so I&rsquo;ll invoke my &ldquo;I assume you know Spring Web MVC&rdquo; assumption here.  The <code>cssErrorClass</code> attribute is kind of fun if you don&rsquo;t already know about it.  It indicates the CSS class to use in the event of a validation error.  You can combine that with the <code>cssClass</code> attribute (which applies in the non-error case) though I haven&rsquo;t done that here.</p>
+
+<p>Now here&rsquo;s the basic &ldquo;thank you&rdquo; page:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/thanks.jsp</code>
+<pre name="code" class="xml">
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+    &lt;head&gt;
+        &lt;title&gt;Thank You&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;Thank You&lt;/h1&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div>
+
+
+<p>(I told you it was basic&hellip;)</p>
+
+<p>OK, now we&rsquo;re ready to move onto application configuration.  Almost done!</p>
+
+<h3>Servlet and Spring configuration</h3>
+
+
+<p>Here&rsquo;s our completely standard <code>web.xml</code>:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/web.xml</code>
+<pre name="code" class="xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;web-app xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+        http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5"&gt;
+    
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;contact&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;
+            org.springframework.web.servlet.DispatcherServlet
+        &lt;/servlet-class&gt;
+    &lt;/servlet&gt;
+    
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;contact&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/contact/*&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;        
+&lt;/web-app&gt;
+</pre>
+</div>
+
+
+<p>Though I said I&rsquo;m assuming you already know Spring Web MVC, I&rsquo;ll just point out that since I didn&rsquo;t specify a custom location for the application context file, I have to put it at <code>/WEB-INF/contact-servlet.xml</code>.  If you want the file to live elsewhere, or if you want it to be associated with the servlet context instead of the <code>DispatcherServlet</code>, you&rsquo;ll have to set that up in <code>web.xml</code> accordingly.</p>
+
+<p>Here&rsquo;s the Spring application context:</p>
+
+<div>
+<span class="code-listing">Code listing:</span> <code>/WEB-INF/contact-servlet.xml</code>
+<pre name="code" class="xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"&gt;
+    
+    &lt;!-- Enable annotation-based validation using Bean Validation Framework --&gt;
+    &lt;!-- Using these instead of vld namespace to prevent Eclipse from complaining --&gt;
+    &lt;bean id="configurationLoader"
+        class="org.springmodules.validation.bean.conf.loader.annotation.AnnotationBeanValidationConfigurationLoader"/&gt;
+    &lt;bean id="validator" class="org.springmodules.validation.bean.BeanValidator"
+        p:configurationLoader-ref="configurationLoader"/&gt;
+    
+    &lt;!-- Load messages --&gt;
+    &lt;bean id="messageSource"
+        class="org.springframework.context.support.ResourceBundleMessageSource"
+        p:basenames="errors"/&gt;
+
+    &lt;!-- Discover POJO @Components --&gt;
+    &lt;!-- These automatically register an AutowiredAnnotationBeanPostProcessor --&gt;
+    &lt;context:component-scan base-package="contact"/&gt;
+    
+    &lt;!-- Map logical view names to physical views --&gt;
+    &lt;bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+        p:prefix="/WEB-INF/"
+        p:suffix=".jsp"/&gt;
+&lt;/beans&gt;
+</pre>
+</div>
+
+
+<p>(<strong>IMPORTANT:</strong> In the <code>configurationLoader</code> definition, make sure you put the class name on a single line.  I had to break it up for formatting purposes.)</p>
+
+<p>If you&rsquo;re not familiar with it, I&rsquo;m using the <code>p</code> namespace here for syntactic sugar&mdash;it allows me to specify properties using a nice shorthand.</p>
+
+<p>The first two beans basically create the <code>BeanValidator</code> instance we&rsquo;re going to use.  It turns out that instead of defining these two beans explicitly, you can use a special element from a special namespace:</p>
+
+<ul class="square">
+    <li>namespace is <code>xmlns:vld="http://www.springmodules.org/validation/bean/validator"</code>;</li>
+    <li>purported schema location is <code>http://www.springmodules.org/validation/bean/validator-2.0.xsd</code>;</li>
+    <li>element is <code>&lt;vld:annotation-based-validator id="validator"/&gt;</code></li>
+</ul>
+
+
+<p>But when I do it, Eclipse complains (even though the code works when you run it) since there isn&rsquo;t at the time of this writing actually an XSD at the specified location.  (At least there&rsquo;s a <a href="http://jira.springframework.org/browse/MOD-464">JIRA ticket</a> for it.)  So I&rsquo;ll just use the two beans for now.</p>
+
+<p>The other stuff is mostly normal Spring Web MVC stuff.  I put the message source on the app context, scan for the controller (which is why I&rsquo;m autowiring the validator into the controller), and put a view resolver on the context too.</p>
+
+<h3>Finis</h3>
+
+
+<p>Build and deploy your WAR, and then point your browser to your web app; for example:</p>
+
+<center>http://localhost:8080/contact-example/contact/form</center>
+
+
+<p>Try submitting the form with empty fields, or an invalid e-mail address, or fields that are too long.  If things are working correctly, you ought to see error messages and even field highlighting when validation fails.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1994,209 +2382,6 @@ JkMount /mywebapp/*.jsp ajp13w</pre>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/03/18/annotation-based-transactions-in-spring/">Annotation-based Transactions in Spring</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-03-18T15:52:55-07:00" pubdate data-updated="true">Mar 18<span>th</span>, 2008</time>
-        
-         | <a href="/2008/03/18/annotation-based-transactions-in-spring/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>The post shows how to use transaction management annotations in Spring.  I&rsquo;m using Spring 2.5 though these features have been available at least since Spring 2.0.</p>
-
-<p>Spring provides several different approaches to transaction management:</p>
-
-<ul class="square">
-    <li><b>Programmatic:</b> You can write your transactions using Java source code directly.  Normally you wouldn&#8217;t do this unless you needed fine-grained control over some particular transaction.</li>
-    <li>
-        <b>Declarative:</b> You can declare transaction definitions in either a centralized way using XML or in a distributed way using annotations:
-        <ul class="square">
-            <li>
-                <b>XML-based:</b> You can configure transactions in Spring&#8217;s centralized application context file.  Once again you have options:
-                <ul class="square">
-                    <li><b>Proxy-based:</b> In this approach you wrap your service beans with transactional proxies.  The proxy and the service bean both implement the same Java interface so the application can&#8217;t tell them apart.  This is a fairly verbose approach with respect to the actual context configuration though there are techniques you can use to streamline the configuration.</li>
-                    <li><b>AOP-based:</b> Here you define AOP aspects to endow your service beans with transactional semantics.  Not quite as verbose as the proxy-based approach.</li>
-                </ul>
-            </li>
-            <li><b>Annotation-based:</b> You can use Java 5 annotations to distribute transaction configuration across Java classes.</li>
-        </ul>
-    </li>
-</ul>
-
-
-<p>As the title suggests, this article deals with annotation-based configuration.  In my opinion this is the cleanest and most sensible approach: context file configuration is almost nil and the transaction definitions are conveniently located with the service interfaces and/or beans themselves.</p>
-
-<p>Let&rsquo;s start with a basic overview of transactions, and then we&rsquo;ll get to the good stuff.</p>
-
-<h3>Transaction basics</h3>
-
-
-<p>Feel free to skip this section if you already understand transactions and just want to see how to define transactions in Spring using annotations.</p>
-
-<p>The core idea behind a transaction is that it&rsquo;s a complex operation completed as an all-or-nothing set of simpler operations.  If one of the simpler operations fails, then none of the operations should be applied.</p>
-
-<p>The classic example is making a purchase, and indeed this is probably where the name &ldquo;transaction&rdquo; comes from.  There are several steps:</p>
-
-<ol>
-<li>Pull funds from buyer&#8217;s account</li>
-<li>Add funds to seller&#8217;s account</li>
-<li>Decrease product inventory</li>
-</ol>
-
-
-<p>A failure could happen at any of those steps.  For example, at step 1, if the buyer doesn&rsquo;t have enough money, then the transaction should fail.  (We wouldn&rsquo;t add funds to the seller&rsquo;s account and we wouldn&rsquo;t decrease product inventory.)  At step 2, if the seller&rsquo;s account has been frozen due to suspected involvement in illegal activities, then the transaction should fail.  At step 3, if the product is out of stock, then again the transaction should fail.</p>
-
-<p>That&rsquo;s just the classic example.  There are other examples that are transactions in the technical sense even though a non-technical person wouldn&rsquo;t normally regard them as transactions <i>per se</i>.  For instance, my web site allows end users to submit comments on articles. I have a database table for comments and a separate link table that links comments to their associated articles.  (I have it this way because I want to be able to relate comments to other entities as well.)  So to add a comment, I need to insert a record into the comment table and then another record into the link table.  If either of those inserts fails, then I don&rsquo;t want to run either one.  That&rsquo;s a transaction too, at least in the narrower technical sense that we&rsquo;re discussing here.</p>
-
-<p>I would say that the all-or-nothing nature of transactions is their defining characteristic, but it is generally recognized that there are four major characteristics we have in mind when we call something a transaction.  They are the ACID properties.</p>
-
-<h4>ACID properties</h4>
-
-
-<p>ACID is an acronym that stands for atomic, consistent, isolated and durable.  An operation is a transaction if and only if it has these four characteristics, which I&rsquo;ll describe briefly:</p>
-
-<ul class="square">
-
-<li><b>Atomic:</b> This is the aforementioned all-or-nothing property. Even though a transaction comprises multiple operations, it is completed as a single logical unit of work.  Either the whole thing succeeds or none of it does.</li>
-
-<li><b>Consistent:</b> We want our &#8220;transactional resource&#8221; (which in most cases means our database) to be consistent with reality.  So for example if I have 4,132 widgets in stock after I sell you five of them, then I want the database to say that I have 4,132 widgets in stock after I run a <code>sell(you, 5, widget)</code> transaction. The consistency property means that after a transaction completes, the database (or whatever transactional resource we&#8217;re using) matches up with the real world.</li>
-
-<li><b>Isolated:</b> In general we want to be able to run lots of transactions against the database at the same time, and we don&#8217;t want to make a big mess out of things in the process.  The isolation property means that when you run a transaction, it achieves its results without interference from other transactions.  That doesn&#8217;t mean that the transactions can&#8217;t run concurrently&mdash;it just means that the transactions shouldn&#8217;t corrupt each other in the process.  In practice it&#8217;s nontrivial to strike the right balance between concurrency and isolation; transactions however exhibit some level of isolation, and well-designed transactions exhibit the &#8220;right&#8221; amount of isolation.</li>
-
-<li><b>Durable:</b> This just means that after a transaction has ended, its results are made persistent.  Probably they would have called this property &#8220;persistent&#8221; instead of &#8220;durable&#8221;, but &#8220;ACIP&#8221; is not as cool as &#8220;ACID&#8221;.</li>
-
-</ul>
-
-
-
-
-<h4>Defining individual transactions</h4>
-
-
-<p>Now that we know what transactions are, we need to understand how individual transactions are actually specified.  Defining a transaction involves picking a chunk of code (maybe a method, maybe a set of methods, maybe a block of code inside a method) and setting values for the following five parameters:</p>
-
-<ul class="square">
-
-<li><b>Propagation behavior:</b> When defining a transaction we must specify its &#8220;boundaries&#8221;: where does the transaction start and where does it end?  In Spring (and also in EJB), the boundaries of a transaction may or may not coincide with the boundaries of a Java method.  In one respect this is not unlike using the <code>synchronized</code> keyword: if one synchronized method calls another on the same class, then the protected scope includes both methods, not just one, and so the boundaries do not coincide with a single method.  But the difference is that with transactions you have a lot more flexibility as far as defining the boundaries.  Certainly it is possible to enter a transaction starting from one method and then include additional method calls within the scope of that initial transaction.  But you can do other things too, such as declare that calls to other methods open up new transactions, or that a given method must always run within the scope of an existing transaction, etc.  I won&#8217;t go over all the options here but there are seven and you can see them here: <a href="http://static.springframework.org/spring/docs/2.5.0/api/org/springframework/transaction/TransactionDefinition.html">transaction propagation options</a>.  Probably <code>PROPAGATION_REQUIRED</code> is the most typical.</li>
-
-<li><b>Isolation level:</b> I mentioned above that in practice concurrency trades against isolation.  (Once again there&#8217;s an analogy with threads, incidentally.)  You can specify the level of isolation you need for a given transaction; the general rule of thumb is assign the weakest isolation level you can safely get away with so as to maximize concurrency.  Again I won&#8217;t go into the details but you can find them here: <a href="http://static.springframework.org/spring/docs/2.5.0/api/org/springframework/transaction/TransactionDefinition.html">transaction isolation levels</a>.  The most typical cases are <code>ISOLATION_READ_COMMITTED</code> and <code>ISOLATION_REPEATABLE_READ</code>.  The <code>ISOLATION_READ_UNCOMMITTED</code> is so weak as to be almost useless in practice, and <code>ISOLATION_SERIALIZABLE</code> is so strong that you don&#8217;t want to use it unless you really, really need the safety it provides: it&#8217;s a concurrency-killer.</li>
-
-<li><b>Timeout:</b> I&#8217;m currently reading a great book on software development called <a href="http://www.pragprog.com/titles/mnee">Release It!: Design and Deploy Production-Ready Software</a>, by Michael T. Nygard.  In a nutshell this book makes the case that designing software against a functional requirements document isn&#8217;t (at all) the same thing as designing software for the data center, and to do the latter you need to assume that serious bugs will infiltrate your production releases and design your software to deal with that reality.  One of the key insights is that problems occur primarily at integration points, and one of the strategies for dealing with that is to use timeouts. Transaction timeouts allow the calling application to give up if the database hasn&#8217;t completed the transaction within a specifiable interval of time.</li>
-
-<li><b>Read-only:</b> This flag indicates whether the transaction will be, well, read-only.  If so, you can flag it as such and the underlying database or other resource can apply optimizations based on that fact.</li>
-
-<li><b>Rollback behavior:</b> By default, both Spring and EJB roll back a transaction (i.e., cancel it without applying any of the changes) when runtime exceptions, but not when checked exceptions occur.  You can modify that behavior.</li>
-
-</ul>
-
-
-<p>With that overview concluded, let&rsquo;s now examine Spring&rsquo;s annotation-based transaction management.  It is ridiculously straightforward.</p>
-
-<h3>Annotating the Java interface</h3>
-
-
-<p>With Spring, you typically apply transaction annotations either to Java interfaces for service beans, or else to the service beans themselves.  If you apply the annotations to the interfaces then the transaction definition holds true for any classes implementing those interfaces.  We&rsquo;ll do that here, but remember that you can apply the annotations to the service beans themselves as well.</p>
-
-<p>Here&rsquo;s an interface for a simple article service.  This service allows the application to get an article by ID, and also to post a comment for a given article.</p>
-
-<pre>package myapp.service;
-
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import myapp.model.Article;
-import myapp.model.Comment;
-
-@Transactional(
-    propagation = Propagation.REQUIRED,
-    isolation = Isolation.DEFAULT,
-    readOnly = true)
-public interface ArticleService {
-    
-    Article getArticle(long articleId);
-    
-    @Transactional(readOnly = false)
-    void postComment(long articleId, Comment comment);
-}</pre>
-
-
-
-
-<div class="alert warning">In this example I&#8217;m annotating the <code>ArticleService</code> interface, but that works only with interface-based proxies, not for class-based proxies. In general it&#8217;s better to place the <code>@Transactional</code> annotation on concrete classes, not interfaces. &mdash; Willie</div>
-
-
-<p>The first thing to notice is again just how ridiculously simple this is.  I probably don&rsquo;t need to explain it but I will anyway just to be safe.  The <code>@Transactional</code> annotation we define on the interface is setting default values for the various methods that form the interface.  So we are saying here that unless the method itself specifies otherwise, we want <code>Propagation.REQUIRED</code> for the propagation behavior, we want the default isolation level, and we want to flag methods as read-only.</p>
-
-<p>The only other piece to mention is that I&rsquo;ve overridden the <code>readOnly</code> setting for the <code>postComment</code> method since that&rsquo;s obviously a write method.</p>
-
-<p>If it could be any simpler I&rsquo;m not sure how.  Now let&rsquo;s look at the Spring configuration file.</p>
-
-<h3>The Spring configuration file</h3>
-
-
-<p>Here it is:</p>
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-
-&lt;beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:aop="http://www.springframework.org/schema/aop"
-    xmlns:tx="http://www.springframework.org/schema/tx"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
-        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
-        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"&gt;
-    
-    &lt;!-- Wire beans here --&gt;
-    ...
-
-    &lt;bean id="transactionManager"
-        class="org.springframework.orm.hibernate3.HibernateTransactionManager"&gt;
-        ...
-    &lt;/bean&gt;
-    
-    &lt;!-- This tells Spring to activate annotation-driven transactions --&gt;
-    &lt;tx:annotation-driven/&gt;
-&lt;/beans&gt;</pre>
-
-
-<p>That&rsquo;s it&mdash;really!  Make sure you include both the <code>aop</code> and <code>tx</code> namespaces and schema locations since that&rsquo;s where the magic lives.  You have to wire your beans up just like you normally would (though note that you can even <a href="spring-autowiring-annotations.html">use annotations to autowire your beans</a>).  And you have to provide a transaction manager of one kind or another.  I&rsquo;m using the Hibernate 3 <code>HibernateTransactionManager</code> but use whatever you want. If you give your transaction manager the id <code>transactionManager</code>, then you can take advantage of a little Spring convention-over-configuration: <code>&lt;tx:annotation-driven&gt;</code> will pick that up automatically.  (And if you want to call your transaction manager something else, that&rsquo;s fine too.  Just reference that ID using the <code>transaction-manager</code> attribute of the <code>&lt;tx:annotation-driven&gt;</code> element.)</p>
-
-<p>Oh, the <code>&lt;tx:annotation-driven&gt;</code> element just tells Spring that you want it to pick the transaction definitions up from the Java annotations.  I&rsquo;m not sure how it works behind the scenes, but I think Spring will run through the beans in your context and create the necessary transaction aspects.  Not positive about that&mdash;if you know the details, I&rsquo;m interested&mdash;but in any case you end up with annotation-driven transactions.  Nice!</p>
-
-<div class="endnote">Post migrated from my Wheeler Software site.</div>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/9/">&larr; Older</a>
@@ -2214,6 +2399,10 @@ public interface ArticleService {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know which apps are hitting your web service</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
       </li>
     
@@ -2227,10 +2416,6 @@ public interface ArticleService {
     
       <li class="post">
         <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
       </li>
     
   </ul>

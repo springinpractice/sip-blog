@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-24T18:47:52-07:00</updated>
+  <updated>2013-10-25T01:43:30-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,74 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Know which apps are hitting your web service]]></title>
+    <link href="http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service/"/>
+    <updated>2013-10-25T00:42:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service</id>
+    <content type="html"><![CDATA[<p>When creating a web service, it&rsquo;s often useful to know which apps are hitting it. I don&rsquo;t mean which users, but instead which apps. The reason is that you may want to coordinate with some other team on something. For example, maybe the team is being too aggressive about request retries, or maybe you want to alert the team to a change in the API. Whatever the reason, it&rsquo;s good to know which apps are calling your service.</p>
+
+<p>HTTP has a <code>User-Agent</code> header that can help here. One possible approach is to make that a required header. Unfortunately, this approach isn&rsquo;t ideal. The problem is that HTTP client libraries usually set that header automatically. So if the client application forgets to set the header explicitly, you end up with user agents like <code>Apache-HttpClient/release (java 1.5)</code>, which isn&rsquo;t much help at all.</p>
+
+<p>An approach I like better is to define a custom header and make it required. I use <code>X-User-Agent</code>, since it really is a user agent we&rsquo;re talking about here.</p>
+
+<p>Here&rsquo;s how to implement this with a servlet filter. No Spring involved here at all; it&rsquo;s just servlet stuff.</p>
+
+<pre><code>package com.myapp.web.filter;
+
+import java.io.IOException;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class XUserAgentFilter implements Filter {
+    private static final String X_USER_AGENT = "X-User-Agent";
+
+    private String errorJson;
+
+    public XUserAgentFilter() {
+        String message = 
+            "HTTP header '" + X_USER_AGENT + "' is required. Please set it to your application name so we know " +
+            "who to contact if there's an issue.";
+        this.errorJson = "{ " + wrap("message") + " : " + wrap(message) + " }";
+    }
+
+    private String wrap(String s) { return "\"" + s + "\""; }
+
+    @Override
+    public void init(FilterConfig config) throws ServletException { }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        if (httpRequest.getHeader(X_USER_AGENT) == null) {
+            httpResponse.setStatus(422);
+            httpResponse.getWriter().println(errorJson);
+        } else {
+            chain.doFilter(request, response);
+        }
+    }
+
+    @Override
+    public void destroy() { }
+}
+</code></pre>
+
+<p>Of course, you need to configure this filter and a filter mapping in your <code>web.xml</code> file.</p>
+
+<p>In the next post I&rsquo;ll show you how to set up your Spring <code>RestTemplate</code> to send the <code>X-User-Agent</code> header with each request automatically.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Generating JSON error object responses with Spring Web MVC]]></title>
@@ -565,39 +633,6 @@ public class OptimisticLockChecker {
 <p>After that, we compare and either throw an exception or else increment the version number.</p>
 
 <p>Perhaps the Spring Data REST guys will provide more direct support for <code>@Version</code> (or some suitable alternative) at some future point. Until then, I hope the approach above proves useful.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Sending cookies with RestTemplate]]></title>
-    <link href="http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate/"/>
-    <updated>2012-04-08T14:06:18-07:00</updated>
-    <id>http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate</id>
-    <content type="html"><![CDATA[<p>Sometimes it is necessary to send cookies along with requests to a RESTful API. One such example is the JIRA 4.3 API, which requires sending the <code>JSESSIONID</code> to JIRA for session management and authentication purposes. REST purists point out that such usages are not properly RESTful (see <a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/" target="_blank"><a href="http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/">http://blog.mikepearce.net/2010/08/24/cookies-and-the-restful-api/</a></a> for a good discussion), and indeed the <code>RestTemplate</code> doesn&rsquo;t directly support sending cookies.</p>
-
-<p>But in the real world, we need to make things work, and so in this quick post I&rsquo;ll show how to send cookies with <code>RestTemplate</code>.</p>
-
-<!-- more -->
-
-
-<p>The first thing to bear in mind is that we implement cookies as HTTP headers: the service uses a <code>Set-Cookie</code> response header to tell the client to set a cookie, and the client uses the <code>Cookie</code> request header for subsequent requests. And <code>RestTemplate</code> certainly supports setting request headers.</p>
-
-<p>Here&rsquo;s how I&rsquo;m pulling down an access-controlled RSS feed from JIRA 4.3:</p>
-
-<pre>HttpHeaders requestHeaders = new HttpHeaders();
-requestHeaders.add("Cookie", "JSESSIONID=" + session.getValue());
-HttpEntity requestEntity = new HttpEntity(null, requestHeaders);
-ResponseEntity rssResponse = restTemplate.exchange(
-    "https://jira.example.com/sr/jira.issueviews:searchrequest-xml/18107/SearchRequest-18107.xml?tempMax=1000",
-    HttpMethod.GET,
-    requestEntity,
-    Rss.class);
-Rss rss = rssResponse.getBody();</pre>
-
-
-<p>The trick here is to use the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> method, as this gives us more control over the request, including request headers. We just encode the cookie as a <code>JSESSIONID=[session ID]</code> request header and send it along.</p>
-
-<p>Have fun!</p>
 ]]></content>
   </entry>
   

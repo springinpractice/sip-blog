@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="For a long time, creating a DAO layer in Spring has been a largely manual process: Create a base generic DAO interface. Create a generic abstract DAO &hellip;">
+  <meta name="description" content="You know the p namespace? It&rsquo;s the one that cleans up your Spring configuration files by providing a shorthand for injecting beans and values &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,69 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/">The Spring Constructor Namespace</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-04-26T05:14:51-07:00" pubdate data-updated="true">Apr 26<span>th</span>, 2012</time>
+        
+         | <a href="/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>You know the <code>p</code> namespace? It&rsquo;s the one that cleans up your Spring configuration files by providing a shorthand for injecting beans and values:</p>
+
+<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation=
+       "http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"&gt;
+    
+    &lt;bean id="sessionFactory"
+        class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"
+        p:dataSource-ref="dataSource"
+        p:packagesToScan="com.springinpractice.ch10.model" /&gt;
+
+    ... other beans ...
+
+&lt;/beans&gt;</pre>
+
+
+<p>Did you know that Spring 3.1 introduces an analogous namespace for constructor injection? Yup&mdash;it&rsquo;s the <code>c</code> namespace:</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -807,59 +870,6 @@ List&lt;GitHubUser&gt; watchers =
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/01/14/skybasegithub-integration/">Zkybase/GitHub Integration</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-01-14T07:55:43-08:00" pubdate data-updated="true">Jan 14<span>th</span>, 2012</time>
-        
-         | <a href="/2012/01/14/skybasegithub-integration/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>A major goal for <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> is to tie together the activities of developers, testers, release engineers and operations. A few major benefits are:</p>
-
-<ul>
-<li><strong>Tool integration:</strong> We can single source app lists and more across development, build, test, deployment, monitoring, knowledge management and other tools.</li>
-<li><strong>Process streamlining:</strong> Outputs from the dev process feed into the test and deployment processes, which in turn feed into operational processes.</li>
-<li><strong>Communications across teams:</strong> All the teams work from the same concepts and data, facilitating communication.</li>
-</ul>
-
-
-<p>One of the first things I want to tackle in Zkybase, then, is supporting some developer-centric concerns. An important one is source control. Obviously Zkybase isn&rsquo;t itself a source control management system, but it makes sense to pull in useful information from the source code repos just to provide a &ldquo;single pane of glass&rdquo; where developers and other users can get a holistic view of what an app is all about.</p>
-
-<p>Since I&rsquo;m using GitHub, Github integration is a logical starting point for Zkybase/SCM integration. GitHub has a <a title="GitHub REST API" href="http://developer.github.com/v3/">REST API</a> that makes this integration easy. I wrote a <a title="Calling the GitHub API using Spring’s RestTemplate" href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/">post</a> that explains the technical approach. Here&rsquo;s the end result:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-14-skybasegithub-integration/skybase_scm4.png" alt="Zkybase SCM page" /></p>
-
-<p>I suspect that such integrations will be a large part of the value that Zkybase delivers. They will help realize the process, tool and communications benefits I highlighted above.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -877,6 +887,10 @@ List&lt;GitHubUser&gt; watchers =
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know which apps are hitting your web service</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
       </li>
     
@@ -890,10 +904,6 @@ List&lt;GitHubUser&gt; watchers =
     
       <li class="post">
         <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
       </li>
     
   </ul>

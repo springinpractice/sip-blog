@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-24T18:47:52-07:00</updated>
+  <updated>2013-10-25T01:43:30-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,74 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Know which apps are hitting your web service]]></title>
+    <link href="http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service/"/>
+    <updated>2013-10-25T00:42:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service</id>
+    <content type="html"><![CDATA[<p>When creating a web service, it&rsquo;s often useful to know which apps are hitting it. I don&rsquo;t mean which users, but instead which apps. The reason is that you may want to coordinate with some other team on something. For example, maybe the team is being too aggressive about request retries, or maybe you want to alert the team to a change in the API. Whatever the reason, it&rsquo;s good to know which apps are calling your service.</p>
+
+<p>HTTP has a <code>User-Agent</code> header that can help here. One possible approach is to make that a required header. Unfortunately, this approach isn&rsquo;t ideal. The problem is that HTTP client libraries usually set that header automatically. So if the client application forgets to set the header explicitly, you end up with user agents like <code>Apache-HttpClient/release (java 1.5)</code>, which isn&rsquo;t much help at all.</p>
+
+<p>An approach I like better is to define a custom header and make it required. I use <code>X-User-Agent</code>, since it really is a user agent we&rsquo;re talking about here.</p>
+
+<p>Here&rsquo;s how to implement this with a servlet filter. No Spring involved here at all; it&rsquo;s just servlet stuff.</p>
+
+<pre><code>package com.myapp.web.filter;
+
+import java.io.IOException;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class XUserAgentFilter implements Filter {
+    private static final String X_USER_AGENT = "X-User-Agent";
+
+    private String errorJson;
+
+    public XUserAgentFilter() {
+        String message = 
+            "HTTP header '" + X_USER_AGENT + "' is required. Please set it to your application name so we know " +
+            "who to contact if there's an issue.";
+        this.errorJson = "{ " + wrap("message") + " : " + wrap(message) + " }";
+    }
+
+    private String wrap(String s) { return "\"" + s + "\""; }
+
+    @Override
+    public void init(FilterConfig config) throws ServletException { }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        if (httpRequest.getHeader(X_USER_AGENT) == null) {
+            httpResponse.setStatus(422);
+            httpResponse.getWriter().println(errorJson);
+        } else {
+            chain.doFilter(request, response);
+        }
+    }
+
+    @Override
+    public void destroy() { }
+}
+</code></pre>
+
+<p>Of course, you need to configure this filter and a filter mapping in your <code>web.xml</code> file.</p>
+
+<p>In the next post I&rsquo;ll show you how to set up your Spring <code>RestTemplate</code> to send the <code>X-User-Agent</code> header with each request automatically.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Generating JSON error object responses with Spring Web MVC]]></title>
@@ -1463,91 +1531,6 @@ jM3JXG7LRkr/G6M24RCxBKONckQy+3j1wdy/jZwfisilPg==
 <li><a href="http://en.wikipedia.org/wiki/STARTTLS">STARTTLS [Wikipedia]</a>: Background material on STARTTLS.</li>
 </ul>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[The Spring constructor namespace]]></title>
-    <link href="http://springinpractice.com/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts/"/>
-    <updated>2012-04-26T05:14:51-07:00</updated>
-    <id>http://springinpractice.com/2012/04/26/the-spring-constructor-namespace-and-some-deep-thoughts</id>
-    <content type="html"><![CDATA[<p>You know the <code>p</code> namespace? It&rsquo;s the one that cleans up your Spring configuration files by providing a shorthand for injecting beans and values:</p>
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:p="http://www.springframework.org/schema/p"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation=
-       "http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"&gt;
-    
-    &lt;bean id="sessionFactory"
-        class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"
-        p:dataSource-ref="dataSource"
-        p:packagesToScan="com.springinpractice.ch10.model" /&gt;
-
-    ... other beans ...
-
-&lt;/beans&gt;</pre>
-
-
-<p>Did you know that Spring 3.1 introduces an analogous namespace for constructor injection? Yup&mdash;it&rsquo;s the <code>c</code> namespace:</p>
-
-<!-- more -->
-
-
-
-
-<pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:c="http://www.springframework.org/schema/c"
-    xmlns:p="http://www.springframework.org/schema/p"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation=
-       "http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd"&gt;
-        
-    &lt;bean id="connectionFactoryLocator"
-        class="org.springframework.social.connect.support.ConnectionFactoryRegistry"&gt;
-        &lt;property name="connectionFactories"&gt;
-            &lt;list&gt;
-                &lt;bean class="org.springframework.social.github.connect.GitHubConnectionFactory"
-                    c:clientId="${gitHub.clientId}"
-                    c:clientSecret="${gitHub.clientSecret}" /&gt;
-            &lt;/list&gt;
-        &lt;/property&gt;
-    &lt;/bean&gt;
-    
-    &lt;bean id="usersConnectionRepository"
-        class="org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository"
-        c:dataSource-ref="dataSource"
-        c:connectionFactoryLocator-ref="connectionFactoryLocator"
-        c:textEncryptor-ref="textEncryptor" /&gt;
-    
-    ... other beans ...
-
-&lt;/beans&gt;</pre>
-
-
-<p>It works pretty much the same way, but for constructors. You can inject values, or else you can inject references using the <code>-ref</code> suffix.</p>
-
-<p>With <code>p</code>, the XML element name comes from the bean property name, but with constructors that&rsquo;s not available. Instead, for <code>c</code> we use the name of the constructor parameter itself. So for <code>JdbcUsersConnectionRepository</code> we&rsquo;re calling a constructor that looks like this:</p>
-
-<p><code>public JdbcUsersConnectionRepository(DataSource dataSource, ConnectionFactoryLocator connectionFactoryLocator, TextEncryptor textEncryptor)</code></p>
-
-<p>where it&rsquo;s the parameter names themselves (rather than the parameter types) driving the XML element names.</p>
-
-<h3>But keep this in mind&#8230;</h3>
-
-
-<p>The <code>c</code> namespace is great, but there&rsquo;s something you may not have considered. Because the XML element names come from the constructor parameter names, we have to compile the app in debug mode if we want to use this feature (otherwise the local variable names aren&rsquo;t in the class files), and we want to pay attention to the parameter names we choose. So, for instance, <code>ds</code>, <code>cfl</code> and <code>te</code> wouldn&rsquo;t be very good constructor parameter names.</p>
-
-<p>Note that Spring (especially Spring Web MVC) has been using parameter names in this fashion for a long time, so that&rsquo;s nothing new. The <code>@PathVariable</code> and <code>@RequestParam</code> annotations, for example, default to using parameter names when explicit names aren&rsquo;t specified. But in the case of the <code>c</code> namespace, a bean that supports <code>c</code>-based injection ought to publish the constructor parameter names, and they become in effect part of the API.</p>
-
-<h3>Update</h3>
-
-
-<p>I&rsquo;ve had a bit of a change of heart regarding the constructor namespace. Here&rsquo;s why I think <a href="http://springinpractice.com/2012/05/07/springs-constructor-namespace-is-a-bad-idea/">the Spring constructor namespace is a bad idea</a>.</p>
 ]]></content>
   </entry>
   

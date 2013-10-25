@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="This post is part of a three-part series: Part 1 | Part 2 | Part 3 This post is the second in a three-part series on concurrent programming. In the &hellip;">
+  <meta name="description" content="This post is part of a three-part series: Part 1 | Part 2 | Part 3 This third and final post in our series on concurrency explains how &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,208 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Concurrent Programming for Practicing Software Engineers, Part 3</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-10-15T09:06:02-07:00" pubdate data-updated="true">Oct 15<span>th</span>, 2008</time>
+        
+         | <a href="/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><div class="intro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Part 3</a></span>
+</div>
+
+
+<p>This third and final post in our series on concurrency explains how synchronization mistakes can lead to the problem of deadlocks, and what you can do to minimize or eliminate them.</p>
+
+<h3>How synchronization gives rise to deadlocks</h3>
+
+
+<p>We saw in the <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">previous post</a> how a thread will grab a lock just before entering a critical section, thereby forcing other threads to &ldquo;block&rdquo; (concurrency lingo for &ldquo;wait for another thread to release a lock&rdquo;) until they can acquire the lock. Normally this blocking behavior is unremarkable. It is a standard part of concurrent programming since we&rsquo;re trying to protect data from data races.</p>
+
+<p>If there&rsquo;s too much contention for locks, that can of course have a negative effect on performance since threads are sitting around waiting instead of doing work. But usually this just means subpar performance rather than hanging.</p>
+
+<p>The pathological case of contention for locks is <em>deadlocking</em>. This is characterized by two or more threads becoming permanently hung. They are notoriously difficult to predict, avoid and handle, but it&rsquo;s not impossible. The secret to understanding deadlocks is to understand that they arise when threads wait for each other to release a lock in a cyclic fashion. The simplest case would be thread T<sub>1</sub> waiting for T<sub>2</sub> to release a lock, and T<sub>2</sub> waiting for T<sub>1</sub> to release a lock. Neither one can make forward progress. The next simplest case is T<sub>1</sub> waiting for T<sub>2</sub>, T<sub>2</sub> waiting for T<sub>3</sub>, and T<sub>3</sub> waiting for T<sub>1</sub>. Now we have three deadlocked threads. Obviously the cycle can be of arbitrary length; all threads involved will be deadlocked.</p>
+
+<p>Here&rsquo;s a diagram that shows how it works:</p>
+
+<div style="margin: 20px auto; width: 584px;">
+    <div><img src="http://wheelersoftware.s3.amazonaws.com/articles/concurrent-programming/deadlocks.jpg" alt="The cyclic nature of deadlocks" /></div>
+    <div class="caption"><span class="figure-label">Figure 1.</span> Deadlocks arise from circular dependencies between threads.</div>
+</div>
+
+
+<p>In figure 1, you can see that each thread holds the lock needed by the preceding thread. As the dependencies are circular, there is no way for any of the threads to make forward progress once something like the above happens. All five threads are hung&mdash;that is, deadlocked.</p>
+
+<div style="margin-right: 10px; float: left">
+    <div><img src="http://wheelersoftware.s3.amazonaws.com/articles/concurrent-programming/vambrace-m16.jpg" alt="" /></div>
+    <div class="photo-caption" style="text-align: center">Photo credit: <a href="http://www.flickr.com/photos/gladius/2296372699/">gladius</a></div>
+</div>
+
+
+
+
+<h4>A furry aside</h4>
+
+
+<p>By now you might understand what I meant at the beginning of the article when I said that concurrent programming is kind of like an arms race. We start with single threads, but sometimes that&rsquo;s too slow, so we introduce multithreading. That causes a problem though, which is that the threads can interfere with one another when working with shared data. So we introduce turn-taking through mutexes (and through the <code>synchronized</code> keyword in particular). But that has the effect of limiting parallelism, and if we take that too far, we can end up sacrificing the parallelism (and performance) that we sought in the first place. In the most extreme case, we can inadvertently cause threads to deadlock.</p>
+
+<p>(Maybe <a href="http://en.wikipedia.org/wiki/Whac-a-mole">Whac-A-Mole</a> is a better metaphor. That&rsquo;s OK. I&rsquo;m going to stick with arms race just because I really like the mech/cyber photo. Think of it as an arms race between software engineers and small furry rodents.)</p>
+
+<div style="clear: both"></div>
+
+
+<p>Now let&rsquo;s consider an example of code vulnerable to deadlocks.</p>
+
+<h4>Some deadlocky code</h4>
+
+
+<p>For this one we&rsquo;re going to use the standard bank account funds transfer example. Yes, it&rsquo;s a clich&egrave;d example, but it&rsquo;s such a good example and originality is overrated anyway. Here&rsquo;s listing 3:</p>
+
+<div>
+    <div><span class="code-listing">Listing 3.</span> A deadlock just waiting to happen</div>
+        <pre>public void transferFunds(Account from, Account to, Money amount) {
+    synchronized (from) {
+        synchronized (to) {
+            from.decreaseBy(amount);
+            to.increaseBy(amount);
+        }
+    }
+}</pre>
+</div>
+
+
+<p>(We&rsquo;ll ignore exceptional conditions such as insufficient funds. Or, if you like, assume that <code>decreaseBy()</code> throws an unchecked <code>InsufficientFundsException</code>.)</p>
+
+<p>If it isn&rsquo;t obvious, the method is a service method that transfers funds from one account to another account. Before going further, take a look at the code and see if you can figure out how the deadlock can occur. Keep in mind what we said about cyclic dependencies.</p>
+
+<h4>Here&#8217;s how a deadlock can occur</h4>
+
+
+<p>Recall from the discussion above that deadlocks involve multiple threads. Each one grabs a lock that one of the other threads needs, and needs a lock that one of the other threads has. Here, we have two <code>synchronized</code> blocks, and each entry point corresponds to a place where a thread will try to grab a lock, maybe successfully and maybe not.</p>
+
+<p>With that information it&rsquo;s straightforward to construct the sequence of events that leads to the deadlock:</p>
+
+<ol>
+
+<li>Thread T<sub>1</sub> enters the method, with the source account being account 4 and the destination account being account 14. T<sub>1</sub> is able to acquire the lock for account 4, but then there&#8217;s a context switch before it can enter the second <code>synchronized</code> block.</li>
+
+<li>Thread T<sub>2</sub> also enters the method, with the source account being account 14 and the destination account being account 4. T<sub>2</sub> is able to acquire the lock for account 14, but then gets blocked when trying to acquire the lock for account 4. That stands to reason, since T<sub>1</sub> has it. Context switch.</li>
+
+<li>T<sub>1</sub> tries to grab the lock for account 14, but of course it can&#8217;t since T<sub>2</sub> has it. Threads T<sub>1</sub> and T<sub>2</sub> are now deadlocked.</li>
+
+</ol>
+
+
+<p>That&rsquo;s a fairly intricate bit of logic, and developers new to concurrent programming may wonder how in the heck they are supposed to anticipate problems like that. They may also wonder whether this series of events is so implausible that is just isn&rsquo;t worth worrying about. To answer the second concern first, deadlocks most certainly do occur in real code. Keep in mind that although the situations that produce them may be implausible, the problem is that CPU clock speeds are pretty incredible, and so things that seem implausible suddenly become just a matter of time.</p>
+
+<p>As to how to defend against deadlocks, we&rsquo;ll look at that right now.</p>
+
+<h3>Solving deadlocks with globally-defined lock orderings</h3>
+
+
+<p>There are different ways to either minimize the likelihood of deadlocking or else just avoid it altogether. One best practice is to minimize the scope of your critical sections so as to decrease the time that threads hang onto locks, and hence to decrease the likelihood of a deadlock. That however doesn&rsquo;t solve the issue; deadlocks can still occur.</p>
+
+<p>Another technique is to avoid the sort of nested locking that we saw in the example in the previous page. Instead of locking each account individually, we might define a single lock that any thread must acquire before doing a transfer. While this does indeed eliminate deadlocks, it does so at a very steep cost: acquiring the single lock becomes a bottleneck, and limits the parallelism we&rsquo;re trying to achieve in the first place. It does not scale.</p>
+
+<p>A third technique is to use timeouts. Under this approach, if any thread is blocked for a sufficiently lengthy period of time, it just gives up.</p>
+
+<p>Those are all legitimate techniques, but in this section we&rsquo;ll discuss global lock orders.</p>
+
+<h4>What is a globally-defined lock order?</h4>
+
+
+<p>Recall in our discussion of deadlocks that they arise from circular dependencies between the threads. Any given thread depends on a resource (a lock) that the previous thread in the ring holds. So one way to stamp out deadlocks is to define a global ordering on the locks so that such cycles can never arise. In other words, you define and publish rules around which locks to acquire before which other locks. This approach requires significant discipline from developers since there isn&rsquo;t any automatic way to enforce it. It is however extremely useful since it makes deadlocks impossible.</p>
+
+<p>Let&rsquo;s see how we might apply a global lock order to the funds transfer example.</p>
+
+<h4>The funds transfer example reconsidered</h4>
+
+
+<p>At first glance you might think, &ldquo;Wait a minute. The source account&rsquo;s lock is always grabbed before the destination account&rsquo;s lock, so how is it possible for a deadlock to occur?&rdquo; But upon closer examination it&rsquo;s clear that that&rsquo;s not a correct analysis. Whatever global lock order we define needs to translate ultimately down to instances, not roles in a transaction. Sometimes account 4 will be the source account, and sometimes it will be the destination account. Similarly for account 14. Whatever global lock order we define needs to handle that.</p>
+
+<p>One straightforward way to define a lock order for our current example would be to say that we always grab the lock for the account with the lower ID first. Listing 4 shows the new code:</p>
+
+<div>
+    <div><span class="code-listing">Listing 4.</span> Applying a globally-defined lock order</div>
+    <pre>public void transferFunds(Account from, Account to, Money amount) {
+    long fromId = from.getId();
+    long toId = to.getId();
+    long lowId = (fromId &lt; toId ? fromId : toId);
+    long highId = (fromId &lt; toId ? toId : fromId);
+    synchronized (lowId) {
+        synchronized (highId) {
+            from.decreaseBy(amount);
+            to.increaseBy(amount);
+        }
+    }
+}</pre>
+</div>
+
+
+<p>The code above is deadlock-free, because cyclic dependencies are impossible. Say thread T<sub>1</sub> wants to transfer funds from account 4 to account 14, and thread T<sub>2</sub> wants to transfer funds from account 14 to account 4. Both threads will try to grab the lock for account 4 before trying to grab the lock for account 14. Thus it&rsquo;s impossible to wait for the lock on account 4 while holding the lock for account 14, at least as long as all code observes the same globally-defined lock ordering that we&rsquo;ve observed here. (Hence &ldquo;global&rdquo;.)</p>
+
+<h3>Conclusion and recommended readings</h3>
+
+
+<p>In this series we looked at several key areas of concurrent programming that (in my opinion, anyway) all practicing software developers should understand. As regards concurrency, there is a gap between what typical developers <em>should</em> know and what they <em>actually</em> know, and that causes real-world production issues on a regular basis. I wrote this series to try to narrow that gap.</p>
+
+<p>There are of course lots of good resources for concurrent programming. Here are some of my favorites:</p>
+
+<ul class="square">
+
+<li><a href="http://www.infoq.com/presentations/goetz-concurrency-past-present">Concurrency: Past and Present</a>, by Brian Goetz: An entertaining presentation on concurrency. Goetz is a well-known authority on concurrent programming.</li>
+
+<li><a href="http://jcip.net/">Java Concurrency in Practice</a>, by Brian Goetz. A really great and approachable book.</li>
+
+<li><a href="http://www.amazon.com/Concurrent-Programming-Java-TM-Principles/dp/0201310090">Concurrent Programming in Java(TM): Design Principles and Pattern (2nd Edition)</a>, by Doug Lea. Another great book on concurrency; probably the standard. More academic than the Goetz book but still quite approachable.</li>
+
+<li><a href="http://sunnyday.mit.edu/papers/therac.pdf">The Therac-25 Accidents</a>: A classic software engineering paper on how race conditions actually injured and killed people. The basic idea is that the Therac-25 machine, which was designed to administer radiation to cancer patients, was vulnerable to race conditions that occurred as the human operator became more experienced with operating the machine (and thus keyboarded commands more quickly). The race conditions led to massive radiation overdoses. Long but well worth the read.</li>
+
+</ul>
+
+
+
+
+<div class="outro">
+<span class="icon stickyNote">This post is part of a three-part series: <a href="http://springinpractice.com/2008/10/13/concurrent-programming-for-practicing-software-engineers-part-1/">Part 1</a> | <a href="http://springinpractice.com/2008/10/14/concurrent-programming-for-practicing-software-engineers-part-2/">Part 2</a> | <a href="http://springinpractice.com/2008/10/15/concurrent-programming-for-practicing-software-engineers-part-3/">Part 3</a></span>
+</div>
+
+
+
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1482,394 +1684,6 @@ public class UserDetailsAdapter extends User { // 1
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/">Annotation-based Validation With the Spring Bean Validation Framework</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-07-17T16:35:36-07:00" pubdate data-updated="true">Jul 17<span>th</span>, 2008</time>
-        
-         | <a href="/2008/07/17/annotation-based-validation-with-the-spring-bean-validation-framework/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><div class="alert warning">This post predates JSR 303, which describes a standard around bean validation. The Spring Modules Bean Validation Framework isn&#8217;t compliant with that JSR, and anyway, it&#8217;s a defunct library. Use <a href="http://springinpractice.com/2009/02/02/getting-started-with-hibernate-validator/">Hibernate Validator</a> instead.</div>
-
-
-<p>The Spring Bean Validation Framework, which is part of the <a href="https://springmodules.dev.java.net/">Spring Modules</a> project, allows you to perform validation declaratively using Java annotations. I&rsquo;ve always liked the declarative approach, which we saw for instance in Commons Validator, but annotation-based validation is especially convenient.</p>
-
-<p><a href="http://jcp.org/en/jsr/detail?id=303">JSR 303 (Bean Validation)</a> specifies some standards around bean validation, though the Spring Bean Validation Framework does not adopt those standards. The <a href="http://www.hibernate.org/412.html">Hibernate Validator</a> project, on the other hand, aims to provide an implementation of the emerging JSR 303 standard.</p>
-
-<p>While it very well could be subpar Googling skills on my part, there doesn&rsquo;t seem to be much detailed how-to information out there on actually using the Bean Validation Framework.  Hence this article.</p>
-
-<p>I&rsquo;m using Spring 2.5.x (specifically, Spring 2.5.5) and Spring Modules 0.9.  I assume that you already know Spring and Spring Web MVC in particular.</p>
-
-<p>If you want to download the code, you can do so here:</p>
-
-<center><span class="icon archive"><a href="http://wheelersoftware.s3.amazonaws.com/articles/spring-bean-validation-framework/contact-example.zip">contact-example.zip</a></span></center>
-
-
-<p>You&rsquo;ll have to download the dependencies separately though.</p>
-
-<h3>Dependencies</h3>
-
-
-<p>Here&rsquo;s what you&rsquo;ll need (again, I&rsquo;m using Spring 2.5.x and Spring Modules 0.9):</p>
-
-<ul class="square">
-    <li><code>commons-collections.jar</code></li>
-    <li><code>commons-lang.jar</code></li>
-    <li><code>commons-logging.jar</code></li>
-    <li><code>spring.jar</code></li>
-    <li><code>spring-modules-validation.jar</code></li>
-    <li><code>spring-webmvc.jar</code></li>
-</ul>
-
-
-
-
-<h3>Java sources</h3>
-
-
-<p>I&rsquo;m going to do things a little differently than I normally do, and start with the Java first.  We&rsquo;re going to build a very simple &ldquo;Contact Us&rdquo; form of the sort that you might use to ask a question, complain about lousy service, or whatever.  Since we&rsquo;re just showing how validation works, I&rsquo;ve left out the service and persistence tiers.  We&rsquo;re going to do everything with a form bean and a controller.</p>
-
-<p>Here&rsquo;s the form bean:</p>
-
-<div>
-<span class="code-listing">Code listing:</span> <code>contact.UserMessage</code>
-<pre name="code" class="java">
-package contact;
-
-import org.springmodules.validation.bean.conf.loader.annotation.handler.Email;
-import org.springmodules.validation.bean.conf.loader.annotation.handler.Length;
-import org.springmodules.validation.bean.conf.loader.annotation.handler.NotBlank;
-
-public final class UserMessage {
-    
-    @NotBlank
-    @Length(max = 80)
-    private String name;
-    
-    @NotBlank
-    @Email
-    @Length(max = 80)
-    private String email;
-    
-    @NotBlank
-    @Length(max = 4000)
-    private String text;
-    
-    public String getName() { return name; }
-
-    public void setName(String name) { this.name = name; }
-    
-    public String getEmail() { return email; }
-
-    public void setEmail(String email) { this.email = email; }
-
-    public String getText() { return text; }
-
-    public void setText(String text) { this.text = text; }
-}
-</pre>
-</div>
-
-
-<p>The bean itself is pretty uninteresting&mdash;I have field for the user&rsquo;s name, e-mail address, and the message text.  But the cool part is that I&rsquo;ve included annotations that specify validation constraints.  It&rsquo;s probably self-explanatory, but I&rsquo;ve specified that none of the fields is allowed to be blank, and I&rsquo;ve also specified the maximum lengths for each.  (You can also specify minimum lengths, which one could use instead of <code>@NotBlank</code>, but I&rsquo;m using <code>@NotBlank</code> instead for a reason I&rsquo;ll explain in just a bit.)  Finally, I&rsquo;ve specified that <code>email</code> needs to be a valid e-mail address.  It&rsquo;s that simple!</p>
-
-<p>Here are <a href="https://springmodules.dev.java.net/docs/reference/0.8/html_single/#d0e9699">the rest of the validation rules</a> you can use.</p>
-
-<p>Now here&rsquo;s the Spring MVC controller, which I&rsquo;ve implemented as a POJO controller:</p>
-
-<div>
-<span class="code-listing">Code listing:</span> <code>contact.ContactController</code>
-<pre name="code" class="java">
-package contact;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.Validator;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
-@Controller
-public final class ContactController {
-    
-    @Autowired
-    private Validator validator;
-    
-    public void setValidator(Validator validator) {
-        this.validator = validator;
-    }
-    
-    @RequestMapping(value = "/form", method = RequestMethod.GET)
-    public ModelMap get() {
-        
-        // Because we're not specifying a logical view name, the
-        // DispatcherServlet's DefaultRequestToViewNameTranslator kicks in.
-        return new ModelMap("userMessage", new UserMessage());
-    }
-    
-    @RequestMapping(value = "/form", method = RequestMethod.POST)
-    public String post(@ModelAttribute("userMessage") UserMessage userMsg,
-            BindingResult result) {
-        
-        validator.validate(userMsg, result);
-        if (result.hasErrors()) { return "form"; }
-        
-        // Use the redirect-after-post pattern to reduce double-submits.
-        return "redirect:thanks";
-    }
-    
-    @RequestMapping("/thanks")
-    public void thanks() {
-    }
-}
-</pre>
-</div>
-
-
-<p>The Bean Validation Framework includes its own <code>Validator</code> implementation, called <code>BeanValidator</code>, and I&rsquo;m making that injectable here.  Also, note that we&rsquo;re going to autowire it in.</p>
-
-<p>It may be that there&rsquo;s a standard, predefined interceptor to apply <code>BeanValidator</code> (as opposed to injecting the <code>Validator</code> into the controller), but if there is, I haven&rsquo;t seen it.  I&rsquo;d be interested to hear if you, gentle reader, know of one.</p>
-
-<p>The noteworthy method here is the second <code>post()</code> method, which contains the validation code.  I just call the standard <code>validate()</code> method, passing in the form bean and the <code>BindingResult</code>, and return the current logical view name if there&rsquo;s an error.  That way the form shows the validation error messages, which we&rsquo;ll see below.  If everything passes validation, I just redirect to a &ldquo;thank you&rdquo; page.</p>
-
-<p>Now let&rsquo;s look at how we define the validation messages that the end user sees if his form submission fails validation.</p>
-
-<h3>Validation messages</h3>
-
-
-
-
-<div>
-<span class="code-listing">Code listing:</span> <code>/WEB-INF/classes/errors.properties</code>
-<pre name="code" class="java">
-UserMessage.name[not.blank]=Please enter your name.
-UserMessage.name[length]=Please enter no more than {2} characters.
-UserMessage.email[not.blank]=Please enter your e-mail address.
-UserMessage.email[email]=Please enter a valid e-mail address.
-UserMessage.email[length]=Please enter no more than {2} characters.
-UserMessage.text[not.blank]=Please enter a message.
-UserMessage.text[length]=Please enter no more than {2} characters.
-</pre>
-</div>
-
-
-<p>The keys should be fairly self-explanatory given <code>UserMessage</code> above.  Each key involves a class, a field and an annotation.  The values are parametrizable messages, not unlike Commons Validator messages if you&rsquo;re familiar with those.  In the three <code>length</code> messages, I&rsquo;m using <code>{2}</code> to indicate argument #2&mdash;viz., <code>max</code>&mdash;for the <code>length</code> validation rule.  Argument #1 happens to be <code>min</code>, and argument #0 in general appears to be the form bean itself.  I can imagine that it would be nice to be able to use the form bean to get at the specific submitted value so you could say things like &ldquo;You entered 4012 characters, but the limit is 4000 characters.&rdquo;  And I think there&rsquo;s actually a way to do that though I don&rsquo;t myself know how to do it yet.  (This is another one of those areas where I&rsquo;d appreciate whatever information you may have.)</p>
-
-<p>I mentioned above that I chose <code>@NotBlank</code> instead of <code>@Length(min = 1, max = 80)</code>.  The reason is that I wanted to use a specific error message (&ldquo;Please enter your name&rdquo;) if the message is blank.  I could have just used &ldquo;Please enter a name between 1-80 characters&rdquo; but that sounds slightly silly compared to &ldquo;Please enter your name&rdquo;, and since I&rsquo;m a usability guy I care about such things.</p>
-
-<h3>The JSPs</h3>
-
-
-<p>We have two JSPs: the form itself, and a basic (really basic) &ldquo;thank you&rdquo; page.</p>
-
-<div>
-<span class="code-listing">Code listing:</span> <code>/WEB-INF/form.jsp</code>
-<pre name="code" class="xml">
-&lt;%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %&gt;
-
-&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
-
-&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
-    &lt;head&gt;
-        &lt;title&gt;Contact Us&lt;/title&gt;
-        &lt;style&gt;
-            .form-item { margin: 20px 0; }
-            .form-label { font-weight: bold; }
-            .form-error-field { background-color: #FFC; }
-            .form-error-message { font-weight: bold; color: #900; }
-        &lt;/style&gt;
-    &lt;/head&gt;
-    &lt;body&gt;
-    
-&lt;h1&gt;Contact Us&lt;/h1&gt;
-
-&lt;%-- Give command object a meaningful name instead of using default name, 'command' --%&gt;
-&lt;form:form commandName="userMessage"&gt;
-    &lt;div class="form-item"&gt;
-        &lt;div class="form-label"&gt;Your name:&lt;/div&gt;
-        &lt;form:input path="name" size="40" cssErrorClass="form-error-field"/&gt;
-        &lt;div class="form-error-message"&gt;&lt;form:errors path="name"/&gt;&lt;/div&gt;
-    &lt;/div&gt;
-    &lt;div class="form-item"&gt;
-        &lt;div class="form-label"&gt;Your e-mail address:&lt;/div&gt;
-        &lt;form:input path="email" size="40" cssErrorClass="form-error-field"/&gt;
-        &lt;div class="form-error-message"&gt;&lt;form:errors path="email"/&gt;&lt;/div&gt;
-    &lt;/div&gt;
-    &lt;div class="form-item"&gt;
-        &lt;div class="form-label"&gt;Your message:&lt;/div&gt;
-        &lt;form:textarea path="text" rows="12" cols="60" cssErrorClass="form-error-field"/&gt;
-        &lt;div class="form-error-message"&gt;&lt;form:errors path="text"/&gt;&lt;/div&gt;
-    &lt;/div&gt;
-    &lt;div class="form-item"&gt;
-        &lt;input type="submit" value="Submit" /&gt;
-    &lt;/div&gt;
-&lt;/form:form&gt;
-
-    &lt;/body&gt;
-&lt;/html&gt;
-</pre>
-</div>
-
-
-<p>This is just a standard Spring Web MVC form, so I&rsquo;ll invoke my &ldquo;I assume you know Spring Web MVC&rdquo; assumption here.  The <code>cssErrorClass</code> attribute is kind of fun if you don&rsquo;t already know about it.  It indicates the CSS class to use in the event of a validation error.  You can combine that with the <code>cssClass</code> attribute (which applies in the non-error case) though I haven&rsquo;t done that here.</p>
-
-<p>Now here&rsquo;s the basic &ldquo;thank you&rdquo; page:</p>
-
-<div>
-<span class="code-listing">Code listing:</span> <code>/WEB-INF/thanks.jsp</code>
-<pre name="code" class="xml">
-&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
-
-&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
-    &lt;head&gt;
-        &lt;title&gt;Thank You&lt;/title&gt;
-    &lt;/head&gt;
-    &lt;body&gt;
-        &lt;h1&gt;Thank You&lt;/h1&gt;
-    &lt;/body&gt;
-&lt;/html&gt;
-</pre>
-</div>
-
-
-<p>(I told you it was basic&hellip;)</p>
-
-<p>OK, now we&rsquo;re ready to move onto application configuration.  Almost done!</p>
-
-<h3>Servlet and Spring configuration</h3>
-
-
-<p>Here&rsquo;s our completely standard <code>web.xml</code>:</p>
-
-<div>
-<span class="code-listing">Code listing:</span> <code>/WEB-INF/web.xml</code>
-<pre name="code" class="xml">
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;web-app xmlns="http://java.sun.com/xml/ns/javaee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-        http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-    version="2.5"&gt;
-    
-    &lt;servlet&gt;
-        &lt;servlet-name&gt;contact&lt;/servlet-name&gt;
-        &lt;servlet-class&gt;
-            org.springframework.web.servlet.DispatcherServlet
-        &lt;/servlet-class&gt;
-    &lt;/servlet&gt;
-    
-    &lt;servlet-mapping&gt;
-        &lt;servlet-name&gt;contact&lt;/servlet-name&gt;
-        &lt;url-pattern&gt;/contact/*&lt;/url-pattern&gt;
-    &lt;/servlet-mapping&gt;        
-&lt;/web-app&gt;
-</pre>
-</div>
-
-
-<p>Though I said I&rsquo;m assuming you already know Spring Web MVC, I&rsquo;ll just point out that since I didn&rsquo;t specify a custom location for the application context file, I have to put it at <code>/WEB-INF/contact-servlet.xml</code>.  If you want the file to live elsewhere, or if you want it to be associated with the servlet context instead of the <code>DispatcherServlet</code>, you&rsquo;ll have to set that up in <code>web.xml</code> accordingly.</p>
-
-<p>Here&rsquo;s the Spring application context:</p>
-
-<div>
-<span class="code-listing">Code listing:</span> <code>/WEB-INF/contact-servlet.xml</code>
-<pre name="code" class="xml">
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:p="http://www.springframework.org/schema/p"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"&gt;
-    
-    &lt;!-- Enable annotation-based validation using Bean Validation Framework --&gt;
-    &lt;!-- Using these instead of vld namespace to prevent Eclipse from complaining --&gt;
-    &lt;bean id="configurationLoader"
-        class="org.springmodules.validation.bean.conf.loader.annotation.AnnotationBeanValidationConfigurationLoader"/&gt;
-    &lt;bean id="validator" class="org.springmodules.validation.bean.BeanValidator"
-        p:configurationLoader-ref="configurationLoader"/&gt;
-    
-    &lt;!-- Load messages --&gt;
-    &lt;bean id="messageSource"
-        class="org.springframework.context.support.ResourceBundleMessageSource"
-        p:basenames="errors"/&gt;
-
-    &lt;!-- Discover POJO @Components --&gt;
-    &lt;!-- These automatically register an AutowiredAnnotationBeanPostProcessor --&gt;
-    &lt;context:component-scan base-package="contact"/&gt;
-    
-    &lt;!-- Map logical view names to physical views --&gt;
-    &lt;bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
-        p:prefix="/WEB-INF/"
-        p:suffix=".jsp"/&gt;
-&lt;/beans&gt;
-</pre>
-</div>
-
-
-<p>(<strong>IMPORTANT:</strong> In the <code>configurationLoader</code> definition, make sure you put the class name on a single line.  I had to break it up for formatting purposes.)</p>
-
-<p>If you&rsquo;re not familiar with it, I&rsquo;m using the <code>p</code> namespace here for syntactic sugar&mdash;it allows me to specify properties using a nice shorthand.</p>
-
-<p>The first two beans basically create the <code>BeanValidator</code> instance we&rsquo;re going to use.  It turns out that instead of defining these two beans explicitly, you can use a special element from a special namespace:</p>
-
-<ul class="square">
-    <li>namespace is <code>xmlns:vld="http://www.springmodules.org/validation/bean/validator"</code>;</li>
-    <li>purported schema location is <code>http://www.springmodules.org/validation/bean/validator-2.0.xsd</code>;</li>
-    <li>element is <code>&lt;vld:annotation-based-validator id="validator"/&gt;</code></li>
-</ul>
-
-
-<p>But when I do it, Eclipse complains (even though the code works when you run it) since there isn&rsquo;t at the time of this writing actually an XSD at the specified location.  (At least there&rsquo;s a <a href="http://jira.springframework.org/browse/MOD-464">JIRA ticket</a> for it.)  So I&rsquo;ll just use the two beans for now.</p>
-
-<p>The other stuff is mostly normal Spring Web MVC stuff.  I put the message source on the app context, scan for the controller (which is why I&rsquo;m autowiring the validator into the controller), and put a view resolver on the context too.</p>
-
-<h3>Finis</h3>
-
-
-<p>Build and deploy your WAR, and then point your browser to your web app; for example:</p>
-
-<center>http://localhost:8080/contact-example/contact/form</center>
-
-
-<p>Try submitting the form with empty fields, or an invalid e-mail address, or fields that are too long.  If things are working correctly, you ought to see error messages and even field highlighting when validation fails.</p>
-
-<div class="endnote">Post migrated from my Wheeler Software site.</div>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -1887,6 +1701,10 @@ UserMessage.text[length]=Please enter no more than {2} characters.
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know which apps are hitting your web service</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
       </li>
     
@@ -1900,10 +1718,6 @@ UserMessage.text[length]=Please enter no more than {2} characters.
     
       <li class="post">
         <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/14/optimistic-locking-with-spring-data-rest/">Optimistic locking with Spring Data REST</a>
       </li>
     
   </ul>
