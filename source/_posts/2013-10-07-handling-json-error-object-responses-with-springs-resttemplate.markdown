@@ -18,7 +18,7 @@ So let's look at a different approach&mdash;one that does in fact separate resou
 The idea
 --------
 
-The concept is to read the response body as a string instead of reading it as an object, and then deserialize the body either as the expected response type or else as an error object, depending on whether the status code was in the HTTP 400 or 500 series (client and server errors, respectively).
+The concept is to read the response body as a string instead of reading it as an object, and then deserialize the body either as the expected response type or else as an error object, depending on whether the status code was an error (HTTP 400 or 500 series).
 
 How to do it
 ------------

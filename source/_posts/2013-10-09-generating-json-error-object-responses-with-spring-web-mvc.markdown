@@ -30,7 +30,7 @@ There are various ways to do this, but Spring 3.2 introduces a pretty elegant ap
 
 <!-- more -->
 
-(You can find out more about `@ControllerAdvice` and `@ExceptionHandler` in the post [Error Handling for REST with Spring 3](http://www.baeldung.com/2013/01/31/exception-handling-for-rest-with-spring-3-2/) by Eugen Paraschiv.)
+(You can find out more about `@ControllerAdvice` and `@ExceptionHandler` in the post [Error Handling for REST with Spring 3](http://www.baeldung.com/2013/01/31/exception-handling-for-rest-with-spring-3-2/) by [Eugen Paraschiv](https://twitter.com/baeldung).)
 
 Note that the error-triggering event doesn't really have to be an exception *per se*. For example, we might want bean validation errors or authorization errors&mdash;neither of which manifests itself as an exception&mdash;to map to JSON error objects. The key is to have these triggers generate exceptions that we can capture using the `@ControllerAdvice` component.
 
