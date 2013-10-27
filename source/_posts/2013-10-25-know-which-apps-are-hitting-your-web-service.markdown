@@ -7,6 +7,8 @@ categories: [ "Chapter 13 - Integration", "Quick Tips" ]
 ---
 When creating a web service, it's often useful to know which apps are hitting it. I don't mean which users, but instead which apps. The reason is that you may want to coordinate with some other team on something. For example, maybe the team is being too aggressive about request retries, or maybe you want to alert the team to a change in the API. Whatever the reason, it's good to know which apps are calling your service.
 
+<!-- more -->
+
 HTTP has a `User-Agent` header that can help here. One possible approach is to make that a required header. Unfortunately, this approach isn't ideal. The problem is that HTTP client libraries usually set that header automatically. So if the client application forgets to set the header explicitly, you end up with user agents like `Apache-HttpClient/release (java 1.5)`, which isn't much help at all.
 
 An approach I like better is to define a custom header and make it required. I use `X-User-Agent`, since it really is a user agent we're talking about here.
