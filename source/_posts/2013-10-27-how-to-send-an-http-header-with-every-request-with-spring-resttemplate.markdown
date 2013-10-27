@@ -58,3 +58,5 @@ Now we need to configure our `RestTemplate` to use it. Here I'm using Spring's J
     }
 
 With this configuration, any requests you make through the `RestTemplate` will automatically carry the desired HTTP request header.
+
+To learn how to set request timeouts automatically, see my post [How to Set HTTP Request Timeouts With Spring RestTemplate](http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/).
