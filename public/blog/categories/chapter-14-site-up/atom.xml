@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 14 - Site-up | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-14-site-up/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-27T10:55:59-07:00</updated>
+  <updated>2013-10-27T11:09:31-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,56 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[How to set HTTP request timeouts with Spring RestTemplate]]></title>
+    <link href="http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/"/>
+    <updated>2013-10-27T10:31:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate</id>
+    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to Send an HTTP Header With Every Request With Spring RestTemplate</a>, we looked at how to send a given HTTP header automatically with every request. Here we&rsquo;ll do something similar, which is to automatically apply a request timeout to every request.</p>
+
+<!-- more -->
+
+
+<p>Here&rsquo;s the Java-based configuration for this technique:</p>
+
+<pre><code>package com.myapp;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class MyAppConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate(clientHttpRequestFactory());
+    }
+
+    private ClientHttpRequestFactory clientHttpRequestFactory() {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setReadTimeout(2000);
+        factory.setConnectTimeout(2000);
+        return factory;
+    }
+}
+</code></pre>
+
+<p>The XML-based configuration is this:</p>
+
+<pre><code>&lt;bean class="org.springframework.web.client.RestTemplate"&gt;
+    &lt;constructor-arg&gt;
+        &lt;bean class="org.springframework.http.client.HttpComponentsClientHttpRequestFactory"
+            p:readTimeout="2000"
+            p:connectTimeout="2000" /&gt;
+    &lt;/constructor-arg&gt;
+&lt;/bean&gt;
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Top ten [and counting] operational excellence design principles]]></title>
