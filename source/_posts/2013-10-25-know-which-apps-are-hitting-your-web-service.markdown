@@ -65,4 +65,4 @@ Here's how to implement this with a servlet filter. No Spring involved here at a
 
 Of course, you need to configure this filter and a filter mapping in your `web.xml` file.
 
-In the next post I'll show you how to set up your Spring `RestTemplate` to send the `X-User-Agent` header with each request automatically.
+In the [next post](http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/) I'll show you how to set up your Spring `RestTemplate` to send the `X-User-Agent` header with each request automatically.
