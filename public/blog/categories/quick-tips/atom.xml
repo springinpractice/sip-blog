@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Quick Tips | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/quick-tips/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-27T10:48:43-07:00</updated>
+  <updated>2013-10-27T10:55:59-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -124,6 +124,8 @@ public class MyAppConfig {
 </code></pre>
 
 <p>With this configuration, any requests you make through the <code>RestTemplate</code> will automatically carry the desired HTTP request header.</p>
+
+<p>To learn how to set request timeouts automatically, see my post <a href="http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/">How to Set HTTP Request Timeouts With Spring RestTemplate</a>.</p>
 ]]></content>
   </entry>
   
