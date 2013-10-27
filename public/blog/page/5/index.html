@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Zkybase is my first open source configuration management database (CMDB) effort, but it&rsquo;s not the first time I&rsquo;ve built a CMDB. At work &hellip;">
+  <meta name="description" content="If you want to generate both XML and JSON views of some object, one option is to use JAXB2 annotations for the XML mapping and Jackson annotations &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,120 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2011/12/06/jackson-json-jaxb2-xml-spring/">Configuring Jackson to Use JAXB2 Annotations With Spring</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-12-06T14:17:40-08:00" pubdate data-updated="true">Dec 6<span>th</span>, 2011</time>
+        
+         | <a href="/2011/12/06/jackson-json-jaxb2-xml-spring/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>If you want to generate both XML and JSON views of some object, one option is to use JAXB2 annotations for the XML mapping and Jackson annotations for the JSON mapping. But that&rsquo;s a little bit of a nuisance, because you have to declare the what are essentially the same mappings twice. It turns out that it&rsquo;s possible to configure Jackson to use the JAXB2 annotations.</p>
+
+<h3>Maven configuration</h3>
+
+
+<p>First, make sure you have the <code>jackson-xc</code> dependency (in addition to the other Jackson dependencies) declared. This is the Maven dependency that supports using JAXB2 annotations:</p>
+
+<pre>&lt;dependency&gt;
+    &lt;groupId&gt;org.codehaus.jackson&lt;/groupId&gt;
+    &lt;artifactId&gt;jackson-xc&lt;/artifactId&gt;
+    &lt;version&gt;1.9.2&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+
+
+
+<h3>Spring configuration</h3>
+
+
+<p>Next, you&rsquo;ll need a bit of Spring configuration:</p>
+
+<pre>&lt;oxm:jaxb2-marshaller id="marshaller"&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Person" /&gt;
+    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Project" /&gt;
+&lt;/oxm:jaxb2-marshaller&gt;
+
+&lt;bean id="jaxbAnnIntrospector"
+    class="org.codehaus.jackson.xc.JaxbAnnotationIntrospector" /&gt;
+&lt;bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper"&gt;
+    &lt;property name="serializationConfig.annotationIntrospector"
+        ref="jaxbAnnIntrospector" /&gt;
+    &lt;property name="deserializationConfig.annotationIntrospector"
+        ref="jaxbAnnIntrospector" /&gt;
+&lt;/bean&gt;
+
+&lt;bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver"&gt;
+    &lt;property name="mediaTypes"&gt;
+        &lt;map&gt;
+            &lt;entry key="html" value="text/html" /&gt;
+            &lt;entry key="json" value="application/json" /&gt;
+            &lt;entry key="xml" value="application/xml" /&gt;
+        &lt;/map&gt;
+    &lt;/property&gt;
+    &lt;property name="viewResolvers"&gt;
+        &lt;list&gt;
+            &lt;bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+                p:prefix="/WEB-INF/jsp/"
+                p:suffix=".jsp" /&gt;
+        &lt;/list&gt;
+    &lt;/property&gt;
+    &lt;property name="defaultViews"&gt;
+        &lt;list&gt;
+            &lt;bean class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"
+                p:objectMapper-ref="jacksonObjectMapper"&gt;
+                &lt;property name="renderedAttributes"&gt;
+                    &lt;set&gt;
+                        &lt;value&gt;person&lt;/value&gt;
+                        &lt;value&gt;project&lt;/value&gt;
+                    &lt;/set&gt;
+                &lt;/property&gt;
+            &lt;/bean&gt;
+            &lt;bean class="org.springframework.web.servlet.view.xml.MarshallingView"
+                p:marshaller-ref="marshaller" /&gt;
+        &lt;/list&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;</pre>
+
+
+<p>Note the use of the compound property names when injecting into the Jackson <code>ObjectMapper</code>. That&rsquo;s a little-known but useful technique for performing injections in cases where constructor and simple property injection aren&rsquo;t options.</p>
+
+<p>See also</p>
+
+<ul>
+    <li><a href="http://hillert.blogspot.com/2011/01/marshal-json-data-using-jackson-in.html">http://hillert.blogspot.com/2011/01/marshal-json-data-using-jackson-in.html</a></li>
+    <li><a href="http://wiki.fasterxml.com/JacksonJAXBAnnotations">http://wiki.fasterxml.com/JacksonJAXBAnnotations</a></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -728,50 +842,6 @@ public Newsletter getFacultyNews() { ... }
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/07/12/spring-security-3-dzone-refcard-and-interview/">Spring Security 3 DZone Refcard and Interview</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-07-12T05:23:20-07:00" pubdate data-updated="true">Jul 12<span>th</span>, 2010</time>
-        
-         | <a href="/2010/07/12/spring-security-3-dzone-refcard-and-interview/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/springsecurity/refcard106/ss3_refcard.png" alt="Spring Security 3 DZone Refcard" style="float:right;margin:0 0 20px 20px;" /></p>
-
-<p>My <a href="http://refcardz.dzone.com/refcardz/expression-based-authorization?oid=hom25493">Spring Security 3 Refcard</a> is out. It covers expression-based authorization in Spring Security 3.</p>
-
-<p>There is also a supporting <a href="http://java.dzone.com/articles/willie-wheeler-spring-security3-interview">interview</a> about the Refcard. The interview goes into more depth about some security principles like whitelisting and data-driven security, and explains how to implement these ideas using Spring Security 3.</p>
-
-<p>Thanks to <a href="http://www.scottbattaglia.com/">Scott Battaglia</a>, David Harp, Joe Koberstein, <a href="http://www.mularien.com/blog/">Peter Mularien</a>, <a href="http://pveentjer.wordpress.com/">Peter Veentjer</a> and John Wheeler for their helpful suggestions and also for catching typos.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/6/">&larr; Older</a>
@@ -789,6 +859,10 @@ public Newsletter getFacultyNews() { ... }
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/">How to set HTTP request timeouts with Spring RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to send an HTTP header with every request with Spring RestTemplate</a>
       </li>
     
@@ -802,10 +876,6 @@ public Newsletter getFacultyNews() { ... }
     
       <li class="post">
         <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
       </li>
     
   </ul>

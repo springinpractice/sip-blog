@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="It&rsquo;s been a little while since I&rsquo;ve posted Zkybase screenshots, so here&rsquo;s the work in progress. I explain how to implement this &hellip;">
+  <meta name="description" content="In my last post, Calling the GitHub API using Spring&rsquo;s RestTemplate, I explained how to call a public endpoint that retrieves a repository& &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,222 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/17/spring-social-github-revisiting-github-integration/">Spring Social GitHub: Revisiting GitHub Integration</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-17T15:44:56-08:00" pubdate data-updated="true">Jan 17<span>th</span>, 2012</time>
+        
+         | <a href="/2012/01/17/spring-social-github-revisiting-github-integration/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In my last post, <a title="Calling the GitHub API using Spring’s RestTemplate" href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/">Calling the GitHub API using Spring&rsquo;s RestTemplate</a>, I explained how to call a public endpoint that retrieves a repository&rsquo;s watchers on the <a href="http://developer.github.com/v3/">GitHub API</a> using Spring&rsquo;s RestTemplate.</p>
+
+<p>I was happy to receive a <a href="http://springinpractice.com/2012/01/14/calling-the-github-api-using-springs-resttemplate/#comment-230">comment</a> by <a title="Craig Walls' Twitter page" href="https://twitter.com/#!/habuma">Craig Walls</a> pointing out that <a title="Spring Social" href="http://www.springsource.org/spring-social">Spring Social</a> has a <a title="Spring Social GitHub's GitHub site" href="https://github.com/SpringSource/spring-social-github">GitHub binding</a>, which came with an invitation to contribute code to that binding. Sounded great&mdash;I forked the project on GitHub and dug in. I discovered two factoids:</p>
+
+<ol>
+    <li>The project is <a title="Gradle" href="http://gradle.org/">Gradle</a>-based. Excellent, because I&#8217;d been wanting to try it out for a couple of years since Craig first recommended it to me in at Spring One 2GX. I just never got around to it.</li>
+    <li>The Spring Social GitHub binding is nascent. (Understandably, Facebook, Twitter and LinkedIn get the lion&#8217;s share of development attention.) Outstanding, because I could implement whatever I wanted.</li>
+</ol>
+
+
+<p>I ended up writing a handful of public endpoints for Spring Social GitHub. I focused on the public ones instead of the personal ones requiring OAuth (GitHub supports OAuth2 among others) since the <a title="Skybase GitHub site" href="https://github.com/williewheeler/skybase">Skybase app</a> I&rsquo;m building probably doesn&rsquo;t need any of the personal endpoints. I&rsquo;ll show you some of what I did since it&rsquo;s fairly straightforward and since some of you might be interested in contributing further code. The Spring Social documentation has a <a title="Contributing code" href="http://static.springsource.org/spring-social/docs/1.0.x/reference/html/implementing.html">chapter on how to create or elaborate a binding</a>, and there are existing bindings for <a href="https://github.com/SpringSource/spring-social-facebook">Facebook</a>, <a href="https://github.com/SpringSource/spring-social-twitter">Twitter</a> and <a href="https://github.com/SpringSource/spring-social-linkedin">LinkedIn</a> that provide good guidance as to how to structure things. The GitHub site has <a title="Mechanics" href="https://github.com/SpringSource/spring-social/wiki/Contributing">useful information on the mechanics as well.</a> I was a little bit lazy and just shot Craig a few questions. He was <a href="https://github.com/SpringSource/spring-social-github/pull/1">good-natured</a> about it, and pointed me to the right examples.</p>
+
+<h3>Implementing support for repository watching in Spring Social GitHub</h3>
+
+
+<p><strong>Implementing a user class.</strong> In the last post I implemented a <code>User</code> class and then just called the GitHub URL with the RestTemplate, deserializing the JSON into my User. As it turns out, this isn&rsquo;t that different than what I added to Spring Social GitHub. In fact, the revised version is almost exactly the same:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import java.io.Serializable;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonProperty;
+
+@SuppressWarnings("serial")
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class GitHubUser implements Serializable {
+    private Long id;
+    private String url;
+    private String login;
+    private String avatarUrl;
+    private String gravatarId;
+
+    public Long getId() { return id; }
+
+    public void setId(Long id) { this.id = id; }
+
+    public String getUrl() { return url; }
+
+    public void setUrl(String url) { this.url = url; }
+
+    public String getLogin() { return login; }
+
+    public void setLogin(String login) { this.login = login; }
+
+    @JsonProperty("avatar_url")
+    public String getAvatarUrl() { return avatarUrl; }
+
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
+    @JsonProperty("gravatar_id")
+    public String getGravatarId() { return gravatarId; }
+
+    public void setGravatarId(String gravatarId) { this.gravatarId = gravatarId; }
+}</pre>
+
+
+<p>I added the <code>@JsonIgnoreProperties</code> annotation to try to future-proof the class a little, and I renamed it to <code>GitHubUser</code> since that was more in line with the Spring Social convention around naming data transfer objects.</p>
+
+<p><strong>Creating the client interfaces.</strong> Spring Social basically wraps <code>RestTemplate</code> with provider-specific methods and support for OAuth authorization. So instead of passing <code><a href="https://api.github.com/repos/williewheeler/skybase">https://api.github.com/repos/williewheeler/skybase</a> to RestTemplate.getForObject()</code>, we call a <code>getWatchers()</code> method on the Spring Social GitHub API.</p>
+
+<p>The general pattern is for there to be a top-level Java client interface, which is called <code>Facebook</code>, or <code>Twitter</code>, or <code>LinkedIn</code>, or <code>GitHub</code>, and then for this interface to have smaller sub-APIs to group related operations. This avoids having a monster interface with dozens and dozens of methods. Here, for example, is what the <code>GitHub</code> interface looks like so far:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import org.springframework.social.ApiBinding;
+import org.springframework.social.github.api.impl.GitHubTemplate;
+
+public interface GitHub extends ApiBinding {
+
+    RepoOperations repoOperations();
+
+    UserOperations userOperations();
+}</pre>
+
+
+<p>GitHub has a lot more sets of operations than that (e.g. gists, issues, orgs, pull requests, etc.), but I was just getting my feet wet and so I only created a couple of <code>XxxOperations</code> interfaces here.</p>
+
+<p>Here&rsquo;s what <code>RepoOperations</code> looks like so far:</p>
+
+<pre>package org.springframework.social.github.api;
+
+import java.util.List;
+
+public interface RepoOperations {
+    List getCollaborators(String user, String repo);
+    List getCommits(String user, String repo);
+    List getWatchers(String user, String repo);
+}</pre>
+
+
+<p>(As I mentioned, I implemented a few things beyond <code>getWatchers()</code>.)</p>
+
+<p><strong>Filling in the client implementations.</strong> With the interfaces in place, it was time to write their implementations. This looked pretty close to the code from my previous article, but a little more industrial-strength to handle API modularity and also personal endpoints. Here for instance is the <code>RepoTemplate</code>.</p>
+
+<pre>package org.springframework.social.github.api.impl;
+
+import static java.util.Arrays.asList;
+
+import java.util.List;
+import org.springframework.social.github.api.GitHubCommit;
+import org.springframework.social.github.api.GitHubUser;
+import org.springframework.social.github.api.RepoOperations;
+import org.springframework.web.client.RestTemplate;
+
+public class RepoTemplate extends AbstractGitHubOperations
+    implements RepoOperations {
+
+    private final RestTemplate restTemplate;
+
+    public RepoTemplate(RestTemplate restTemplate, boolean isAuthorizedForUser) {
+        super(isAuthorizedForUser);
+        this.restTemplate = restTemplate;
+    }
+
+    public List getCollaborators(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/collaborators"), GitHubUser[].class, user, repo));
+    }
+
+    public List getCommits(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/commits"), GitHubCommit[].class, user, repo));
+    }
+
+    public List getWatchers(String user, String repo) {
+        return asList(restTemplate.getForObject(
+            buildRepoUri("/watchers"), GitHubUser[].class, user, repo));
+    }
+
+    private String buildRepoUri(String path) {
+        return buildUri("repos/{user}/{repo}" + path);
+    }
+}</pre>
+
+
+<p><strong>Test cases.</strong> I wrote some test cases as well, using the test framework that the Spring guys put together. It is basically a mock server that serves up JSON files so you don&rsquo;t have to hit the real GitHub and put your rate limit in danger.</p>
+
+<h3>Using Spring Social GitHub</h3>
+
+
+<p>With all that in place, I was excited to try out my new code. Spring Social GitHub hasn&rsquo;t had an actual release yet (Spring Social Core has, but not the GitHub binding), so you&rsquo;ll need to hit a snapshot repository to get it:</p>
+
+<pre>&lt;repository&gt;
+    &lt;id&gt;spring-snapshot&lt;/id&gt;
+    &lt;name&gt;Spring Maven Snapshot Repository&lt;/name&gt;
+    &lt;url&gt;http://maven.springframework.org/snapshot&lt;/url&gt;
+&lt;/repository&gt;
+
+...
+
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.social&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-social-core&lt;/artifactId&gt;
+    &lt;version&gt;1.0.1.RELEASE&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.social&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-social-github&lt;/artifactId&gt;
+    &lt;version&gt;1.0.0.BUILD-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p>Here&rsquo;s the actual Java code:</p>
+
+<pre>import org.springframework.social.github.api.GitHub;
+import org.springframework.social.github.api.GitHubUser;
+
+...
+
+GitHub gitHub = ... injected or whatever ...
+List&lt;GitHubUser&gt; watchers =
+    gitHub.repoOperations().getWatchers("williewheeler", "skybase");</pre>
+
+
+<p>Couldn&rsquo;t be much easier.</p>
+
+<p>Here are some Skybase screenshots that show what sort of information I&rsquo;m pulling down from GitHub using Spring Social GitHub:</p>
+
+<p>[gallery columns=&ldquo;2&rdquo;]</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1278,120 +1494,6 @@ public String getPersonDetails(@PathVariable String username, Model model) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2011/12/06/jackson-json-jaxb2-xml-spring/">Configuring Jackson to Use JAXB2 Annotations With Spring</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-12-06T14:17:40-08:00" pubdate data-updated="true">Dec 6<span>th</span>, 2011</time>
-        
-         | <a href="/2011/12/06/jackson-json-jaxb2-xml-spring/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>If you want to generate both XML and JSON views of some object, one option is to use JAXB2 annotations for the XML mapping and Jackson annotations for the JSON mapping. But that&rsquo;s a little bit of a nuisance, because you have to declare the what are essentially the same mappings twice. It turns out that it&rsquo;s possible to configure Jackson to use the JAXB2 annotations.</p>
-
-<h3>Maven configuration</h3>
-
-
-<p>First, make sure you have the <code>jackson-xc</code> dependency (in addition to the other Jackson dependencies) declared. This is the Maven dependency that supports using JAXB2 annotations:</p>
-
-<pre>&lt;dependency&gt;
-    &lt;groupId&gt;org.codehaus.jackson&lt;/groupId&gt;
-    &lt;artifactId&gt;jackson-xc&lt;/artifactId&gt;
-    &lt;version&gt;1.9.2&lt;/version&gt;
-&lt;/dependency&gt;</pre>
-
-
-
-
-<h3>Spring configuration</h3>
-
-
-<p>Next, you&rsquo;ll need a bit of Spring configuration:</p>
-
-<pre>&lt;oxm:jaxb2-marshaller id="marshaller"&gt;
-    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Person" /&gt;
-    &lt;oxm:class-to-be-bound name="org.skydingo.skybase.model.Project" /&gt;
-&lt;/oxm:jaxb2-marshaller&gt;
-
-&lt;bean id="jaxbAnnIntrospector"
-    class="org.codehaus.jackson.xc.JaxbAnnotationIntrospector" /&gt;
-&lt;bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper"&gt;
-    &lt;property name="serializationConfig.annotationIntrospector"
-        ref="jaxbAnnIntrospector" /&gt;
-    &lt;property name="deserializationConfig.annotationIntrospector"
-        ref="jaxbAnnIntrospector" /&gt;
-&lt;/bean&gt;
-
-&lt;bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver"&gt;
-    &lt;property name="mediaTypes"&gt;
-        &lt;map&gt;
-            &lt;entry key="html" value="text/html" /&gt;
-            &lt;entry key="json" value="application/json" /&gt;
-            &lt;entry key="xml" value="application/xml" /&gt;
-        &lt;/map&gt;
-    &lt;/property&gt;
-    &lt;property name="viewResolvers"&gt;
-        &lt;list&gt;
-            &lt;bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
-                p:prefix="/WEB-INF/jsp/"
-                p:suffix=".jsp" /&gt;
-        &lt;/list&gt;
-    &lt;/property&gt;
-    &lt;property name="defaultViews"&gt;
-        &lt;list&gt;
-            &lt;bean class="org.springframework.web.servlet.view.json.MappingJacksonJsonView"
-                p:objectMapper-ref="jacksonObjectMapper"&gt;
-                &lt;property name="renderedAttributes"&gt;
-                    &lt;set&gt;
-                        &lt;value&gt;person&lt;/value&gt;
-                        &lt;value&gt;project&lt;/value&gt;
-                    &lt;/set&gt;
-                &lt;/property&gt;
-            &lt;/bean&gt;
-            &lt;bean class="org.springframework.web.servlet.view.xml.MarshallingView"
-                p:marshaller-ref="marshaller" /&gt;
-        &lt;/list&gt;
-    &lt;/property&gt;
-&lt;/bean&gt;</pre>
-
-
-<p>Note the use of the compound property names when injecting into the Jackson <code>ObjectMapper</code>. That&rsquo;s a little-known but useful technique for performing injections in cases where constructor and simple property injection aren&rsquo;t options.</p>
-
-<p>See also</p>
-
-<ul>
-    <li><a href="http://hillert.blogspot.com/2011/01/marshal-json-data-using-jackson-in.html">http://hillert.blogspot.com/2011/01/marshal-json-data-using-jackson-in.html</a></li>
-    <li><a href="http://wiki.fasterxml.com/JacksonJAXBAnnotations">http://wiki.fasterxml.com/JacksonJAXBAnnotations</a></li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/5/">&larr; Older</a>
@@ -1409,6 +1511,10 @@ public String getPersonDetails(@PathVariable String username, Model model) {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/">How to set HTTP request timeouts with Spring RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to send an HTTP header with every request with Spring RestTemplate</a>
       </li>
     
@@ -1422,10 +1528,6 @@ public String getPersonDetails(@PathVariable String username, Model model) {
     
       <li class="post">
         <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
       </li>
     
   </ul>

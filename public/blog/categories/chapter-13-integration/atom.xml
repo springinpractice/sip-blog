@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-27T08:53:06-07:00</updated>
+  <updated>2013-10-27T10:48:43-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,56 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[How to set HTTP request timeouts with Spring RestTemplate]]></title>
+    <link href="http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/"/>
+    <updated>2013-10-27T10:31:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate</id>
+    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to Send an HTTP Header With Every Request With Spring RestTemplate</a>, we looked at how to send a given HTTP header automatically with every request. Here we&rsquo;ll do something similar, which is to automatically apply a request timeout to every request.</p>
+
+<!-- more -->
+
+
+<p>Here&rsquo;s the Java-based configuration for this technique:</p>
+
+<pre><code>package com.myapp;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class MyAppConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate(clientHttpRequestFactory());
+    }
+
+    private ClientHttpRequestFactory clientHttpRequestFactory() {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setReadTimeout(2000);
+        factory.setConnectTimeout(2000);
+        return factory;
+    }
+}
+</code></pre>
+
+<p>The XML-based configuration is this:</p>
+
+<pre><code>&lt;bean class="org.springframework.web.client.RestTemplate"&gt;
+    &lt;constructor-arg&gt;
+        &lt;bean class="org.springframework.http.client.HttpComponentsClientHttpRequestFactory"
+            p:readTimeout="2000"
+            p:connectTimeout="2000" /&gt;
+    &lt;/constructor-arg&gt;
+&lt;/bean&gt;
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[How to send an HTTP header with every request with Spring RestTemplate]]></title>
@@ -144,7 +194,7 @@ public class XUserAgentFilter implements Filter {
 
 <p>Of course, you need to configure this filter and a filter mapping in your <code>web.xml</code> file.</p>
 
-<p>In the next post I&rsquo;ll show you how to set up your Spring <code>RestTemplate</code> to send the <code>X-User-Agent</code> header with each request automatically.</p>
+<p>In the <a href="http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">next post</a> I&rsquo;ll show you how to set up your Spring <code>RestTemplate</code> to send the <code>X-User-Agent</code> header with each request automatically.</p>
 ]]></content>
   </entry>
   
@@ -474,76 +524,6 @@ public DoodadResources getDoodads() {
 <p>Personally I&rsquo;d like to see a version of <code>RestTemplate.exchange()</code> that supports two response types instead of just one: one for the expected response type and one for the error response type. This would avoid the need to handle error objects ourselves, and would also allow the <code>RestTemplate</code> to parse the response body (via Jackson) without having to buffer the entire thing first.</p>
 
 <p>Anyway, that&rsquo;s at least one way to do it. If there are better ways I&rsquo;d very much appreciate hearing about them.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Quick tip: Basic authentication with Spring RestTemplate]]></title>
-    <link href="http://springinpractice.com/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/"/>
-    <updated>2013-10-02T02:10:00-07:00</updated>
-    <id>http://springinpractice.com/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate</id>
-    <content type="html"><![CDATA[<p>Here&rsquo;s a quick tip for using Spring&rsquo;s <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html">RestTemplate</a> to authenticate to a RESTful web service that uses <a href="http://en.wikipedia.org/wiki/Basic_access_authentication">HTTP basic authentication</a>.</p>
-
-<p>There are a couple of things we have to do:</p>
-
-<ul>
-<li>First we construct an <code>Authorization</code> request header that contains (among other things) the user&rsquo;s base 64-encoded credentials.</li>
-<li>Then we invoke the <code>RestTemplate</code> in such a way as to send that request header to the service.</li>
-</ul>
-
-
-<!-- more -->
-
-
-<p>Let&rsquo;s start with the <code>Authorization</code> header.</p>
-
-<h2>Authorization header</h2>
-
-<p>For the sake of example, suppose that the username is <code>willie</code> and the password is <code>p@ssword</code>.</p>
-
-<p>The first step is to base 64 encode the string <code>willie:p@ssword</code>. In general we want to do this programmatically. The <a href="http://commons.apache.org/proper/commons-codec/">Apache Commons Codec library</a> is useful for doing this:</p>
-
-<pre><code>import org.apache.commons.codec.binary.Base64;
-
-...
-
-String plainCreds = "willie:p@ssword";
-byte[] plainCredsBytes = plainCreds.getBytes();
-byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-String base64Creds = new String(base64CredsBytes);
-</code></pre>
-
-<p>Now let&rsquo;s construct our HTTP request headers, including the <code>Authorization</code> header:</p>
-
-<pre><code>import org.springframework.http.HttpHeaders;
-
-...
-
-HttpHeaders headers = new HttpHeaders();
-headers.add("Authorization", "Basic " + base64Creds);
-</code></pre>
-
-<p>Next, let&rsquo;s use the <code>RestTemplate</code> to issue the request.</p>
-
-<h2>Using RestTemplate to send the request</h2>
-
-<p>The approach is similar to what we did with <a href="http://springinpractice.com/2012/04/08/sending-cookies-with-resttemplate/">Sending Cookies with RestTemplate</a>. We use one of the <code>RestTemplate</code>&rsquo;s <code>exchange()</code> methods to exchange a request for a response. Let&rsquo;s imagine that we want to get account information.</p>
-
-<pre><code>import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-
-...
-
-HttpEntity&lt;String&gt; request = new HttpEntity&lt;String&gt;(headers);
-ResponseEntity&lt;Account&gt; response = restTemplate.exchange(url, HttpMethod.GET, request, Account.class);
-Account account = response.getBody();
-</code></pre>
-
-<p>In both the request and response, the type parameters represent the body. In the request we aren&rsquo;t sending anything in the body, so we just use <code>String</code> as a default, and pass the headers along by themselves. In the response we expect an account, so that&rsquo;s why we have <code>Account</code> and <code>Account.class</code> there.</p>
-
-<p>Happy basic authenticating.</p>
 ]]></content>
   </entry>
   

@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Quick tip: avoid rule duplication when using security:authorize - Spring in Practice</title>
+  <title>How to set HTTP request timeouts with Spring RestTemplate - Spring in Practice</title>
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Spring Security features a tag that allows us to show or hide JSP content based on access rules we can define. Here&rsquo;s an example: &lt;security: &hellip;">
+  <meta name="description" content="In How to Send an HTTP Header With Every Request With Spring RestTemplate, we looked at how to send a given HTTP header automatically with every &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://springinpractice.com/2010/10/10/quick-tip-avoid-rule-duplication-when-using-securityauthorize">
+  <link rel="canonical" href="http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate">
   <link href="/favicon.ico" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Spring in Practice" type="application/atom+xml">
@@ -82,7 +82,7 @@
   
   <header>
     
-      <h1 class="entry-title">Quick Tip: Avoid Rule Duplication When Using Security:authorize</h1>
+      <h1 class="entry-title">How to Set HTTP Request Timeouts With Spring RestTemplate</h1>
     
     
       <p class="meta">
@@ -98,7 +98,7 @@
   
 
 
-<time datetime="2010-10-10T15:56:42-07:00" pubdate data-updated="true">Oct 10<span>th</span>, 2010</time>
+<time datetime="2013-10-27T10:31:00-07:00" pubdate data-updated="true">Oct 27<span>th</span>, 2013</time>
         
          | <a href="#disqus_thread">Comments</a>
         
@@ -107,35 +107,48 @@
   </header>
 
 
-<div class="entry-content"><p>Spring Security features a  tag that allows us to show or hide JSP content based on access rules we can define. Here&rsquo;s an example:</p>
+<div class="entry-content"><p>In <a href="http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to Send an HTTP Header With Every Request With Spring RestTemplate</a>, we looked at how to send a given HTTP header automatically with every request. Here we&rsquo;ll do something similar, which is to automatically apply a request timeout to every request.</p>
 
-<pre style="margin:20px 0;">
-&lt;security:authorize access="hasRole('admin')"&gt;
-    &lt;a href="/main/admin.html"&gt;Admin&lt;/a&gt;
-&lt;security:authorize&gt;
-</pre>
+<!-- more -->
 
 
-<p>This is probably the most common way to use the tag. The problem with this approach, though, is that it leads to rule duplication, because the same <code>hasRole(&lsquo;admin&rsquo;)</code> rule is defined in the security application context.</p>
+<p>Here&rsquo;s the Java-based configuration for this technique:</p>
 
-<p>A better approach is to bind the display of the tag body to the user&rsquo;s actual access to the URL in question. Suppose for example that we have the following definition in the app context:</p>
+<pre><code>package com.myapp;
 
-<pre style="margin:20px 0;">
-&lt;intercept-url pattern="/main/admin.html" method="GET"
-    access="hasRole('admin')" /&gt;
-</pre>
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
+@Configuration
+public class MyAppConfig {
 
-<p>Then we can simply replace the old JSP tag definition with a new one like this:</p>
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate(clientHttpRequestFactory());
+    }
 
-<pre style="margin:20px 0;">
-&lt;security:authorize url="/main/admin.html" method="GET"&gt;
-    &lt;a href="/main/admin.html"&gt;Admin&lt;/a&gt;
-&lt;security:authorize&gt;
-</pre>
+    private ClientHttpRequestFactory clientHttpRequestFactory() {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setReadTimeout(2000);
+        factory.setConnectTimeout(2000);
+        return factory;
+    }
+}
+</code></pre>
 
+<p>The XML-based configuration is this:</p>
 
-<p>Now we&rsquo;ve successfully eliminated the duplicate rule definition. If we were to decide to change the rule to <code>hasRole(&lsquo;administrator&rsquo;)</code>, or to anything else for that matter, we&rsquo;d be able to do that in a single location.</p>
+<pre><code>&lt;bean class="org.springframework.web.client.RestTemplate"&gt;
+    &lt;constructor-arg&gt;
+        &lt;bean class="org.springframework.http.client.HttpComponentsClientHttpRequestFactory"
+            p:readTimeout="2000"
+            p:connectTimeout="2000" /&gt;
+    &lt;/constructor-arg&gt;
+&lt;/bean&gt;
+</code></pre>
 </div>
 
 
@@ -158,12 +171,12 @@
   
 
 
-<time datetime="2010-10-10T15:56:42-07:00" pubdate data-updated="true">Oct 10<span>th</span>, 2010</time>
+<time datetime="2013-10-27T10:31:00-07:00" pubdate data-updated="true">Oct 27<span>th</span>, 2013</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/chapter-07-authorization/'>Chapter 07 - Authorization</a>, <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>
+    <a class='category' href='/blog/categories/chapter-13-integration/'>Chapter 13 - Integration</a>, <a class='category' href='/blog/categories/quick-tips/'>Quick Tips</a>
   
 </span>
 
@@ -172,7 +185,7 @@
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2010/10/10/quick-tip-avoid-rule-duplication-when-using-securityauthorize/" data-via="williewheeler" data-counturl="http://springinpractice.com/2010/10/10/quick-tip-avoid-rule-duplication-when-using-securityauthorize/" >Tweet</a>
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/" data-via="williewheeler" data-counturl="http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -185,10 +198,8 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/2010/09/06/quick-tip-upgrade-a-legacy-password-storage-scheme/" title="Previous Post: Quick tip: upgrade a legacy password storage scheme">&laquo; Quick tip: upgrade a legacy password storage scheme</a>
+        <a class="basic-alignment left" href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/" title="Previous Post: How to send an HTTP header with every request with Spring RestTemplate">&laquo; How to send an HTTP header with every request with Spring RestTemplate</a>
       
-      
-        <a class="basic-alignment right" href="/2010/10/27/quick-tip-spring-security-role-based-authorization-and-permissions/" title="Next Post: Quick tip: Spring Security role-based authorization and permissions">Quick tip: Spring Security role-based authorization and permissions &raquo;</a>
       
     </p>
   </footer>
@@ -284,8 +295,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://springinpractice.com/2010/10/10/quick-tip-avoid-rule-duplication-when-using-securityauthorize/';
-        var disqus_url = 'http://springinpractice.com/2010/10/10/quick-tip-avoid-rule-duplication-when-using-securityauthorize/';
+        var disqus_identifier = 'http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/';
+        var disqus_url = 'http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/';
         var disqus_script = 'embed.js';
       
     (function () {

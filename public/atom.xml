@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-27T08:53:06-07:00</updated>
+  <updated>2013-10-27T10:48:43-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,56 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[How to set HTTP request timeouts with Spring RestTemplate]]></title>
+    <link href="http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/"/>
+    <updated>2013-10-27T10:31:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate</id>
+    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to Send an HTTP Header With Every Request With Spring RestTemplate</a>, we looked at how to send a given HTTP header automatically with every request. Here we&rsquo;ll do something similar, which is to automatically apply a request timeout to every request.</p>
+
+<!-- more -->
+
+
+<p>Here&rsquo;s the Java-based configuration for this technique:</p>
+
+<pre><code>package com.myapp;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class MyAppConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate(clientHttpRequestFactory());
+    }
+
+    private ClientHttpRequestFactory clientHttpRequestFactory() {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setReadTimeout(2000);
+        factory.setConnectTimeout(2000);
+        return factory;
+    }
+}
+</code></pre>
+
+<p>The XML-based configuration is this:</p>
+
+<pre><code>&lt;bean class="org.springframework.web.client.RestTemplate"&gt;
+    &lt;constructor-arg&gt;
+        &lt;bean class="org.springframework.http.client.HttpComponentsClientHttpRequestFactory"
+            p:readTimeout="2000"
+            p:connectTimeout="2000" /&gt;
+    &lt;/constructor-arg&gt;
+&lt;/bean&gt;
+</code></pre>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[How to send an HTTP header with every request with Spring RestTemplate]]></title>
@@ -144,7 +194,7 @@ public class XUserAgentFilter implements Filter {
 
 <p>Of course, you need to configure this filter and a filter mapping in your <code>web.xml</code> file.</p>
 
-<p>In the next post I&rsquo;ll show you how to set up your Spring <code>RestTemplate</code> to send the <code>X-User-Agent</code> header with each request automatically.</p>
+<p>In the <a href="http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">next post</a> I&rsquo;ll show you how to set up your Spring <code>RestTemplate</code> to send the <code>X-User-Agent</code> header with each request automatically.</p>
 ]]></content>
   </entry>
   
@@ -1389,62 +1439,6 @@ update wp_posts set comment_count = @comment_count where ID = @post_id;</pre>
 
 
 <p>For some reason the Gravatars don&rsquo;t seem to be showing up as much when there are a lot of comments all on a single page. I don&rsquo;t know if it&rsquo;s rate limited or what.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Configuring Jetty to use Gmail as an SMTP provider]]></title>
-    <link href="http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider/"/>
-    <updated>2012-04-29T09:13:34-07:00</updated>
-    <id>http://springinpractice.com/2012/04/29/configuring-jetty-to-use-gmail-as-an-smtp-provider</id>
-    <content type="html"><![CDATA[<p>In chapter 8 of <a href="http://www.manning.com/wheeler/">Spring in Practice</a>, recipes 8.2 and 8.3 require a JNDI-exposed JavaMail session backed by an SMTP provider. Here I&rsquo;ll show how to set that up in Jetty 6. For SMTP we&rsquo;ll use Gmail, which provides a free SMTP service to anybody with a Gmail account.</p>
-
-<!-- more -->
-
-
-<p>Here&rsquo;s the <code>jetty-env.xml</code> configuration supporting the goals above.</p>
-
-<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd"&gt;
-&lt;Configure class="org.mortbay.jetty.webapp.WebAppContext"&gt;
-    &lt;New id="repository" class="org.mortbay.jetty.plus.naming.Resource"&gt;
-        &lt;Arg&gt;mail/Session&lt;/Arg&gt;
-        &lt;Arg&gt;
-            &lt;New class="org.mortbay.naming.factories.MailSessionReference"&gt;
-                &lt;Set name="user"&gt;[your_gmail_username]&lt;/Set&gt;
-                &lt;Set name="password"&gt;[your_gmail_password]&lt;/Set&gt;
-                &lt;Set name="properties"&gt;
-                    &lt;New class="java.util.Properties"&gt;
-                        &lt;Put name="mail.user"&gt;[your_gmail_username]&lt;/Put&gt;
-                        &lt;Put name="mail.password"&gt;[your_gmail_password]&lt;/Put&gt;
-                        &lt;Put name="mail.transport.protocol"&gt;smtp&lt;/Put&gt;
-                        &lt;Put name="mail.smtp.host"&gt;smtp.gmail.com&lt;/Put&gt;
-                        &lt;Put name="mail.smtp.port"&gt;587&lt;/Put&gt;
-                        &lt;Put name="mail.smtp.auth"&gt;true&lt;/Put&gt;
-                        &lt;Put name="mail.smtp.starttls.enable"&gt;true&lt;/Put&gt;
-                        &lt;Put name="mail.debug"&gt;true&lt;/Put&gt;
-                    &lt;/New&gt;
-                &lt;/Set&gt;
-            &lt;/New&gt;
-        &lt;/Arg&gt;
-    &lt;/New&gt;
-
-    ... other configuration (e.g. JDBC DataSource) ...
-&lt;/Configure&gt;
-</code></pre>
-
-<p>This configuration allows us to grab the mail session using the <code>mail/Session</code> name from the Spring configuration file:</p>
-
-<pre><code>&lt;jee:jndi-lookup id="mailSession" jndi-name="mail/Session" resource-ref="true" /&gt;
-</code></pre>
-
-<h2>Alternative configurations</h2>
-
-<p>For information about doing the same thing with Tomcat, or information on configuring your JavaMail session directly into the app (along with the SMTP provider details), see my post <a href="http://springinpractice.com/2008/05/15/send-e-mail-using-spring-and-javamail/">Send e-mail using Spring and JavaMail</a>.</p>
-
-<h2>Problems?</h2>
-
-<p>If you run into an error to the effect that there was a PKIX path building problem, then you need to import the remote certificate into your local truststore. See <a href="http://springinpractice.com/2012/04/29/fixing-pkix-path-building-issues-when-using-javamail-and-smtp/">Fixing PKIX path building issues when using JavaMail and SMTP</a> for details on this issue and how to fix it.</p>
 ]]></content>
   </entry>
   

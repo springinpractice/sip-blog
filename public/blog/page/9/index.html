@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="Here&rsquo;s a step-by-step tutorial that shows how to integrate Tomcat 5.5.x with Apache 2.0.x under Windows XP using the AJP 1.3 connector. The &hellip;">
+  <meta name="description" content="I assume you already know the whys, concepts, and terminology; this is just a statement of the steps involved. I&rsquo;m using OpenSSH and a DSA key &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,92 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/03/19/setting-up-public-key-authentication-pka-over-ssh/">Setting Up Public Key Authentication (PKA) Over SSH</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-03-19T07:18:48-07:00" pubdate data-updated="true">Mar 19<span>th</span>, 2008</time>
+        
+         | <a href="/2008/03/19/setting-up-public-key-authentication-pka-over-ssh/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I assume you already know the whys, concepts, and terminology; this is just a statement of the steps involved. I&rsquo;m using OpenSSH and a DSA key pair.</p>
+
+<h3>Step 1</h3>
+
+
+<p>Generate a key pair:</p>
+
+<pre>ssh-keygen -t dsa
+Generating public/private dsa key pair.
+Enter file in which to save the key (/home/Willie/.ssh/id_dsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/Willie/.ssh/id_dsa.
+Your public key has been saved in /home/Willie/.ssh/id_dsa.pub.
+The key fingerprint is:
+f2:f7:5b:9b:f7:64:2b:d8:fe:ca:ad:f5:13:35:9f:63 Willie@ARCATA</pre>
+
+
+<p>This creates your key pair, and places them in your <code>~/.ssh</code> directory. The public key is <code>id_dsa.pub</code>; the private key is <code>id_dsa</code>. If it isn&rsquo;t already obvious, the public key is not a secret, and the private key is. :&ndash;)</p>
+
+<h3>Step 2</h3>
+
+
+<p>Install the public key to any SSH servers for which you&rsquo;d like to use PKA. To do this, SSH into the server machine and open up the <code>~/.ssh/authorized_keys</code> file in a text editor. If you haven&rsquo;t already installed a public key to the server in the past, then you&rsquo;ll be creating a new file. Just append the contents of your id_dsa.pub file to <code>authorized_keys</code>. Here&rsquo;s mine:</p>
+
+<pre>ssh-dss AAAAB3NzaC1kc3MAAACBAOybEZ4kAaKROXoibeR+V/ajTY3L/aN6K5lVbdWKsw+9uPl/cyj4
+6Qu5UYHkLS5tiGci8Olx7jNfku4/k1z8/JoGDTqwAixMxgb/NNKTUB7ZnhxfVTenSI/oVtM/lNpCiOdg
+U7ESOyNrxPFVU6K1pWId+LGxeweWTw+08vwIOShTAAAAFQDx6q5JWhV2EDGUMXFwj3QF8+8a4wAAAIBW
+Mee5MphZPYxG7la772tAYREo+37eXfP3SW49GmPHJFdydFcf5VtroLlzKJ1Iy9HUwnKjiEv2qE1B2xVD
+jJslgQ34QVKKswQDRCXlyshyKbbRMd37MSYNpNqdZ5gTJT+EMa8+NoTUGwXOitSMMtx2WmpVo4Fu7Fp1
+eDYvSVChjAAAAIB6uisHso6iPMz11qbKNaHSIqIAV+7iNJZD7aeFuytLDG20Y70b4Jy4Mr4g8RH+MtAL
+fyq6aTcv/g/j2DMeJjwjqLXQFbaFekmQEOfoQ6IZJ5CylthMP1PzRcR5KeCUInKj9CRkTlWLlTMk5es+
+VEebIHg9SWNstkjWBLwlQhemgA== Willie@ARCATA</pre>
+
+
+<p>(For formatting purposes, I&rsquo;ve included line breaks above, but don&rsquo;t introduce line breaks into your public key when you paste it into <code>authorized_keys</code>.)</p>
+
+<h3>Step 3</h3>
+
+
+<p>Adjust the permissions on your <code>.ssh</code> directory, and on the files inside it, so that nobody else can write to them.</p>
+
+<h3>Step 4</h3>
+
+
+<p>Set up the SSH agent. This allows you to enter your passphrase one time per shell session instead of having to type it in every time you want to SSH to your server. Just type <code>ssh-agent</code> followed by <code>ssh-add</code>. Some people just put this in their startup script (e.g., <code>.bash_profile</code>). You&rsquo;ll need to use <code>eval $(ssh-agent)</code> instead of <code>ssh-agent</code> if you choose to do that. You&rsquo;ll have to enter your passphrase every time you open a shell, but after that you can SSH anywhere where you&rsquo;ve installed your public key without having to enter your passphrase.</p>
+
+<div class="endnote">Post migrated from my Wheeler Software site.</div>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1743,6 +1829,10 @@ authenticationProcessingFilter,exceptionTranslationFilter,filterSecurityIntercep
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/">How to set HTTP request timeouts with Spring RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to send an HTTP header with every request with Spring RestTemplate</a>
       </li>
     
@@ -1756,10 +1846,6 @@ authenticationProcessingFilter,exceptionTranslationFilter,filterSecurityIntercep
     
       <li class="post">
         <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
       </li>
     
   </ul>
