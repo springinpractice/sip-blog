@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="When creating a web service, it&rsquo;s often useful to know which apps are hitting it. I don&rsquo;t mean which users, but instead which apps. The &hellip;">
+  <meta name="description" content="In Know Which Apps Are Hitting Your Web Service, I showed how to write a servlet filter that enforces the existence of a special HTTP request header &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -85,6 +85,51 @@
       
   <header>
     
+      <h1 class="entry-title"><a href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to Send an HTTP Header With Every Request With Spring RestTemplate</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-27T08:34:00-07:00" pubdate data-updated="true">Oct 27<span>th</span>, 2013</time>
+        
+         | <a href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>In <a href="http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know Which Apps Are Hitting Your Web Service</a>, I showed how to write a servlet filter that enforces the existence of a special HTTP request header.</p>
+
+<p>From a client perspective, it would be nice to send this header automatically, instead of having to set the header manually with every request. This post shows how we can use Spring&rsquo;s <code>RestTemplate</code> and <code>ClientHttpRequestInterceptor</code> to accomplish this.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know Which Apps Are Hitting Your Web Service</a></h1>
     
     
@@ -112,66 +157,12 @@
 
   <div class="entry-content"><p>When creating a web service, it&rsquo;s often useful to know which apps are hitting it. I don&rsquo;t mean which users, but instead which apps. The reason is that you may want to coordinate with some other team on something. For example, maybe the team is being too aggressive about request retries, or maybe you want to alert the team to a change in the API. Whatever the reason, it&rsquo;s good to know which apps are calling your service.</p>
 
-<p>HTTP has a <code>User-Agent</code> header that can help here. One possible approach is to make that a required header. Unfortunately, this approach isn&rsquo;t ideal. The problem is that HTTP client libraries usually set that header automatically. So if the client application forgets to set the header explicitly, you end up with user agents like <code>Apache-HttpClient/release (java 1.5)</code>, which isn&rsquo;t much help at all.</p>
-
-<p>An approach I like better is to define a custom header and make it required. I use <code>X-User-Agent</code>, since it really is a user agent we&rsquo;re talking about here.</p>
-
-<p>Here&rsquo;s how to implement this with a servlet filter. No Spring involved here at all; it&rsquo;s just servlet stuff.</p>
-
-<pre><code>package com.myapp.web.filter;
-
-import java.io.IOException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-public class XUserAgentFilter implements Filter {
-    private static final String X_USER_AGENT = "X-User-Agent";
-
-    private String errorJson;
-
-    public XUserAgentFilter() {
-        String message = 
-            "HTTP header '" + X_USER_AGENT + "' is required. Please set it to your application name so we know " +
-            "who to contact if there's an issue.";
-        this.errorJson = "{ " + wrap("message") + " : " + wrap(message) + " }";
-    }
-
-    private String wrap(String s) { return "\"" + s + "\""; }
-
-    @Override
-    public void init(FilterConfig config) throws ServletException { }
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-
-        if (httpRequest.getHeader(X_USER_AGENT) == null) {
-            httpResponse.setStatus(422);
-            httpResponse.getWriter().println(errorJson);
-        } else {
-            chain.doFilter(request, response);
-        }
-    }
-
-    @Override
-    public void destroy() { }
-}
-</code></pre>
-
-<p>Of course, you need to configure this filter and a filter mapping in your <code>web.xml</code> file.</p>
-
-<p>In the next post I&rsquo;ll show you how to set up your Spring <code>RestTemplate</code> to send the <code>X-User-Agent</code> header with each request automatically.</p>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Read on &rarr;</a>
+    </footer>
   
 
 
@@ -556,51 +547,6 @@ public class XUserAgentFilter implements Filter {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Renaming Node Classes When Using Spring Data Neo4j</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-12-09T15:33:00-08:00" pubdate data-updated="true">Dec 9<span>th</span>, 2012</time>
-        
-         | <a href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>This is one of those posts where I&rsquo;m just jotting down some notes for my own future use, but someone else may find this useful.</p>
-
-<p>I&rsquo;m going to show how to rename a node entity class when using Spring Data Neo4j. I&rsquo;m talking about the fully-qualified classname here, so it applies when we want to rename a package too.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/2012/12/09/renaming-node-classes-when-using-spring-data-neo4j/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -616,6 +562,10 @@ public class XUserAgentFilter implements Filter {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to send an HTTP header with every request with Spring RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know which apps are hitting your web service</a>
       </li>
     
@@ -629,10 +579,6 @@ public class XUserAgentFilter implements Filter {
     
       <li class="post">
         <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
       </li>
     
   </ul>

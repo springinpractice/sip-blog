@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="One of the things we&rsquo;re working on is an open source configuration management system called Zkybase. It&rsquo;s a new project, and we&rsquo;re &hellip;">
+  <meta name="description" content="Zkybase is my first open source configuration management database (CMDB) effort, but it&rsquo;s not the first time I&rsquo;ve built a CMDB. At work &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,121 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2011/12/06/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/">Why I&#8217;m Pretty Excited About Using Neo4j for a CMDB Backend</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2011-12-06T05:14:44-08:00" pubdate data-updated="true">Dec 6<span>th</span>, 2011</time>
+        
+         | <a href="/2011/12/06/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/deathburro-200x300.jpg" alt="deathburro" /></p>
+
+<p><a href="https://github.com/williewheeler/zkybase">Zkybase</a> is my first <em>open source</em> configuration management database (CMDB) effort, but it&rsquo;s not the first time I&rsquo;ve built a CMDB. At work a bunch of us built&mdash;and continue to build&mdash;a proprietary, internal system CMDB called deathBURRITO as part of our deployment automation effort. We built deathBURRITO using Java, Spring, Hibernate and MySQL. deathBURRITO even has a <a href="http://theksmith.com/tagged/deathburro/">robotic donkey</a> (really) whose purpose we haven&rsquo;t quite yet identified.</p>
+
+<p>So far deathBURRITO has worked out well for us. Some of its features&mdash;namely, those that directly support deployment automation&mdash;have proven more useful than others. But the general consensus seems to be that deathBURRITO addresses an important configuration management (CM) gap, where previously we were &ldquo;managing&rdquo; CM data on a department wiki, in spreadsheets, in XML files and in Visio diagrams. While there&rsquo;s more work to do, what we&rsquo;ve done so far has been reasonably right-headed, and we&rsquo;ve been able to evolve it as our needs have evolved.</p>
+
+<p>That&rsquo;s not to say that there&rsquo;s nothing I would change. I think there&rsquo;s an opportunity to do something better on the backend. That was indeed the impetus for Zkybase.</p>
+
+<h3>Revisiting the backend with Spring Data</h3>
+
+
+<p>Because CM involves a lot of different kinds of entities (e.g., regions, data centers, environments, farms, instance types, machine images, instances, applications, middleware, packages, deployments, EC2 security groups, key pairs&mdash;the list goes on and on), it was helpful to build out a bit of framework to handle various cross-cutting concerns more or less automatically, such as standard views (list view, details view, form views), web controllers (CRUD ops, standard queries), DAOs (again, CRUD ops and queries), generic domain object capabilities, security and more. And I think it&rsquo;s fair to say that this helped, though perhaps not quite as much as I would have liked (at least not yet). The fact remains that anytime we want to add a new entity to the system, we still have to do a fair amount of work making each layer of the framework do what it&rsquo;s supposed to do.</p>
+
+<p>My experience has been that the data persistence layer is the one that&rsquo;s most challenging to change. Besides the actual schema changes, we have to write data migration scripts, we have to make corresponding changes to our integration test data scripts, we have to make sure Hibernate&rsquo;s eager- and lazy-loading are doing the right things, sometimes we have to change the domain object APIs and associated Hibernate queries, etc. Certainly doable, but there&rsquo;s generally a good deal of planning, discussion and testing involved.</p>
+
+<p>So I started looking for some ways to simplify the backend.</p>
+
+<p>Recently I started goofing around with <a href="http://www.springsource.org/spring-data">Spring Data</a>, and in particular, <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. For those who haven&rsquo;t used Spring Data, it offers some nice features that I wanted to try out:</p>
+
+<ul class="square">
+    <li>One of the features is that it&#8217;s able to generate DAO implementations automagically using Java&#8217;s dynamic proxy mechanism. Spring Data calls these DAOs &#8220;repositories&#8221;, which is fine with me. Basically what you do as a developer is you write an interface that extends a type-specific Repository interface, such as a JpaRepository or a MongoRepository. You don&#8217;t have to declare CRUD operations because the Repository interface already declares the ones you&#8217;d typically want (e.g., save(), findAll(), findById(), delete(), deleteAll(), exists(), count(), etc.).</li>
+    <li>And if you have custom queries, just declare them on the interface using some method naming conventions and Spring Data can figure out how to generate an implementation for you.</li>
+    <li>In some cases, Spring Data handles mapping for you. In the case of Spring Data JPA you still have to make sure you have the right JPA annotations in place, and that&#8217;s not too terribly bad. But for MongoDB, since the MongoDB backend is just BSON (binary JSON), the mapping from objects to MongoDB is straightforward and so Spring Data handles that very well, without requiring a bunch of annotations.</li>
+</ul>
+
+
+<p>&ldquo;Game changer&rdquo; might be too strong for the features I&rsquo;ve just described, but man, are they useful. Besides making it easier and faster to implement repos, Spring Data allows me to get rid of a lot of boilerplate code (lots of DAO implementations) and even some Spring Data-like DAO framework code that I usually write. (You know, define a generic DAO interface, a generic abstract DAO class, etc.) My days of building DAOs directly against Hibernate are probably over.</p>
+
+<p>But that&rsquo;s not the only backend change I&rsquo;m looking at.</p>
+
+<h3>Revisiting the backend, part 2: Neo4j + Spring Data Neo4j</h3>
+
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/neo4j-graph.png" alt="Example of a graph in Neo4j" /></p>
+
+<p>Since Spring Data tends to gravitate toward the NoSQL stores, I finally got around to reading up on Neo4j and some other stuff that I probably ought to have read up on a long time ago. Better late than never I guess. It struck me that Neo4j could be a very interesting way to implement a CM backend, and that Spring Data Neo4j could help me keep the DAO layer thin. Here&rsquo;s the thinking:</p>
+
+<ul class="square">
+    <li><strong>There are many entities and relationships.</strong> There are lots and lots of entities and relationships in a CMDB. There are different ways of grouping things, like grouping which assets form a stack, which stacks to deploy to which instances, which instances are in which farms, how to define shards and how to define failover farms, grouping features into apps, endpoints into services, etc. We have to associate SLAs and OLAs with app features and service endpoints, we have to define dependencies between components, and so on. There&#8217;s a ton of stuff. It would eliminate a major chunk of work if we could get away with defining the schema one time (say, in the app itself) instead of in both the app and the database.</li>
+    <li><strong>We need schema agility to experiment with different CMDB approaches.</strong> Along similar lines, there are some strong forces that push for schema agility. Most fundamentally, the right approach to designing and implementing a CMDB isn&#8217;t necessarily a solved problem. Some tools involve running network discovery agents that collect up millions of configuration items (CIs) from the environment. Other tools focus more on collecting the <em>right</em> data rather than collecting everything. Some tools have more of a traditional enterprise data center customer in mind, where you&#8217;re capturing everything from bare metal to the apps to the ITIL services based on the apps. Other tools are more aligned with cloud infrastructures, starting from virtualized infrastructure and working up, leaving everything under that virtualization layer for the cloud provider to worry about. Some tools treat CIs as supporting configuration management but not application performance management (APM); other tools try to single-source their CM and APM data. Some organizations want to centralize CIs in a single database and other organizations pursue a more federated model. With such a panoply of approaches, it&#8217;s no surprise that schema changes occur.</li>
+    <li><strong>We need schema agility to accommodate continuing innovations in infrastructure.</strong> Another schema agility driver is the fact that the way we do infrastructure is rapidly evolving. Infrastructure is steadily moving to the cloud, virtualization is commonplace and new automation and monitoring tools are appearing all the time. The constant stream of innovation demands the ability to adjust quickly, and schema flexibility is a big part of that.</li>
+    <li><strong>We need schema flexibility to accommodate the needs of different organizations.</strong> Besides schema agility, a CMDB needs to offer a certain level of flexibility to support the needs of different customers. One org may have everything in the cloud, where another one is just getting its feet wet. One org may have two environments whereas another has seven. Different orgs have different roles, test processes, deployment pipelines and so forth. Any CMDB that hopes to support more than just a single customer needs to support some level of flexibility.</li>
+    <li><strong>But we still need structure.</strong> One of the more powerful benefits of driving deployment automation from a CMDB is that you can control drift in the target environments by controlling the data in your CMDB. And defining a schema around that is a great way to do so. If, for example, you expect every instance in a given farm to have the same OS, then your schema should attach the OS to the farm itself, not to the instance. (The instances inherit the OS from the farm.) Or maybe it&#8217;s not just the OS&#8211;you want a certain instance type (in terms of virtual hardware profile), certain machine image, certain middleware stack, certain security configuration, etc. Great: bundle those together in a single server build object and then associate that with the farm. This constrains the instances in the farm to have the same server build. (See <a title="Flexibility" href="http://skydingo.com/blog/?p=56">this post</a> for a more detailed discussion.) While Neo4j is schema-free, Spring Data Neo4j gives us a way to impose schema from the app layer.</li>
+    <li><strong>A schemaless backend makes zero-downtime deployments easier.</strong> If you have any apps with hardcore availability requirements, then it goes without saying that you have to have significant automation in place to support that, both on the deployment side and on the incident response side. Since the CMDB is the single source of truth driving that automation, it follows that the CMDB itself must have hardcore availability requirements. Having a schemaless database ought to make it easier to perform zero-downtime deployments of the CMDB itself.</li>
+    <li><strong>We want to support intuitive querying.</strong> Once you bring a bunch of CIs together in a CMDB, there are all kinds of queries that pop up. This could be anything from using the dependency structure to diagnose an incident, assess the impact of a change, or sequence project deliverables (e.g. make system components highly available depending on where they sit in the system dependency graph); using org structures to determine support escalation paths and horizontal communications channels; SLA reporting by group, manager, application category; and so forth. Intuitive query languages for graph databases&#8211;and in particular, the Cypher query language for Neo4j&#8211;appear to be especially well-suited for the broad diversity of queries we expect to see.</li>
+</ul>
+
+
+<p>Remember how I mentioned that Spring Data generates repository implementations automatically based on interfaces? Here&rsquo;s what that looks like with Spring Data Neo4j:</p>
+
+<pre><code>package org.skydingo.zkybase.repository;
+
+import org.skydingo.zkybase.model.Person;
+import org.skydingo.zkybase.model.Project;
+import org.springframework.data.neo4j.annotation.Query;
+import org.springframework.data.neo4j.repository.GraphRepository;
+
+public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
+    Project findProjectByKey(String key);
+    Project findProjectByName(String name);
+
+    @Query("start person=node({0}) match person--&gt;project return project")
+    Iterable&lt;Project&gt; findProjectsByPerson(Person person);
+}
+</code></pre>
+
+<p>Let me repeat that I <em>don&rsquo;t</em> have to write the repository implementation myself. <code>GraphRepository</code> comes with various CRUD operations. Methods like <code>findProjectByKey()</code> and <code>findProjectByName()</code> obey a naming convention that allows Spring Data to produce the backing query automatically. And in the <code>findProjectsByPerson()</code> case, I provided a query using Neo4j&rsquo;s Cypher query language (it uses ASCII art to define queries&mdash;how ridiculously cool is that?).</p>
+
+<h3>Exploring the ideas above with Zkybase</h3>
+
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/dashboard1.png" alt="Zkybase dashboard" /></p>
+
+<p>The point of Zkybase is to see whether we can build a better mousetrap based on the ideas above. I&rsquo;m using Neo4j and Spring Data Neo4j to build it out. I haven&rsquo;t decided yet whether Zkybase will focus on the CMDB piece or whether it&rsquo;s a frontend to configuration management more generally (delegating on the backend to something like <a href="http://www.opscode.com/chef/">Chef</a> or <a href="http://puppetlabs.com/">Puppet</a>, say), but the CMDB will certainly be in there. That will include a representation of the as-is (current) configuration as well as representations for desired configurations as might be defined during a deployment planning activity.</p>
+
+<p>So far I&rsquo;m finding it a lot easier to work with the graph database than with a relational database, and I&rsquo;m finding Spring Data Neo4j to be a big help in terms of repository building and defining app-level schemas. The code is a lot smaller than it was when I did this with a relational database. But it&rsquo;s still early days, so the jury is out.</p>
+
+<p>Watch this space for further developments.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -657,285 +772,6 @@ public Newsletter getFacultyNews() { ... }
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2010/07/06/annotation-based-circuit-breakers-with-spring/">Annotation-based Circuit Breakers With Spring</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2010-07-06T15:10:11-07:00" pubdate data-updated="true">Jul 6<span>th</span>, 2010</time>
-        
-         | <a href="/2010/07/06/annotation-based-circuit-breakers-with-spring/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>The punch line</h3>
-
-
-<p>First, here&rsquo;s the punch line for readers who already know what a circuit breaker is:</p>
-
-<pre style="margin:20px 0;">
-@Service
-@Transactional(
-    propagation = Propagation.REQUIRED,
-    isolation = Isolation.DEFAULT,
-    readOnly = true)
-public class MessageServiceImpl implements MessageService {
-    @Inject private MessageDao messageDao;
-
-    @GuardedByCircuitBreaker("messageServiceBreaker")
-    public Message getMotd() {
-        return messageDao.getMotd();
-    }
-
-    @GuardedByCircuitBreaker("messageServiceBreaker")
-    public List getImportantMessages() {
-        return messageDao.getImportantMessages();
-    }
-}
-</pre>
-
-
-<p>If you find that exciting (or at least interesting, if you don&rsquo;t know about circuit breakers yet), read on&hellip;</p>
-
-<h3>A proper introduction</h3>
-
-
-<p>One of my favorite books is Michael Nygard&rsquo;s <a href="http://www.pragprog.com/titles/mnee/release-it">Release It!</a> (Pragmatic). The idea behind the book is that when we build apps, the feature set isn&rsquo;t the only thing that matters. We need to pay attention to app vulnerabilities that too often result in performance issues or else downtime. A central thesis is that plenty of vulnerabilities are sufficiently common to warrant being classified as antipatterns, and there are corresponding patterns of correct engineering practice to address the antipatterns.</p>
-
-<p>Let&rsquo;s look at one of Nygard&rsquo;s antipatterns, the cascading failure.</p>
-
-<h3>Cascading failures</h3>
-
-
-<p>Probably everybody has seen cascading failures. It&rsquo;s essentially vertical fault propagation. The system has a fault somewhere low in the stack and the fault travels up the stack in an uncontrolled fashion until the outage is much worse than it should have been. Consider for instance the following system:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/portal.png" alt="Portal" /></p>
-
-<p>In this system we have a portal home page that depends upon a web service to deliver important messages to end users. The web service in turn pulls messages out of a database. Standard stuff.</p>
-
-<p>Now suppose there&rsquo;s some kind of problem with the database. Maybe a missing index leads to a bad execution plan, which leads to slow query times, leading to the web service&rsquo;s database calls queuing up and exhausting threads, causing the portal&rsquo;s calls to the web service to do the same thing, causing the browser&rsquo;s calls to the portal to do the same. Here&rsquo;s what that looks like:</p>
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/portal-cascade.png" alt="Broken portal" /></p>
-
-<p>While it goes without saying that the important messages are important, it&rsquo;s doubtful that they&rsquo;re so important that a missing index should be allowed to create complete system unavailability. (In this example, we took out a portal home page, so nobody can get in. If users are using other apps in the portal then they can continue to use them, but nobody new can enter.)</p>
-
-<p>Not good. But probably pretty common. I know I&rsquo;ve seen my fair share.</p>
-
-<h3>Circuit breakers to the rescue</h3>
-
-
-<p>A nice way to deal with cascading failures is to engineer the integration points to stop propagating failure. The pattern is called the circuit breaker, and it&rsquo;s modeled after physical circuit breakers in the real world. We install a circuit breaker at each integration point we want to treat. Under normal conditions, requests and responses flow over the breaker just like current flows over a real circuit breaker. But when the breaker detects a problem with the service at the far end of the breaker, it trips, thus preventing requests and responses from crossing over the integration point, at least until the breaker is reset.</p>
-
-<p>The circuit breaker pattern has two major benefits:</p>
-
-<ul>
-    <li><b>Breakers protect the client:</b> We don&#8217;t want breakers wasting valuable resources (e.g., threads, network connections, their associated physical resources) calling services that are known to be down. Especially since the antipattern normally involves the thread just sitting there waiting for a response. The breaker prevents this by failing fast.</li>
-    <li><b>Breakers protect the service:</b> Sometimes the service is bogging down just due to insufficient capacity. In that situation, breakers prevent a capacity issue from becoming complete service unavailability by throttling load to the service. (There&#8217;s still an availability issue here, but it&#8217;s partial.)</li>
-</ul>
-
-
-<p>That&rsquo;s the concept. From a technical perspective, a breaker is a state machine with three states:</p>
-
-<ul>
-    <li><b>Closed:</b> The breaker&#8217;s normal state. Requests and responses flow freely across the integration point.</li>
-    <li><b>Open:</b> The breaker&#8217;s state when there&#8217;s a problem. No requests can make it across the integration point. In effect, problems with the service are contained, and no propagation occurs.</li>
-    <li><b>Half-open:</b> The breaker&#8217;s state when it decides it&#8217;s time to &#8220;try again&#8221;. The breaker doesn&#8217;t stay open forever. Periodically it will allow a single request through to see whether the service is working again. If so, the breaker resets (goes closed). Otherwise the breaker trips again (goes open).</li>
-</ul>
-
-
-<p>Here&rsquo;s a state transition diagram for a circuit breaker. This is adapted from a diagram in Nygard&rsquo;s book:</p>
-
-<p><img src="http://kite.s3.amazonaws.com/wiki/images/circuit-breaker-state-transition.png" alt="Circuit breaker state transition diagram" /></p>
-
-<p>From the diagram we can see that the trip condition is a certain number of consecutive exceptions. In principle we could use whatever trip condition we like. For example, it could be too many exceptions within a specified time window (i.e. excessive exception rate), too many SLA misses, or perhaps something else. In the implementation we&rsquo;ll describe below it&rsquo;s too many consecutive exceptions of specific types. In general we want to filter out exceptions that the user can intentionally generate (for example, by manipulating HTTP parameters or path variables in a URL) because we don&rsquo;t want to create a vector for DoS attacks.</p>
-
-<p>The other thing the diagram reveals is a timeout parameter. This is just the amount of time the breaker should remain open before going half-open and trying the service again.</p>
-
-<p>That&rsquo;s how breakers work in the abstract. Now let&rsquo;s look at a specific implementation based on Spring.</p>
-
-<h3>My circuit breaker implementation</h3>
-
-
-<p>My circuit breaker implementation is part of a nascent open source effort called <a href="http://code.google.com/p/kite-lib/">Kite</a> that I started a few months back. I haven&rsquo;t done terribly much with the project yet, mostly because I&rsquo;m trying to get the book wrapped up, but once I get above water again I&rsquo;ll be returning to the effort. Fortunately though I was able to get a fairly robust circuit breaker implementation out there with some useful features.</p>
-
-<p>The breaker is based on Spring, and that being the case, it&rsquo;s code-level design is very Spring-like. It&rsquo;s pretty similar to transaction management in Spring. You configure some doodads in the application context file and then you have the choice between programmatic application of breakers (via templates; again, very similar to other templates like JdbcTemplate) or else declarative configuration. The declarative approach further supports XML-based configuration and annotation-based configuration.</p>
-
-<p>Let&rsquo;s look at each in turn.</p>
-
-<h4>Programmatic circuit breakers</h4>
-
-
-<p>This will be familiar to anybody who has used HibernateTemplate, JdbcTemplate, TransactionTemplate, etc. The following is an example of what a Spring Web MVC controller might look like when using programmatic circuit breakers:</p>
-
-<pre style="margin:20px 0;">
-@Inject MessageService messageService;
-@Inject CircuitBreakerTemplate breaker;
-...
-
-public String getMotd() {
-    ...
-    try {
-        Message motd = breaker.execute(new CircuitBreakerCallback() {
-            public Message doInCircuitBreaker() throws Exception {
-                return messageService.getMotd();
-            }
-        });
-        model.addAttribute("motd", motd);
-    } catch (Exception e) {
-        log.error("Couldn't get MOTD: {}", e.getMessage());
-    }
-    ...
-}
-</pre>
-
-
-<p>While it&rsquo;s nice to have the flexibility to go programmatic, usually we don&rsquo;t want to go through all that trouble. The next pair of approaches simplifies things quite a bit.</p>
-
-<h4>Declarative circuit breakers using XML</h4>
-
-
-<p>Spring of course offers XML-based configuration for its various frameworks, and since Spring 2.0, Spring has supported custom namespaces that effectively let framework designers design a domain-specific language for framework configuration. That feature is too cool to pass up, so I built that into my implementation. Here&rsquo;s what the app context config looks like:</p>
-
-<pre style="margin:20px 0;">
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;beans:beans xmlns="http://springinpractice.com/schema/kite"
-    xmlns:aop="http://www.springframework.org/schema/aop"
-    xmlns:beans="http://www.springframework.org/schema/beans"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:p="http://www.springframework.org/schema/p"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/aop
-        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
-        http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-3.0.xsd
-        http://springinpractice.com/schema/kite
-        http:// ... kite schema location ... "&gt;
-
-    &lt;context:mbean-export /&gt;
-    
-    &lt;circuit-breaker
-        id="messageServiceBreaker"
-        exceptionThreshold="3"
-        timeout="30000" /&gt;
-
-    &lt;circuit-breaker-advice
-        id="messageServiceBreakerAdvice"
-        breaker="messageServiceBreaker" /&gt;
-
-    &lt;aop:config&gt;
-        &lt;aop:pointcut id="messageServicePointcut"
-            expression="execution(* kite.sample02.service.MessageServiceImpl.*(..))" /&gt;
-        &lt;aop:advisor advice-ref="messageServiceBreakerAdvice"
-            pointcut-ref="messageServicePointcut"
-            order="0" /&gt;
-    &lt;/aop:config&gt;
-&lt;/beans:beans&gt;
-</pre>
-
-
-<p>In this configuration you can see that I&rsquo;ve made <code>kite</code> the default namespace, and then I&rsquo;ve done a bunch of config that&rsquo;s hopefully mostly self-explanatory, if you know AOP anyway. (If not, that&rsquo;s fine. Read on.) The <code>&lt;context:mbean-export /&gt;</code> is there because the breaker implementation is JMX-enabled so your NOC or support staff (maybe it&rsquo;s you) can manually trip and reset the breaker as needed. That&rsquo;s a must-have feature in my opinion. Then I define a breaker, an AOP advice for the breaker, and then a pointcut and advisor to apply the breaker to the desired location.</p>
-
-<p>This is a nice approach, especially if you&rsquo;re not a big fan of annotations, which a lot of people aren&rsquo;t. I however like annotations quite a bit, so I went ahead and implemented support for annotation-based configuration too, as described below.</p>
-
-<h4>Declarative circuit breakers using annotations</h4>
-
-
-<p>Here&rsquo;s the app context:</p>
-
-<pre style="margin:20px 0;">
-&lt;beans:beans xmlns="http://springinpractice.com/schema/kite"
-    xmlns:beans="http://www.springframework.org/schema/beans"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-3.0.xsd
-        http://springinpractice.com/schema/kite
-        http:// ... kite schema location ... "&gt;
-
-    &lt;context:mbean-export /&gt;
-
-    &lt;circuit-breaker
-        id="messageServiceBreaker"
-        exceptionThreshold="3"
-        timeout="30000" /&gt;
-    
-    &lt;annotation-config order="0" /&gt;
-&lt;/beans:beans&gt;
-</pre>
-
-
-<p>And here&rsquo;s the annotated service bean:</p>
-
-<pre style="margin:20px 0;">
-package kite.sample03.service;
-
-import java.util.List;
-import javax.inject.Inject;
-import kite.annotation.GuardedByCircuitBreaker;
-import kite.sample03.dao.MessageDao;
-import kite.sample03.model.Message;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-@Service
-@Transactional(
-    propagation = Propagation.REQUIRED,
-    isolation = Isolation.DEFAULT,
-    readOnly = true)
-public class MessageServiceImpl implements MessageService {
-    @Inject private MessageDao messageDao;
-
-    @GuardedByCircuitBreaker("messageServiceBreaker")
-    public Message getMotd() {
-        return messageDao.getMotd();
-    }
-
-    @GuardedByCircuitBreaker("messageServiceBreaker")
-    public List getImportantMessages() {
-        return messageDao.getImportantMessages();
-    }
-}
-</pre>
-
-
-<p>Nice and clean Spring-style annotation-based configuration.</p>
-
-<h3>Conclusion</h3>
-
-
-<p>Hope you enjoyed the post. If you want to give it a try, go to the <a href="http://code.google.com/p/kite-lib/">Kite project</a> and try it out. Also, chapter 14 in my book <a href="http://www.manning.com/wheeler/">Spring in Practice</a> shows how to go about implementing your own Spring-style framework code, should you get the itch, and it&rsquo;s based on the circuit breaker implementation we just described. It explains how to implement a template, a custom namespace, JMX support, AOP-based configuration and also annotation-based configuration.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/6/">&larr; Older</a>
@@ -953,6 +789,10 @@ public class MessageServiceImpl implements MessageService {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to send an HTTP header with every request with Spring RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know which apps are hitting your web service</a>
       </li>
     
@@ -966,10 +806,6 @@ public class MessageServiceImpl implements MessageService {
     
       <li class="post">
         <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
       </li>
     
   </ul>

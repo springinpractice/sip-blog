@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="A major goal for Zkybase is to tie together the activities of developers, testers, release engineers and operations. A few major benefits are: Tool &hellip;">
+  <meta name="description" content="It&rsquo;s been a little while since I&rsquo;ve posted Zkybase screenshots, so here&rsquo;s the work in progress. I explain how to implement this &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,74 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/01/17/more-skybase-screenshots/">More Zkybase Screenshots</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-01-17T13:30:03-08:00" pubdate data-updated="true">Jan 17<span>th</span>, 2012</time>
+        
+         | <a href="/2012/01/17/more-skybase-screenshots/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>It&rsquo;s been a little while since I&rsquo;ve posted <a title="Zkybase GitHub site" href="https://github.com/williewheeler/zkybase">Zkybase</a> screenshots, so here&rsquo;s the work in progress. I explain how to implement this stuff (<a title="Spring Data Neo4j" href="http://www.springsource.org/spring-data/neo4j">Spring Data Neo4j</a>, <a title="Spring/GitHub integration" href="https://github.com/SpringSource/spring-social">Spring/GitHub integration</a>, <a title="JavaScript InfoVis Toolkit" href="http://thejit.org/">JavaScript InfoVis Toolkit</a>, etc.) in chapter 11 of my book <a title="Spring in Practice" href="http://manning.com/wheeler/">Spring in Practice</a> (Manning).</p>
+
+<h2>App overview page</h2>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-17-more-skybase-screenshots/app_overview.png" alt="App overview" /></p>
+
+<p>Applications are a central concept in Zkybase. This is how the app overview page looks so far. (It&rsquo;s just a start.) The concept behind it is that if you want a 360-degree view of an app (dev view, test view, release view and ops view), you come to the app details page and then you can start looking at different views.</p>
+
+<h2>App repository commits page</h2>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-17-more-skybase-screenshots/commits.png" alt="Commits" /></p>
+
+<p>Here&rsquo;s a repo commit history for a given app. Right now it&rsquo;s just integrated with GitHub, but the idea is to provide integrations with other providers too (e.g. BitBucket).</p>
+
+<h2>App repository watchers page</h2>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-17-more-skybase-screenshots/watchers.png" alt="Watchers" /></p>
+
+<p>Again, an app details view. This time it&rsquo;s GitHub watchers for a given app repo.</p>
+
+<h2>Region details page</h2>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-17-more-skybase-screenshots/region.png" alt="Region" /></p>
+
+<p>Visualizations are one of the more exciting features that a CMDB can offer. One of the huge advantages of putting your configuration management data in a database is that you can move away from Visio documents and Gliffy diagrams, and move instead toward data modeling and automatically generating views. Here I&rsquo;m using the <a title="JavaScript InfoVis Toolkit" href="http://thejit.org/">JavaScript InfoVis Toolkit </a>library to generate an interactive graph visualization. It is a great complement to the underlying <a title="Neo4j" href="http://neo4j.org/">Neo4j</a> graph database.</p>
+
+<h2>Automation view</h2>
+
+<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2012-01-17-more-skybase-screenshots/xml.png" alt="XML" /></p>
+
+<p>This might strike you as a strange screenshot, but in reality it&rsquo;s an example of the most important view&mdash;the automation view. The main reason we want to manage configuration data in a database is that we can build web services (Zkybase supports both JSON and XML views) that simultaneously drive automation and human-consumable views of the sort that a support team would use.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1324,121 +1392,6 @@ public String getPersonDetails(@PathVariable String username, Model model) {
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2011/12/06/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/">Why I&#8217;m Pretty Excited About Using Neo4j for a CMDB Backend</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2011-12-06T05:14:44-08:00" pubdate data-updated="true">Dec 6<span>th</span>, 2011</time>
-        
-         | <a href="/2011/12/06/why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/deathburro-200x300.jpg" alt="deathburro" /></p>
-
-<p><a href="https://github.com/williewheeler/zkybase">Zkybase</a> is my first <em>open source</em> configuration management database (CMDB) effort, but it&rsquo;s not the first time I&rsquo;ve built a CMDB. At work a bunch of us built&mdash;and continue to build&mdash;a proprietary, internal system CMDB called deathBURRITO as part of our deployment automation effort. We built deathBURRITO using Java, Spring, Hibernate and MySQL. deathBURRITO even has a <a href="http://theksmith.com/tagged/deathburro/">robotic donkey</a> (really) whose purpose we haven&rsquo;t quite yet identified.</p>
-
-<p>So far deathBURRITO has worked out well for us. Some of its features&mdash;namely, those that directly support deployment automation&mdash;have proven more useful than others. But the general consensus seems to be that deathBURRITO addresses an important configuration management (CM) gap, where previously we were &ldquo;managing&rdquo; CM data on a department wiki, in spreadsheets, in XML files and in Visio diagrams. While there&rsquo;s more work to do, what we&rsquo;ve done so far has been reasonably right-headed, and we&rsquo;ve been able to evolve it as our needs have evolved.</p>
-
-<p>That&rsquo;s not to say that there&rsquo;s nothing I would change. I think there&rsquo;s an opportunity to do something better on the backend. That was indeed the impetus for Zkybase.</p>
-
-<h3>Revisiting the backend with Spring Data</h3>
-
-
-<p>Because CM involves a lot of different kinds of entities (e.g., regions, data centers, environments, farms, instance types, machine images, instances, applications, middleware, packages, deployments, EC2 security groups, key pairs&mdash;the list goes on and on), it was helpful to build out a bit of framework to handle various cross-cutting concerns more or less automatically, such as standard views (list view, details view, form views), web controllers (CRUD ops, standard queries), DAOs (again, CRUD ops and queries), generic domain object capabilities, security and more. And I think it&rsquo;s fair to say that this helped, though perhaps not quite as much as I would have liked (at least not yet). The fact remains that anytime we want to add a new entity to the system, we still have to do a fair amount of work making each layer of the framework do what it&rsquo;s supposed to do.</p>
-
-<p>My experience has been that the data persistence layer is the one that&rsquo;s most challenging to change. Besides the actual schema changes, we have to write data migration scripts, we have to make corresponding changes to our integration test data scripts, we have to make sure Hibernate&rsquo;s eager- and lazy-loading are doing the right things, sometimes we have to change the domain object APIs and associated Hibernate queries, etc. Certainly doable, but there&rsquo;s generally a good deal of planning, discussion and testing involved.</p>
-
-<p>So I started looking for some ways to simplify the backend.</p>
-
-<p>Recently I started goofing around with <a href="http://www.springsource.org/spring-data">Spring Data</a>, and in particular, <a href="http://www.springsource.org/spring-data/jpa">Spring Data JPA</a> and <a href="http://www.springsource.org/spring-data/mongodb">Spring Data MongoDB</a>. For those who haven&rsquo;t used Spring Data, it offers some nice features that I wanted to try out:</p>
-
-<ul class="square">
-    <li>One of the features is that it&#8217;s able to generate DAO implementations automagically using Java&#8217;s dynamic proxy mechanism. Spring Data calls these DAOs &#8220;repositories&#8221;, which is fine with me. Basically what you do as a developer is you write an interface that extends a type-specific Repository interface, such as a JpaRepository or a MongoRepository. You don&#8217;t have to declare CRUD operations because the Repository interface already declares the ones you&#8217;d typically want (e.g., save(), findAll(), findById(), delete(), deleteAll(), exists(), count(), etc.).</li>
-    <li>And if you have custom queries, just declare them on the interface using some method naming conventions and Spring Data can figure out how to generate an implementation for you.</li>
-    <li>In some cases, Spring Data handles mapping for you. In the case of Spring Data JPA you still have to make sure you have the right JPA annotations in place, and that&#8217;s not too terribly bad. But for MongoDB, since the MongoDB backend is just BSON (binary JSON), the mapping from objects to MongoDB is straightforward and so Spring Data handles that very well, without requiring a bunch of annotations.</li>
-</ul>
-
-
-<p>&ldquo;Game changer&rdquo; might be too strong for the features I&rsquo;ve just described, but man, are they useful. Besides making it easier and faster to implement repos, Spring Data allows me to get rid of a lot of boilerplate code (lots of DAO implementations) and even some Spring Data-like DAO framework code that I usually write. (You know, define a generic DAO interface, a generic abstract DAO class, etc.) My days of building DAOs directly against Hibernate are probably over.</p>
-
-<p>But that&rsquo;s not the only backend change I&rsquo;m looking at.</p>
-
-<h3>Revisiting the backend, part 2: Neo4j + Spring Data Neo4j</h3>
-
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/neo4j-graph.png" alt="Example of a graph in Neo4j" /></p>
-
-<p>Since Spring Data tends to gravitate toward the NoSQL stores, I finally got around to reading up on Neo4j and some other stuff that I probably ought to have read up on a long time ago. Better late than never I guess. It struck me that Neo4j could be a very interesting way to implement a CM backend, and that Spring Data Neo4j could help me keep the DAO layer thin. Here&rsquo;s the thinking:</p>
-
-<ul class="square">
-    <li><strong>There are many entities and relationships.</strong> There are lots and lots of entities and relationships in a CMDB. There are different ways of grouping things, like grouping which assets form a stack, which stacks to deploy to which instances, which instances are in which farms, how to define shards and how to define failover farms, grouping features into apps, endpoints into services, etc. We have to associate SLAs and OLAs with app features and service endpoints, we have to define dependencies between components, and so on. There&#8217;s a ton of stuff. It would eliminate a major chunk of work if we could get away with defining the schema one time (say, in the app itself) instead of in both the app and the database.</li>
-    <li><strong>We need schema agility to experiment with different CMDB approaches.</strong> Along similar lines, there are some strong forces that push for schema agility. Most fundamentally, the right approach to designing and implementing a CMDB isn&#8217;t necessarily a solved problem. Some tools involve running network discovery agents that collect up millions of configuration items (CIs) from the environment. Other tools focus more on collecting the <em>right</em> data rather than collecting everything. Some tools have more of a traditional enterprise data center customer in mind, where you&#8217;re capturing everything from bare metal to the apps to the ITIL services based on the apps. Other tools are more aligned with cloud infrastructures, starting from virtualized infrastructure and working up, leaving everything under that virtualization layer for the cloud provider to worry about. Some tools treat CIs as supporting configuration management but not application performance management (APM); other tools try to single-source their CM and APM data. Some organizations want to centralize CIs in a single database and other organizations pursue a more federated model. With such a panoply of approaches, it&#8217;s no surprise that schema changes occur.</li>
-    <li><strong>We need schema agility to accommodate continuing innovations in infrastructure.</strong> Another schema agility driver is the fact that the way we do infrastructure is rapidly evolving. Infrastructure is steadily moving to the cloud, virtualization is commonplace and new automation and monitoring tools are appearing all the time. The constant stream of innovation demands the ability to adjust quickly, and schema flexibility is a big part of that.</li>
-    <li><strong>We need schema flexibility to accommodate the needs of different organizations.</strong> Besides schema agility, a CMDB needs to offer a certain level of flexibility to support the needs of different customers. One org may have everything in the cloud, where another one is just getting its feet wet. One org may have two environments whereas another has seven. Different orgs have different roles, test processes, deployment pipelines and so forth. Any CMDB that hopes to support more than just a single customer needs to support some level of flexibility.</li>
-    <li><strong>But we still need structure.</strong> One of the more powerful benefits of driving deployment automation from a CMDB is that you can control drift in the target environments by controlling the data in your CMDB. And defining a schema around that is a great way to do so. If, for example, you expect every instance in a given farm to have the same OS, then your schema should attach the OS to the farm itself, not to the instance. (The instances inherit the OS from the farm.) Or maybe it&#8217;s not just the OS&#8211;you want a certain instance type (in terms of virtual hardware profile), certain machine image, certain middleware stack, certain security configuration, etc. Great: bundle those together in a single server build object and then associate that with the farm. This constrains the instances in the farm to have the same server build. (See <a title="Flexibility" href="http://skydingo.com/blog/?p=56">this post</a> for a more detailed discussion.) While Neo4j is schema-free, Spring Data Neo4j gives us a way to impose schema from the app layer.</li>
-    <li><strong>A schemaless backend makes zero-downtime deployments easier.</strong> If you have any apps with hardcore availability requirements, then it goes without saying that you have to have significant automation in place to support that, both on the deployment side and on the incident response side. Since the CMDB is the single source of truth driving that automation, it follows that the CMDB itself must have hardcore availability requirements. Having a schemaless database ought to make it easier to perform zero-downtime deployments of the CMDB itself.</li>
-    <li><strong>We want to support intuitive querying.</strong> Once you bring a bunch of CIs together in a CMDB, there are all kinds of queries that pop up. This could be anything from using the dependency structure to diagnose an incident, assess the impact of a change, or sequence project deliverables (e.g. make system components highly available depending on where they sit in the system dependency graph); using org structures to determine support escalation paths and horizontal communications channels; SLA reporting by group, manager, application category; and so forth. Intuitive query languages for graph databases&#8211;and in particular, the Cypher query language for Neo4j&#8211;appear to be especially well-suited for the broad diversity of queries we expect to see.</li>
-</ul>
-
-
-<p>Remember how I mentioned that Spring Data generates repository implementations automatically based on interfaces? Here&rsquo;s what that looks like with Spring Data Neo4j:</p>
-
-<pre><code>package org.skydingo.zkybase.repository;
-
-import org.skydingo.zkybase.model.Person;
-import org.skydingo.zkybase.model.Project;
-import org.springframework.data.neo4j.annotation.Query;
-import org.springframework.data.neo4j.repository.GraphRepository;
-
-public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
-    Project findProjectByKey(String key);
-    Project findProjectByName(String name);
-
-    @Query("start person=node({0}) match person--&gt;project return project")
-    Iterable&lt;Project&gt; findProjectsByPerson(Person person);
-}
-</code></pre>
-
-<p>Let me repeat that I <em>don&rsquo;t</em> have to write the repository implementation myself. <code>GraphRepository</code> comes with various CRUD operations. Methods like <code>findProjectByKey()</code> and <code>findProjectByName()</code> obey a naming convention that allows Spring Data to produce the backing query automatically. And in the <code>findProjectsByPerson()</code> case, I provided a query using Neo4j&rsquo;s Cypher query language (it uses ASCII art to define queries&mdash;how ridiculously cool is that?).</p>
-
-<h3>Exploring the ideas above with Zkybase</h3>
-
-
-<p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2011-12-06-why-im-pretty-excited-about-using-neo4j-for-a-cmdb-backend/dashboard1.png" alt="Zkybase dashboard" /></p>
-
-<p>The point of Zkybase is to see whether we can build a better mousetrap based on the ideas above. I&rsquo;m using Neo4j and Spring Data Neo4j to build it out. I haven&rsquo;t decided yet whether Zkybase will focus on the CMDB piece or whether it&rsquo;s a frontend to configuration management more generally (delegating on the backend to something like <a href="http://www.opscode.com/chef/">Chef</a> or <a href="http://puppetlabs.com/">Puppet</a>, say), but the CMDB will certainly be in there. That will include a representation of the as-is (current) configuration as well as representations for desired configurations as might be defined during a deployment planning activity.</p>
-
-<p>So far I&rsquo;m finding it a lot easier to work with the graph database than with a relational database, and I&rsquo;m finding Spring Data Neo4j to be a big help in terms of repository building and defining app-level schemas. The code is a lot smaller than it was when I did this with a relational database. But it&rsquo;s still early days, so the jury is out.</p>
-
-<p>Watch this space for further developments.</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/5/">&larr; Older</a>
@@ -1456,6 +1409,10 @@ public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to send an HTTP header with every request with Spring RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know which apps are hitting your web service</a>
       </li>
     
@@ -1469,10 +1426,6 @@ public interface ProjectRepository extends GraphRepository&lt;Project&gt; {
     
       <li class="post">
         <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
       </li>
     
   </ul>

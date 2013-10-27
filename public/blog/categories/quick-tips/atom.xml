@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Quick Tips | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/quick-tips/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-25T01:43:30-07:00</updated>
+  <updated>2013-10-27T08:53:06-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -14,11 +14,78 @@
 
   
   <entry>
+    <title type="html"><![CDATA[How to send an HTTP header with every request with Spring RestTemplate]]></title>
+    <link href="http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/"/>
+    <updated>2013-10-27T08:34:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate</id>
+    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know Which Apps Are Hitting Your Web Service</a>, I showed how to write a servlet filter that enforces the existence of a special HTTP request header.</p>
+
+<p>From a client perspective, it would be nice to send this header automatically, instead of having to set the header manually with every request. This post shows how we can use Spring&rsquo;s <code>RestTemplate</code> and <code>ClientHttpRequestInterceptor</code> to accomplish this.</p>
+
+<!-- more -->
+
+
+<p>First we need to implement a <code>ClientHttpRequestInterceptor</code>:</p>
+
+<pre><code>package com.myapp.connector;
+
+import java.io.IOException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+
+public class XUserAgentInterceptor implements ClientHttpRequestInterceptor {
+
+    @Override
+    public ClientHttpResponse intercept(
+            HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
+            throws IOException {
+
+        HttpHeaders headers = request.getHeaders();
+        headers.add("X-User-Agent", "My App v2.1");
+        return execution.execute(request, body);
+    }
+}
+</code></pre>
+
+<p>Now we need to configure our <code>RestTemplate</code> to use it. Here I&rsquo;m using Spring&rsquo;s Java-based configuration, but you can implement the same thing with the XML-based configuration too:</p>
+
+<pre><code>package com.myapp;
+
+import java.util.Collections;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.web.client.RestTemplate;
+import com.myapp.connector.XUserAgentInterceptor;
+
+@Configuration
+public class MyAppConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
+        restTemplate.setInterceptors(Collections.singletonList(new XUserAgentInterceptor()));
+        return restTemplate;
+    }
+}
+</code></pre>
+
+<p>With this configuration, any requests you make through the <code>RestTemplate</code> will automatically carry the desired HTTP request header.</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[Know which apps are hitting your web service]]></title>
     <link href="http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service/"/>
     <updated>2013-10-25T00:42:00-07:00</updated>
     <id>http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service</id>
     <content type="html"><![CDATA[<p>When creating a web service, it&rsquo;s often useful to know which apps are hitting it. I don&rsquo;t mean which users, but instead which apps. The reason is that you may want to coordinate with some other team on something. For example, maybe the team is being too aggressive about request retries, or maybe you want to alert the team to a change in the API. Whatever the reason, it&rsquo;s good to know which apps are calling your service.</p>
+
+<!-- more -->
+
 
 <p>HTTP has a <code>User-Agent</code> header that can help here. One possible approach is to make that a required header. Unfortunately, this approach isn&rsquo;t ideal. The problem is that HTTP client libraries usually set that header automatically. So if the client application forgets to set the header explicitly, you end up with user agents like <code>Apache-HttpClient/release (java 1.5)</code>, which isn&rsquo;t much help at all.</p>
 
@@ -477,33 +544,6 @@ Account account = response.getBody();
 <p>In both the request and response, the type parameters represent the body. In the request we aren&rsquo;t sending anything in the body, so we just use <code>String</code> as a default, and pass the headers along by themselves. In the response we expect an account, so that&rsquo;s why we have <code>Account</code> and <code>Account.class</code> there.</p>
 
 <p>Happy basic authenticating.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Aggregating TP90 data with Splunk]]></title>
-    <link href="http://springinpractice.com/2013/09/25/aggregating-tp90-data-with-splunk/"/>
-    <updated>2013-09-25T19:38:00-07:00</updated>
-    <id>http://springinpractice.com/2013/09/25/aggregating-tp90-data-with-splunk</id>
-    <content type="html"><![CDATA[<p>One of the challenges around <a href="http://stackoverflow.com/questions/17435438/what-do-we-mean-by-top-percentile-or-tp-based-latency">TP90</a> data is aggregating it. I wrote about this <a href="http://stats.stackexchange.com/questions/49017/options-for-aggregating-dispersion-data">here</a>, and offered a solution based on histograms. Here I&rsquo;m going to describe another approach, this time based on weighted averages.</p>
-
-<!-- more -->
-
-
-<p>To be concrete, suppose we have web page response times, and we&rsquo;ve computed hourly TP90s for them. Now we want to know the TP90 for a week. To get the exact answer, we&rsquo;d need to look at all the response times for the whole week, but that can be pretty expensive for a busy site. The challenge is to estimate the week&rsquo;s TP90 based on the hourlies.</p>
-
-<p>We can do that by computing a <a href="http://en.wikipedia.org/wiki/Weighted_arithmetic_mean">weighted average</a>, where we use counts to establish weights. The weight for any given hour is the number of requests that hour divided by the total number of requests that week. Apply the hourly weights to the hourly TP90s and then sum them all up to get the weighted average over the week.</p>
-
-<p>Here&rsquo;s how to do it in <a href="http://www.splunk.com/">Splunk</a>. The trick here is the <a href="http://docs.splunk.com/Documentation/Splunk/5.0.5/SearchReference/Eventstats">eventstats</a> command, which makes the sum of the hourly counts available on a per-row basis so we can use it to calculate weights.</p>
-
-<pre><code>index=webRequestSummary earliest=-7d@d latest=@d
-    | eventstats sum(hourlyCount) as totalCount
-    | eval weight = hourlyCount / totalCount
-    | eval weightedHourlyTP90 = weight * hourlyTP90
-    | sum(weightedHourlyTP90) as weightedAvgTP90
-</code></pre>
-
-<p>That&rsquo;s it.</p>
 ]]></content>
   </entry>
   

@@ -109,6 +109,9 @@
 
 <div class="entry-content"><p>When creating a web service, it&rsquo;s often useful to know which apps are hitting it. I don&rsquo;t mean which users, but instead which apps. The reason is that you may want to coordinate with some other team on something. For example, maybe the team is being too aggressive about request retries, or maybe you want to alert the team to a change in the API. Whatever the reason, it&rsquo;s good to know which apps are calling your service.</p>
 
+<!-- more -->
+
+
 <p>HTTP has a <code>User-Agent</code> header that can help here. One possible approach is to make that a required header. Unfortunately, this approach isn&rsquo;t ideal. The problem is that HTTP client libraries usually set that header automatically. So if the client application forgets to set the header explicitly, you end up with user agents like <code>Apache-HttpClient/release (java 1.5)</code>, which isn&rsquo;t much help at all.</p>
 
 <p>An approach I like better is to define a custom header and make it required. I use <code>X-User-Agent</code>, since it really is a user agent we&rsquo;re talking about here.</p>
@@ -219,6 +222,8 @@ public class XUserAgentFilter implements Filter {
         <a class="basic-alignment left" href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/" title="Previous Post: Generating JSON error object responses with Spring Web MVC">&laquo; Generating JSON error object responses with Spring Web MVC</a>
       
       
+        <a class="basic-alignment right" href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/" title="Next Post: How to send an HTTP header with every request with Spring RestTemplate">How to send an HTTP header with every request with Spring RestTemplate &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -239,6 +244,10 @@ public class XUserAgentFilter implements Filter {
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/">How to send an HTTP header with every request with Spring RestTemplate</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know which apps are hitting your web service</a>
       </li>
     
@@ -252,10 +261,6 @@ public class XUserAgentFilter implements Filter {
     
       <li class="post">
         <a href="/2013/10/02/quick-tip-basic-authentication-with-spring-resttemplate/">Quick tip: Basic authentication with Spring RestTemplate</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/09/25/aggregating-tp90-data-with-splunk/">Aggregating TP90 data with Splunk</a>
       </li>
     
   </ul>

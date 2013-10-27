@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Chapter 13 - Integration | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/chapter-13-integration/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-25T01:43:30-07:00</updated>
+  <updated>2013-10-27T08:53:06-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -14,11 +14,78 @@
 
   
   <entry>
+    <title type="html"><![CDATA[How to send an HTTP header with every request with Spring RestTemplate]]></title>
+    <link href="http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate/"/>
+    <updated>2013-10-27T08:34:00-07:00</updated>
+    <id>http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate</id>
+    <content type="html"><![CDATA[<p>In <a href="http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service/">Know Which Apps Are Hitting Your Web Service</a>, I showed how to write a servlet filter that enforces the existence of a special HTTP request header.</p>
+
+<p>From a client perspective, it would be nice to send this header automatically, instead of having to set the header manually with every request. This post shows how we can use Spring&rsquo;s <code>RestTemplate</code> and <code>ClientHttpRequestInterceptor</code> to accomplish this.</p>
+
+<!-- more -->
+
+
+<p>First we need to implement a <code>ClientHttpRequestInterceptor</code>:</p>
+
+<pre><code>package com.myapp.connector;
+
+import java.io.IOException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+
+public class XUserAgentInterceptor implements ClientHttpRequestInterceptor {
+
+    @Override
+    public ClientHttpResponse intercept(
+            HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
+            throws IOException {
+
+        HttpHeaders headers = request.getHeaders();
+        headers.add("X-User-Agent", "My App v2.1");
+        return execution.execute(request, body);
+    }
+}
+</code></pre>
+
+<p>Now we need to configure our <code>RestTemplate</code> to use it. Here I&rsquo;m using Spring&rsquo;s Java-based configuration, but you can implement the same thing with the XML-based configuration too:</p>
+
+<pre><code>package com.myapp;
+
+import java.util.Collections;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.web.client.RestTemplate;
+import com.myapp.connector.XUserAgentInterceptor;
+
+@Configuration
+public class MyAppConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
+        restTemplate.setInterceptors(Collections.singletonList(new XUserAgentInterceptor()));
+        return restTemplate;
+    }
+}
+</code></pre>
+
+<p>With this configuration, any requests you make through the <code>RestTemplate</code> will automatically carry the desired HTTP request header.</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[Know which apps are hitting your web service]]></title>
     <link href="http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service/"/>
     <updated>2013-10-25T00:42:00-07:00</updated>
     <id>http://springinpractice.com/2013/10/25/know-which-apps-are-hitting-your-web-service</id>
     <content type="html"><![CDATA[<p>When creating a web service, it&rsquo;s often useful to know which apps are hitting it. I don&rsquo;t mean which users, but instead which apps. The reason is that you may want to coordinate with some other team on something. For example, maybe the team is being too aggressive about request retries, or maybe you want to alert the team to a change in the API. Whatever the reason, it&rsquo;s good to know which apps are calling your service.</p>
+
+<!-- more -->
+
 
 <p>HTTP has a <code>User-Agent</code> header that can help here. One possible approach is to make that a required header. Unfortunately, this approach isn&rsquo;t ideal. The problem is that HTTP client libraries usually set that header automatically. So if the client application forgets to set the header explicitly, you end up with user agents like <code>Apache-HttpClient/release (java 1.5)</code>, which isn&rsquo;t much help at all.</p>
 
@@ -477,162 +544,6 @@ Account account = response.getBody();
 <p>In both the request and response, the type parameters represent the body. In the request we aren&rsquo;t sending anything in the body, so we just use <code>String</code> as a default, and pass the headers along by themselves. In the response we expect an account, so that&rsquo;s why we have <code>Account</code> and <code>Account.class</code> there.</p>
 
 <p>Happy basic authenticating.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Optimistic locking with Spring Data REST]]></title>
-    <link href="http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest/"/>
-    <updated>2013-09-14T20:43:00-07:00</updated>
-    <id>http://springinpractice.com/2013/09/14/optimistic-locking-with-spring-data-rest</id>
-    <content type="html"><![CDATA[<p>I&rsquo;m working on a web service for a document management system, where clients grab documents from the web service, modify them and submit the updates. Since multiple clients can all grab the same document at the same time, we needed to implement an <a href="http://c2.com/cgi/wiki?OptimisticLocking">optimistic locking</a> scheme. In this scheme, each document has a version number, and when the client submits an update to the service, the service checks to see whether the submitted version number baseline is still the most recent one in the database. If so, we increment the version number and the update proceeds. Otherwise, we throw an exception indicating a conflict.</p>
-
-<!-- more -->
-
-
-<p>From a technology perspective we&rsquo;re using <a href="http://projects.spring.io/spring-data-rest/">Spring Data REST</a>, <a href="http://projects.spring.io/spring-data-jpa/">Spring Data JPA</a>, JPA and Hibernate to implement the web service. So I originally tried to use <a href="http://docs.oracle.com/javaee/6/api/javax/persistence/Version.html">JPA&rsquo;s @Version annotation</a>. But for reasons I describe <a href="http://stackoverflow.com/questions/18780621/does-spring-data-rest-support-jpa-version">here</a> it doesn&rsquo;t work. <a href="https://twitter.com/mdeinum">Marten Deinum</a> notes further that this isn&rsquo;t really a problem with Spring Data REST <em>per se</em>; it affects e.g. form submissions too. At Marten&rsquo;s suggestion, I created an <a href="https://jira.springsource.org/browse/DATAREST-160">enhancement request</a>, but since I needed something now, I set out to implement optimisitic locking for Spring Data REST without <code>@Version</code>.</p>
-
-<p>The trick is to listen for events that are fired before the update occurs. Spring Data REST fires such events, but so does JPA, and I decided to use JPA&rsquo;s events instead to ensure that the version number get/test/increment happens as part of a single atomic transaction. (My guess is that the Spring Data REST <a href="http://docs.spring.io/spring-data/rest/docs/1.1.0.M1/reference/htmlsingle/#events-chapter">BeforeSaveEvent</a> fires before entering the transaction.)</p>
-
-<p>Here&rsquo;s the code. First, here&rsquo;s an interface for versioned entities.</p>
-
-<pre><code>package myapp.entity;
-
-public interface VersionedEntity {
-
-    Long getVersion();
-
-    void setVersion(Long version);
-}
-</code></pre>
-
-<p>Next we have an abstract base class for versioned entities. I could have done a mixin-style implementation here (using, e.g., <a href="http://www.eclipse.org/aspectj/doc/next/progguide/language-interType.html">AspectJ inter-type declarations</a>), but I decided to keep it simple for now.</p>
-
-<pre><code>package myapp.entity;
-
-import javax.persistence.Column;
-import javax.persistence.EntityListeners;
-import javax.persistence.MappedSuperclass;
-import myapp.repo.listener.OptimisticLockListener;
-
-@MappedSuperclass
-@EntityListeners(OptimisticLockListener.class)
-public abstract class AbstractVersionedEntity implements VersionedEntity {
-
-    @Column(name = "VERSION")
-    private Long version;
-
-    @Override
-    public Long getVersion() { return version; }
-
-    @Override
-    public void setVersion(Long version) { this.version = version; }
-}
-</code></pre>
-
-<p>Notice the <code>@EntityListeners</code> annotation. This tells JPA which class will listen for JPA lifecycle events. Here&rsquo;s the <code>OptimisticLockListener</code>.</p>
-
-<pre><code>package myapp.repo.listener;
-
-import javax.persistence.PreUpdate;
-import org.springframework.stereotype.Component;
-import myapp.entity.VersionedEntity;
-import myapp.util.ApplicationContextProvider;
-
-public class OptimisticLockListener {
-
-    @PreUpdate
-    public void preUpdate(Object entity) {
-        if (entity instanceof VersionedEntity) {
-            getChecker().check((VersionedEntity) entity);
-        }
-    }
-
-    private OptimisticLockChecker getChecker() {
-        return ApplicationContextProvider
-            .getApplicationContext()
-            .getBean(OptimisticLockChecker.class);
-    }
-}
-</code></pre>
-
-<p>In the listing above we grab an <code>OptimisticLockChecker</code> and then run the check. I&rsquo;ve implemented that as a separate class because I&rsquo;m going to need the application&rsquo;s <code>JdbcTemplate</code> to do the version check, and I need a managed bean to inject the <code>JdbcTemplate</code>. Unfortunately, <a href="http://stackoverflow.com/questions/12951701/how-to-get-entity-manager-or-transaction-in-jpa-listener">JPA 2.0 doesn&rsquo;t treat entity listeners as managed beans</a> (apparently that will change in JPA 2.1). That&rsquo;s why there&rsquo;s a separate <code>OptimisticLockChecker</code> class.</p>
-
-<p><a href="https://twitter.com/vguhesan">Venkatt Guhesan</a> offers <code>ApplicationContextProvider</code> as a <a href="http://mythinkpond.wordpress.com/2010/03/22/spring-application-context/">clever way to get the app&rsquo;s context from an unmanaged instance</a>. Here&rsquo;s the technique.</p>
-
-<pre><code>package myapp.util;
-
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-public class ApplicationContextProvider implements ApplicationContextAware {
-    private static ApplicationContext applicationContext;
-
-    public static ApplicationContext getApplicationContext() { return applicationContext; }
-
-    @Override
-    public void setApplicationContext(ApplicationContext appContext) throws BeansException {
-        applicationContext = appContext;
-    }
-}
-</code></pre>
-
-<p>Finally, let&rsquo;s look at the <code>OptimisticLockChecker</code> itself.</p>
-
-<pre><code>package myapp.repo.listener;
-
-import java.lang.reflect.Field;
-import javax.persistence.Column;
-import javax.persistence.OptimisticLockException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Table;
-import org.springframework.beans.BeanUtils;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
-import myapp.entity.VersionedEntity;
-
-@Component
-public class OptimisticLockChecker {
-    @Inject private JdbcTemplate jdbcTemplate;
-
-    public void check(VersionedEntity entity) {
-        Long submittedVersion = entity.getVersion();
-        if (submittedVersion == null) {
-            throw new RuntimeException("Submitted entity must have a version");
-        }
-
-        Class&lt;?&gt; entityClass = entity.getClass();
-
-        Annotation tableAnn = AnnotationUtils.findAnnotation(entityClass, Table.class);
-        String tableName = (String) AnnotationUtils.getValue(tableAnn, "name");
-
-        Field idField = ReflectionUtils.findField(entityClass, "id");
-        Annotation idColAnn = idField.getAnnotation(Column.class);
-        String idColName = (String) AnnotationUtils.getValue(idColAnn, "name");
-
-        String sql = "select version from " + tableName
-            + " where " + idColName + "=" + entity.getId();
-        Long latestVersion = jdbcTemplate.queryForObject(sql, Long.class);
-
-        if (submittedVersion != latestVersion) {
-            throw new OptimisticLockException(
-                    "Stale entity: submitted version " + submittedVersion
-                    + ", but latest version is " + latestVersion);
-        }
-
-        entity.setVersion(entity.getVersion() + 1);
-    }
-}
-</code></pre>
-
-<p>Despite appearances, the code is a little tricky because we&rsquo;re trying to compare an entity version in the persistence context with an entity version in the database, and by design JPA hides the database from the developer. There are different ways to achieve this, but the most straightforward and reliable is probably to use <code>JdbcTemplate</code> to get the latest version in the database. We use Spring&rsquo;s <code>AnnotationUtils</code> and <code>ReflectionUtils</code> to grab the table name and ID column name from the <code>@Table</code> and <code>@Column</code> annotations. (Note that the code above is for a <code>@Column</code> annotation defined on the field itself; if you&rsquo;ve defined <code>@Column</code> on the getter, then you can use <code>AnnotationUtils</code> to get at that.)</p>
-
-<p>After that, we compare and either throw an exception or else increment the version number.</p>
-
-<p>Perhaps the Spring Data REST guys will provide more direct support for <code>@Version</code> (or some suitable alternative) at some future point. Until then, I hope the approach above proves useful.</p>
 ]]></content>
   </entry>
   
