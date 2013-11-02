@@ -4,7 +4,7 @@
   <title><![CDATA[Spring in Practice]]></title>
   <link href="http://springinpractice.com/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-27T11:09:31-07:00</updated>
+  <updated>2013-11-01T21:39:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,51 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[How to pretty print your JSON with Spring and Jackson]]></title>
+    <link href="http://springinpractice.com/2013/11/01/how-to-pretty-print-your-json-with-spring-and-jackson/"/>
+    <updated>2013-11-01T21:29:00-07:00</updated>
+    <id>http://springinpractice.com/2013/11/01/how-to-pretty-print-your-json-with-spring-and-jackson</id>
+    <content type="html"><![CDATA[<p>When implementing RESTful web services using Spring Web MVC, by default Spring doesn&rsquo;t pretty print the JSON output. Fortunately this is easy to address when using Java-based configuration. Here&rsquo;s how, using Jackson 2.</p>
+
+<!-- more -->
+
+
+<pre><code>@Configuration
+public class MyAppConfig extends WebMvcConfigurerAdapter {
+
+    @Override
+    public void configureMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters) {
+        StringHttpMessageConverter stringConverter = new StringHttpMessageConverter();
+        stringConverter.setWriteAcceptCharset(false);
+        converters.add(new ByteArrayHttpMessageConverter());
+        converters.add(stringConverter);
+        converters.add(new ResourceHttpMessageConverter());
+        converters.add(new SourceHttpMessageConverter&lt;Source&gt;());
+        converters.add(new AllEncompassingFormHttpMessageConverter());
+        converters.add(jackson2Converter());
+    }
+
+    @Bean
+    public MappingJackson2HttpMessageConverter jackson2Converter() {
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(objectMapper());
+        return converter;
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        Object objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return objectMapper;
+    }
+}
+</code></pre>
+
+<p>Here we can see a key advantage of using Java-based configuration, which is that we can easily call the <code>ObjectMapper.enable()</code> method, allowing us to activate pretty printing.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[How to set HTTP request timeouts with Spring RestTemplate]]></title>
@@ -1269,178 +1314,6 @@ public String getRunbookPage(@PathVariable Integer pageNumber, Model model) {
     <updated>2012-05-05T14:39:30-07:00</updated>
     <id>http://springinpractice.com/2012/05/05/combined-my-two-blogs</id>
     <content type="html"><![CDATA[<p>To better focus my Java/Spring blogging, I&rsquo;ve merged my former Wheeler Software blog into this one. There are a few articles that didn&rsquo;t make the cut, but the majority of them did.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Migrating non-Wordpress blog comments into Wordpress]]></title>
-    <link href="http://springinpractice.com/2012/05/03/migrating-non-wordpress-blog-comments-into-wordpress/"/>
-    <updated>2012-05-03T05:24:51-07:00</updated>
-    <id>http://springinpractice.com/2012/05/03/migrating-non-wordpress-blog-comments-into-wordpress</id>
-    <content type="html"><![CDATA[<p>This isn&rsquo;t a Spring post, but I&rsquo;m doing something that I think others might find useful, so I&rsquo;m going to share it.</p>
-
-<p>I&rsquo;m in the process of migrating content over from my old Wheeler Software blog to this one, which is a Wordpress blog. Besides the posts themselves, I want to move the comments over.</p>
-
-<p>The slight wrinkle in the plan is that the software and database for the old blog are custom. So getting the comments over involves some SQL scripting. Both databases are MySQL databases, so that helps a bit.</p>
-
-<p>Here&rsquo;s what I&rsquo;m doing.</p>
-
-<!-- more -->
-
-
-
-
-<h3>The old, custom comment table</h3>
-
-
-
-
-<pre>CREATE TABLE `services_comment` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `url` varchar(255) NOT NULL DEFAULT '',
-  `name` varchar(50) NOT NULL,
-  `email` varchar(50) NOT NULL,
-  `web` varchar(100) DEFAULT NULL,
-  `text` text NOT NULL,
-  `html_text` text,
-  `ip_addr` varchar(15) NOT NULL,
-  `date_created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `date_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `services_comment_idx0` (`url`,`date_created`)
-) ENGINE=InnoDB AUTO_INCREMENT=1686 DEFAULT CHARSET=latin1;</pre>
-
-
-
-
-<h3>The Wordpress post table</h3>
-
-
-<p>This isn&rsquo;t the entire table, but just the columns that we care about for this post:</p>
-
-<pre>CREATE TABLE `wp_posts` (
-  `ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `post_title` text NOT NULL,
-  `comment_count` bigint(20) NOT NULL DEFAULT '0',
-
-  ... other columns that we don't care about for our current purpose ...
-
-) ENGINE=MyISAM AUTO_INCREMENT=1126 DEFAULT CHARSET=utf8;</pre>
-
-
-
-
-<h3>The Wordpress comment table</h3>
-
-
-
-
-<pre>CREATE TABLE `wp_comments` (
-  `comment_ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `comment_post_ID` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `comment_author` tinytext NOT NULL,
-  `comment_author_email` varchar(100) NOT NULL DEFAULT '',
-  `comment_author_url` varchar(200) NOT NULL DEFAULT '',
-  `comment_author_IP` varchar(100) NOT NULL DEFAULT '',
-  `comment_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `comment_date_gmt` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `comment_content` text NOT NULL,
-  `comment_karma` int(11) NOT NULL DEFAULT '0',
-  `comment_approved` varchar(20) NOT NULL DEFAULT '1',
-  `comment_agent` varchar(255) NOT NULL DEFAULT '',
-  `comment_type` varchar(20) NOT NULL DEFAULT '',
-  `comment_parent` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `user_id` bigint(20) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`comment_ID`),
-  KEY `comment_approved` (`comment_approved`),
-  KEY `comment_post_ID` (`comment_post_ID`),
-  KEY `comment_approved_date_gmt` (`comment_approved`,`comment_date_gmt`),
-  KEY `comment_date_gmt` (`comment_date_gmt`),
-  KEY `comment_parent` (`comment_parent`)
-) ENGINE=MyISAM AUTO_INCREMENT=289 DEFAULT CHARSET=utf8;</pre>
-
-
-
-
-<h3>The copy script</h3>
-
-
-
-
-<div class="alert warning"><strong>WARNING and DISCLAIMER:</strong> Before you try anything like this, back up your database! And it&#8217;s a good idea to experiment with your script on a separate copy of the database before trying it out on the real thing.
-
-You&#8217;ve been warned. I&#8217;m not responsible if you hose your database, and I&#8217;m not going to field support requests!</div>
-
-
-
-
-<h4>Step 1. Copy the old table into the new database.</h4>
-
-
-<p>I created a copy of my old comment table inside the new Wordpress database to facilitate the copying.</p>
-
-<h4>Step 2. Look up the target Wordpress post&#8217;s ID</h4>
-
-
-<p>You&rsquo;ll need to have something to attach your comments to. You can use whatever means you like here; I just looked it up by the post title:</p>
-
-<pre>select
-  id
-from
-  wp_posts
-where
-  post_title = 'Getting started with Hibernate Validator' and
-  post_parent = 0
-into
-  @post_id;</pre>
-
-
-<p>Note that you want the post with <code>post_parent = 0</code>. Other posts are the various revisions you create over time, and Wordpress has to have a way to attach all the comments to the same single post.</p>
-
-<h4>Step 3. Copy the comments</h4>
-
-
-<p>This is obviously dependent on the specifics of your source table. In my case the source table is pretty close to the destination table, so that makes things a lot easier.</p>
-
-<p>I didn&rsquo;t really care about getting the date vs. GMT date right, so I just used the same date for both. If you care, I&rsquo;m sure there&rsquo;s a function that can handle that.</p>
-
-<pre>insert into
-  wp_comments (comment_post_ID, comment_author, comment_author_email, comment_author_url, comment_author_IP, comment_date, comment_date_gmt, comment_content, comment_approved)
-select
-  @post_id, name, email, web, ip_addr, date_created, date_created, html_text, 1
-from
-  services_comment
-where
-  url = '/hibernate-validator.html'
-order by
-  date_created;</pre>
-
-
-
-
-<h4>Step 4. Update the post&#8217;s comment count</h4>
-
-
-<p>Presumably for performance reasons, Wordpress stores the comment count with the post itself. So we have to update that column or else it will say &ldquo;0 comments&rdquo; even though there&rsquo;s a bunch of comments below:</p>
-
-<pre>select count(*) from wp_comments where comment_post_ID = @post_id and comment_approved = 1 into @comment_count;
-update wp_posts set comment_count = @comment_count where ID = @post_id;</pre>
-
-
-<p>It probably wouldn&rsquo;t be a bad idea to wrap these up in a stored procedure if you have a lot of posts. But no biggie either way.</p>
-
-<h4>Step 5. Verify</h4>
-
-
-<p>Check to see whether your comments showed up. Mine did:</p>
-
-<ul class="square">
-<li><a href="http://springinpractice.com/2009/02/02/getting-started-with-hibernate-validator/" target="_blank">Hibernate Validator post</a></li>
-<li><a href="http://springinpractice.com/2008/05/05/build-a-shopping-cart-with-spring-web-flow-2-part-1/" target="_blank">Spring Web Flow post</a></li>
-</ul>
-
-
-<p>For some reason the Gravatars don&rsquo;t seem to be showing up as much when there are a lot of comments all on a single page. I don&rsquo;t know if it&rsquo;s rate limited or what.</p>
 ]]></content>
   </entry>
   

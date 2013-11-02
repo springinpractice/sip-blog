@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Quick Tips | Spring in Practice]]></title>
   <link href="http://springinpractice.com/blog/categories/quick-tips/atom.xml" rel="self"/>
   <link href="http://springinpractice.com/"/>
-  <updated>2013-10-27T11:09:31-07:00</updated>
+  <updated>2013-11-01T21:39:48-07:00</updated>
   <id>http://springinpractice.com/</id>
   <author>
     <name><![CDATA[Willie Wheeler]]></name>
@@ -12,6 +12,51 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[How to pretty print your JSON with Spring and Jackson]]></title>
+    <link href="http://springinpractice.com/2013/11/01/how-to-pretty-print-your-json-with-spring-and-jackson/"/>
+    <updated>2013-11-01T21:29:00-07:00</updated>
+    <id>http://springinpractice.com/2013/11/01/how-to-pretty-print-your-json-with-spring-and-jackson</id>
+    <content type="html"><![CDATA[<p>When implementing RESTful web services using Spring Web MVC, by default Spring doesn&rsquo;t pretty print the JSON output. Fortunately this is easy to address when using Java-based configuration. Here&rsquo;s how, using Jackson 2.</p>
+
+<!-- more -->
+
+
+<pre><code>@Configuration
+public class MyAppConfig extends WebMvcConfigurerAdapter {
+
+    @Override
+    public void configureMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters) {
+        StringHttpMessageConverter stringConverter = new StringHttpMessageConverter();
+        stringConverter.setWriteAcceptCharset(false);
+        converters.add(new ByteArrayHttpMessageConverter());
+        converters.add(stringConverter);
+        converters.add(new ResourceHttpMessageConverter());
+        converters.add(new SourceHttpMessageConverter&lt;Source&gt;());
+        converters.add(new AllEncompassingFormHttpMessageConverter());
+        converters.add(jackson2Converter());
+    }
+
+    @Bean
+    public MappingJackson2HttpMessageConverter jackson2Converter() {
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(objectMapper());
+        return converter;
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        Object objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return objectMapper;
+    }
+}
+</code></pre>
+
+<p>Here we can see a key advantage of using Java-based configuration, which is that we can easily call the <code>ObjectMapper.enable()</code> method, allowing us to activate pretty printing.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[How to set HTTP request timeouts with Spring RestTemplate]]></title>
@@ -406,126 +451,6 @@ public class FieldErrorResource {
 </code></pre>
 
 <p>Have fun!</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Handling JSON error object responses with Spring's RestTemplate]]></title>
-    <link href="http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/"/>
-    <updated>2013-10-07T01:14:00-07:00</updated>
-    <id>http://springinpractice.com/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate</id>
-    <content type="html"><![CDATA[<p>Some web services return JSON error objects when there&rsquo;s a problem. <a href="http://developer.github.com/v3/#client-errors">GitHub&rsquo;s API</a> is a good case in point, and <a href="https://www.hipchat.com/docs/api">HipChat&rsquo;s API</a> does the same thing. The approach is pretty common. Error objects give the API a way to communicate details beyond what the HTTP status codes indicate. (For more information on how to <em>generate</em> such responses, please see my post <a href="http://springinpractice.com/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON Error Object Responses With Spring Web MVC</a>.)</p>
-
-<p>A challenge when using Spring&rsquo;s <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/RestTemplate.html">RestTemplate</a> is that there&rsquo;s not an obvious way to handle these. Normally when we use the <code>RestTemplate</code>, we indicate a specific type of response payload we expect to see, and so if an error object comes back instead, then it&rsquo;s not clear what to do.</p>
-
-<p>One possible approach is to add error fields to the various resource data transfer objects (DTOs). While this can work, I&rsquo;m not a big fan of this approach as it fails to separate the resource modeling and error reporting concerns, which I take to be distinct.</p>
-
-<p>So let&rsquo;s look at a different approach&mdash;one that does in fact separate resource modeling from error reporting.</p>
-
-<!-- more -->
-
-
-<h2>The idea</h2>
-
-<p>The concept is to read the response body as a string instead of reading it as an object, and then deserialize the body either as the expected response type or else as an error object, depending on whether the status code was an error (HTTP 400 or 500 series).</p>
-
-<h2>How to do it</h2>
-
-<p>First we need a special <code>RestTemplate</code> configuration. By default <code>RestTemplate</code> contains a default <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/ResponseErrorHandler.html">ResponseErrorHandler</a> implementation called <a href="http://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/web/client/DefaultResponseErrorHandler.html">DefaultResponseErrorHandler</a>, which throws an exception when there&rsquo;s an HTTP error. This doesn&rsquo;t work for us, because the exception bubbles out of the <code>RestTemplate</code> call, thus abandoning the error object we want to read. So we just need to replace it with a custom handler that doesn&rsquo;t throw the exception. Here&rsquo;s one:</p>
-
-<pre><code>package myapp.client;
-
-import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.web.client.ResponseErrorHandler;
-import myapp.util.RestUtil;
-
-public class MyResponseErrorHandler implements ResponseErrorHandler {
-    private static final Logger log = LoggerFactory.getLogger(MyResponseErrorHandler.class);
-
-    @Override
-    public void handleError(ClientHttpResponse response) throws IOException {
-        log.error("Response error: {} {}", response.getStatusCode(), response.getStatusText());
-    }
-
-    @Override
-    public boolean hasError(ClientHttpResponse response) throws IOException {
-        return RestUtil.isError(response.getStatusCode());
-    }
-}
-</code></pre>
-
-<p>In the code above, the <code>handleError()</code> method simply logs the error. It doesn&rsquo;t throw an exception, since again we don&rsquo;t want to prevent <code>RestTemplate</code> from reading the error object into a string.</p>
-
-<p>Just for completeness, here&rsquo;s <code>RestUtil</code>:</p>
-
-<pre><code>package myapp.util;
-
-import org.springframework.http.HttpStatus;
-
-public class RestUtil {
-
-    public static boolean isError(HttpStatus status) {
-        HttpStatus.Series series = status.series();
-        return (HttpStatus.Series.CLIENT_ERROR.equals(series)
-                || HttpStatus.Series.SERVER_ERROR.equals(series));
-    }
-}
-</code></pre>
-
-<p>Now we need to configure the <code>RestTemplate</code> to use our custom <code>ResponseErrorHandler</code>:</p>
-
-<pre><code>&lt;bean class="org.springframework.web.client.RestTemplate"&gt;
-    &lt;property name="errorHandler"&gt;
-        &lt;bean class="myapp.client.MyResponseErrorHandler" /&gt;
-    &lt;/property&gt;
-&lt;/bean&gt;
-</code></pre>
-
-<p>We&rsquo;re going to need an object mapper too (I&rsquo;m assuming <a href="http://wiki.fasterxml.com/JacksonHome">Jackson 2</a> here, though in principle the same approach should work for JAXB or Jackson 1 as well). So here&rsquo;s that:</p>
-
-<pre><code>&lt;bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" /&gt;
-</code></pre>
-
-<p>Inject the <code>RestTemplate</code> and <code>ObjectMapper</code> into your client code. Now here&rsquo;s how to use them to deal with error objects:</p>
-
-<pre><code>@Inject private RestTemplate restTemplate;
-@Inject private ObjectMapper objectMapper;
-
-public DoodadResources getDoodads() {
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Accept", MediaType.APPLICATION_JSON_VALUE);
-    HttpEntity&lt;String&gt; request = new HttpEntity&lt;String&gt;(headers);
-    ResponseEntity&lt;String&gt; response =
-            restTemplate.exchange(DOODAD_URL, HttpMethod.GET, request, String.class);
-    String responseBody = response.getBody();
-    try {
-        if (RestUtil.isError(response.getStatusCode())) {
-            MyErrorResource error = objectMapper.readValue(responseBody, MyErrorResource.class);
-            throw new RestClientException("[" + error.getCode() + "] " + error.getMessage());
-        } else {
-            DoodadResources doodads = objectMapper.readValue(responseBody, DoodadResources.class);
-            return doodads;
-        }
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-    }
-}
-</code></pre>
-
-<p>Notice that the call to <code>exchange()</code> specifies that we want to map the response body to a string, which can handle any JSON (or XML) response. Then we use <code>RestUtil</code> again to process the response differently depending on the status series. For errors we parse the response body into a <code>MyErrorResource</code> and use it to throw an exception with an app-specific error code (not simply an HTTP status code) and a descriptive message. Of course we can do whatever we want with the detailed error information; this is just an example.</p>
-
-<p>If there&rsquo;s no error, then we can parse the response body into the expected response type, if there is one, and return it. Here we return a <code>DoodadResources</code>.</p>
-
-<h2>Conclusion</h2>
-
-<p>Note that since we&rsquo;re capturing the JSON as a string, we&rsquo;re essentially buffering the entire response before parsing it into the actual object (whether expected or error). This may be inappropriate in cases involving large response payloads. Streaming works better there.</p>
-
-<p>Personally I&rsquo;d like to see a version of <code>RestTemplate.exchange()</code> that supports two response types instead of just one: one for the expected response type and one for the error response type. This would avoid the need to handle error objects ourselves, and would also allow the <code>RestTemplate</code> to parse the response body (via Jackson) without having to buffer the entire thing first.</p>
-
-<p>Anyway, that&rsquo;s at least one way to do it. If there are better ways I&rsquo;d very much appreciate hearing about them.</p>
 ]]></content>
   </entry>
   

@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="In a nutshell: Spring in Practice is an applied book on the Spring Framework. It&rsquo;s not theoretical, and it&rsquo;s not a reference manual. Let &hellip;">
+  <meta name="description" content="Manning just sent us the book cover &ndash; we love it! I&rsquo;m pretty sure we will have a lot more than fifty problems solved (we&rsquo;re &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,46 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2008/09/05/just-got-the-book-cover/">Just Got the Book Cover</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2008-09-05T03:49:17-07:00" pubdate data-updated="true">Sep 5<span>th</span>, 2008</time>
+        
+         | <a href="/2008/09/05/just-got-the-book-cover/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="http://springinpractice.s3.amazonaws.com/blog/images/2008-09-05-just-got-the-book-cover/sip-cover-sm12.jpg" alt="Book cover" /></p>
+
+<p>Manning just sent us the book cover &ndash; we love it! I&rsquo;m pretty sure we will have a lot more than fifty problems solved (we&rsquo;re targeting about 600 pages) but I think the text is just sample text for now.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -2389,94 +2429,6 @@ S: 221 2.0.0 smtp.example.com closing connection</pre>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2008/03/28/tutorial-wireshark-in-fifteen-minutes/">Tutorial: Wireshark in Fifteen Minutes</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2008-03-28T05:15:29-07:00" pubdate data-updated="true">Mar 28<span>th</span>, 2008</time>
-        
-         | <a href="/2008/03/28/tutorial-wireshark-in-fifteen-minutes/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>If you&rsquo;ve ever wanted the fastest possible introduction to the Wireshark network protocol analyzer, today is your lucky day.  I&rsquo;m going to show you how to do something useful with Wireshark in fifteen minutes, even if you&rsquo;ve never used it before.</p>
-
-<p>This tutorial is a quickstart.  It is not at all comprehensive.  But if you just want to try it out then this is for you.</p>
-
-<p><b>Step 1.</b> <a href="http://www.wireshark.org/">Download</a> and install Wireshark.  I&rsquo;m using version 0.99.8 for Windows.  The installation is completely straightforward.</p>
-
-<p><b>Step 2.</b> Start it up.</p>
-
-<p><b>Step 3.</b> Think of some network application running on your machine you&rsquo;d like to investigate.  For this tutorial I&rsquo;ll take a look at an SMTP (e-mail) session initiated by an application I wrote.  I&rsquo;ll pretend I&rsquo;m troubleshooting the SMTP communication and to do that I want to see what&rsquo;s happening between my app and the SMTP server.  You can pick whatever you like but pick something where you know the IP address of the remote host.  For instance you might pick an HTTP communication between your machine and a remote host.  Anyway write the IP address down.</p>
-
-<p><b>Step 4.</b> From the Wireshark menubar, choose Capture &rarr; Options.  First, pick the interface (i.e., network interface card, or NIC) you want to investigate.  Don&rsquo;t press the Start button yet.</p>
-
-<p><b>Step 5.</b> <strong>IMPORTANT: TURN <a href="http://en.wikipedia.org/wiki/Promiscuous_mode">PROMISCUOUS MODE</a> OFF!  IF YOU&rsquo;RE AT WORK, YOUR NETWORK ADMINISTRATOR MAY SEE YOU RUNNING IN PROMISCUOUS MODE AND SOMEBODY MAY DECIDE TO FIRE YOU FOR THAT.</strong>  Don&rsquo;t risk it, especially not for a tutorial.  Don&rsquo;t press the Start button yet.</p>
-
-<p><b>Step 6.</b> We need to create a capture filter to prevent Wireshark from capturing all network traffic going through the interface we chose in Step 4.  It is surprising just how much network traffic goes through the interface and we don&rsquo;t want to see all of it.  In the text field next to the &ldquo;Capture Filter&rdquo; button, type <code>host &lt;ip_address&gt;</code>, substituting in the IP address you care about for the <code>&lt;ip_address&gt;</code> part.  This will create a filter that passes only that traffic either originating from or going to the specified host.</p>
-
-<p><b>Step 7.</b> Now you can press Start.  Wireshark is now capturing any data involving the specified IP address, whether as a source or as a destination.</p>
-
-<p><b>Step 8.</b> If you aren&rsquo;t already doing so, run the application of interest.  In this case I&rsquo;m going to run the SMTP client that I mentioned in Step 3.  You should see a list of packets appear in the Wireshark window.</p>
-
-<p><b>Step 9.</b>  Let&rsquo;s take a look at the SMTP session that my app had with the SMTP server.  Go to Analyze &rarr; Follow TCP Stream.  You should see the TCP stream content.  Here&rsquo;s what I saw in mine.  I&rsquo;ve suppressed certain parts for security reasons but you get the picture:</p>
-
-<pre>220 [suppressed] ESMTP Sendmail 8.13.8/8.13.6; Fri, 28 Mar 2008 01:15:04 -0700
-EHLO [suppressed]
-250-[suppressed] Hello [suppressed], pleased to meet you
-250-ENHANCEDSTATUSCODES
-250-PIPELINING
-250-EXPN
-250-VERB
-250-8BITMIME
-250-SIZE 20000000
-250-DSN
-250-ETRN
-250-AUTH LOGIN PLAIN
-250-STARTTLS
-250-DELIVERBY
-250 HELP
-AUTH LOGIN
-334 VXNlcm5hbWU6
-[suppressed]
-334 UGFzc3dvcmQ6
-[suppressed]
-535 5.7.0 authentication failed</pre>
-
-
-<p>The above is an SMTP-AUTH session that shows a failed authentication.  As you can imagine, this sort of visibility can be extremely useful in troubleshooting networked applications.  For instance, here I can see that my app was able to connect with the SMTP server and send my credentials, but the SMTP server rejected them.</p>
-
-<p>That obviously just scratches the surface with respect to Wireshark&rsquo;s capabilities, but that should be enough to get you started.  Have fun!</p>
-
-<div class="endnote">Post migrated from my Wheeler Software site.</div>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/9/">&larr; Older</a>
@@ -2494,6 +2446,10 @@ AUTH LOGIN
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/11/01/how-to-pretty-print-your-json-with-spring-and-jackson/">How to pretty print your JSON with Spring and Jackson</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/">How to set HTTP request timeouts with Spring RestTemplate</a>
       </li>
     
@@ -2507,10 +2463,6 @@ AUTH LOGIN
     
       <li class="post">
         <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
       </li>
     
   </ul>

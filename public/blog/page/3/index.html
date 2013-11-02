@@ -9,7 +9,7 @@
   <meta name="author" content="Willie Wheeler">
 
   
-  <meta name="description" content="In chapter 8 of Spring in Practice, recipes 8.2 and 8.3 require a JNDI-exposed JavaMail session backed by an SMTP provider. Here I&rsquo;ll show how &hellip;">
+  <meta name="description" content="This isn&rsquo;t a Spring post, but I&rsquo;m doing something that I think others might find useful, so I&rsquo;m going to share it. I&rsquo;m in the &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +79,55 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/2012/05/03/migrating-non-wordpress-blog-comments-into-wordpress/">Migrating non-Wordpress Blog Comments Into Wordpress</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-03T05:24:51-07:00" pubdate data-updated="true">May 3<span>rd</span>, 2012</time>
+        
+         | <a href="/2012/05/03/migrating-non-wordpress-blog-comments-into-wordpress/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This isn&rsquo;t a Spring post, but I&rsquo;m doing something that I think others might find useful, so I&rsquo;m going to share it.</p>
+
+<p>I&rsquo;m in the process of migrating content over from my old Wheeler Software blog to this one, which is a Wordpress blog. Besides the posts themselves, I want to move the comments over.</p>
+
+<p>The slight wrinkle in the plan is that the software and database for the old blog are custom. So getting the comments over involves some SQL scripting. Both databases are MySQL databases, so that helps a bit.</p>
+
+<p>Here&rsquo;s what I&rsquo;m doing.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/2012/05/03/migrating-non-wordpress-blog-comments-into-wordpress/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -501,177 +550,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2012/02/12/working-with-the-neo4j-shell/">Working With the Neo4j Shell</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-02-12T06:06:54-08:00" pubdate data-updated="true">Feb 12<span>th</span>, 2012</time>
-        
-         | <a href="/2012/02/12/working-with-the-neo4j-shell/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>In this post we&rsquo;re going to learn how to work with a local Neo4j database using the <a href="http://neo4j.org/" title="Neo4j">Neo4j</a> shell. This isn&rsquo;t really a Spring post, but <a href="http://www.springsource.org/spring-data/neo4j" title="Spring Data Neo4j">Spring Data Neo4j</a> users will probably find it useful.</p>
-
-<p><strong>Set environment variable (optional).</strong> First, set the <code>NEO4J_HOME</code> environment variable to point to the top-level Neo4j directory, and put the <code>bin</code> directory on your path.</p>
-
-<p><strong>Start the Neo4j shell.</strong> Type</p>
-
-<p><code>neo4j-shell -path path/to/neo4j-db</code></p>
-
-<p>with the actual path to your database substituted in. If you want to run in read-only mode, you can do this instead:</p>
-
-<p><code>neo4j-shell -readonly -path path/to/neo4j-db</code></p>
-
-<p>If everything went well, you should see something that looks like this:</p>
-
-<pre>/lib/neo4j-community-1.5/bin$ neo4j-shell -path ~/projects/skydingo/skybase/neo4j/db
-NOTE: Local Neo4j graph database service at '/Users/williewheeler/projects/skydingo/skybase/neo4j/db'
-Welcome to the Neo4j Shell! Enter 'help' for a list of commands
-
-Welcome to the Neo4j Shell! Enter 'help' for a list of commands
-
-neo4j-sh (0)$</pre>
-
-
-<p>I&rsquo;m not sure why it welcomes me twice (friendly shell, I suppose), but that&rsquo;s what it does.</p>
-
-<p><strong>Try some commands.</strong> Now we&rsquo;re in the shell. The command set is bash-like, which is kind of nice if you&rsquo;re already familiar with bash. Let&rsquo;s play around with some commands.</p>
-
-<p>First, we&rsquo;ll set the current node to node 22:</p>
-
-<pre>neo4j-sh (0)$ cd -a 22
-neo4j-sh (willie,22)$</pre>
-
-
-<p>The <code>-a</code> flag stands for &ldquo;absolute path&rdquo;, and it just means that I can navigate to any node at all in the graph, instead of being limited to adjacent nodes.</p>
-
-<p>Now let&rsquo;s see what node 22 looks like:</p>
-
-<pre>neo4j-sh (willie,22)$ ls
-*__type__   =[org.skydingo.skybase.model.Person]
-*email      =[willie@example.com]
-*firstName  =[Willie]
-*gitHubUser =[williewheeler]
-*lastName   =[Wheeler]
-*title      =[Lead developer]
-*username   =[willie]
-*workPhone  =[999-111-2222]
-neo4j-sh (willie,22)$</pre>
-
-
-<p>Let&rsquo;s change the work phone:</p>
-
-<pre>neo4j-sh (willie,22)$ set workPhone "999-867-5309"
-neo4j-sh (willie,22)$ ls
-*__type__   =[org.skydingo.skybase.model.Person]
-*email      =[willie@example.com]
-*firstName  =[Willie]
-*gitHubUser =[williewheeler]
-*lastName   =[Wheeler]
-*title      =[Lead developer]
-*username   =[willie]
-*workPhone  =[999-867-5309]
-neo4j-sh (willie,22)$ </pre>
-
-
-<p>You can tell that I created the node above using Spring Data Neo4j since it has the <code><strong>type</strong></code> property that Spring Data Neo4j uses.</p>
-
-<p>Now let&rsquo;s create a new node. With Neo4j we create new nodes by relating them to existing nodes. Witness:</p>
-
-<pre>neo4j-sh (willie,22)$ mkrel -t HAS_HOBBY -d OUTGOING -c
-neo4j-sh (willie,22)$ ls    
-*__type__   =[org.skydingo.skybase.model.Person]
-*email      =[willie@example.com]
-*firstName  =[Willie]
-*gitHubUser =[williewheeler]
-*lastName   =[Wheeler]
-*title      =[Lead developer]
-*username   =[willie]
-*workPhone  =[999-867-5309]
-(me) --[HAS_HOBBY]-&gt; (48)
-neo4j-sh (willie,22)$</pre>
-
-
-<p>Notice that there&rsquo;s now a node 48. Let&rsquo;s navigate to that node and give it a title:</p>
-
-<pre>neo4j-sh (willie,22)$ cd 48
-neo4j-sh (48)$ ls
-(me) &lt;-[HAS_HOBBY]-- (willie,22)
-neo4j-sh (48)$ set name &quot;Playing guitar&quot;
-neo4j-sh (Playing guitar,48)$ ls
-*name =[Playing guitar]
-(me) &lt;-[HAS_HOBBY]-- (willie,22)
-neo4j-sh (Playing guitar,48)$</pre>
-
-
-<p>Alright, that was cool, but I don&rsquo;t want that node anymore. We&rsquo;re going to delete both the node and the relationship we created:</p>
-
-<pre>neo4j-sh (Playing guitar,48)$ rmnode 48
-(Playing guitar,48) cannot be deleted because it still has relationships. Use -f to force deletion of its relationships
-neo4j-sh (Playing guitar,48)$ rmnode -f 48
-Relationship [HAS_HOBBY,26] deleted
-neo4j-sh (?)$ cd -a 22
-neo4j-sh (willie,22)$ ls
-*__type__   =[org.skydingo.skybase.model.Person]
-*email      =[willie@example.com]
-*firstName  =[Willie]
-*gitHubUser =[williewheeler]
-*lastName   =[Wheeler]
-*title      =[Lead developer]
-*username   =[willie]
-*workPhone  =[999-867-5309]
-neo4j-sh (willie,22)$</pre>
-
-
-<p>We can do Cypher queries too. Here&rsquo;s a pretty basic one:</p>
-
-<pre>neo4j-sh (willie,22)$ start n=node(2) return n
-+------------------------------------------------------------------------+
-| n                                                                      |
-+------------------------------------------------------------------------+
-| Node[2]{name-&gt;"US West",__type__-&gt;"org.skydingo.skybase.model.Region"} |
-+------------------------------------------------------------------------+
-1 rows, 0 ms
-neo4j-sh (willie,22)$</pre>
-
-
-<p>OK, it&rsquo;s quitting time:</p>
-
-<pre>neo4j-sh (willie,22)$ quit
-/lib/neo4j-community-1.5/bin$</pre>
-
-
-<p>There are other commands too, and for those, see the <a href="http://docs.neo4j.org/" title="Neo4j Reference Manual">Neo4j reference manual</a>. But now you should be able to perform basic operations inside the shell.</p>
-
-<p>Have fun!</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -689,6 +567,10 @@ neo4j-sh (willie,22)$</pre>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/2013/11/01/how-to-pretty-print-your-json-with-spring-and-jackson/">How to pretty print your JSON with Spring and Jackson</a>
+      </li>
+    
+      <li class="post">
         <a href="/2013/10/27/how-to-set-http-request-timeouts-with-spring-resttemplate/">How to set HTTP request timeouts with Spring RestTemplate</a>
       </li>
     
@@ -702,10 +584,6 @@ neo4j-sh (willie,22)$</pre>
     
       <li class="post">
         <a href="/2013/10/09/generating-json-error-object-responses-with-spring-web-mvc/">Generating JSON error object responses with Spring Web MVC</a>
-      </li>
-    
-      <li class="post">
-        <a href="/2013/10/07/handling-json-error-object-responses-with-springs-resttemplate/">Handling JSON error object responses with Spring&#8217;s RestTemplate</a>
       </li>
     
   </ul>
